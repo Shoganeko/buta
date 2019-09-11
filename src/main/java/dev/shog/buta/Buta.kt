@@ -8,10 +8,12 @@ import dev.shog.buta.commands.obj.Command.Companion.COMMANDS
 import dev.shog.buta.events.GuildJoinEvent
 import dev.shog.buta.events.GuildLeaveEvent
 import dev.shog.buta.events.MessageEvent
+import dev.shog.buta.events.PresenceHandler
 import discord4j.core.DiscordClient
 import discord4j.core.DiscordClientBuilder
 import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
+import discord4j.core.event.domain.lifecycle.ReadyEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
@@ -45,7 +47,8 @@ fun main() = runBlocking<Unit> {
         eventDispatcher.on(GuildCreateEvent::class.java).subscribe(GuildJoinEvent::invoke)
         eventDispatcher.on(GuildDeleteEvent::class.java).subscribe(GuildLeaveEvent::invoke)
         eventDispatcher.on(MessageCreateEvent::class.java).subscribe(MessageEvent::invoke)
-
-        login().block()
+        eventDispatcher.on(ReadyEvent::class.java).subscribe(PresenceHandler::invoke)
     }
+
+    CLIENT?.login()?.block()
 }
