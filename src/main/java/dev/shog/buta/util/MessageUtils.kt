@@ -44,5 +44,6 @@ fun preset(pre: Pre, vararg replaceable: String, incPrefix: Boolean): String {
  * A preset message. The [message], and the amount of things that should be replaced.
  */
 enum class Pre(internal val message: String, internal val replaceable: Int, internal val defaultMessage: String) {
-    INV_ARGS("Invalid Usage!\nProper Usage: `<>`", 1, "Invalid Usage!")
+    INV_ARGS("Invalid Usage!\nProper Usage: `<>`", 1, "Invalid Usage!"),
+    NO_PERM("No Permission!", 0, "No Permission!")
 }
