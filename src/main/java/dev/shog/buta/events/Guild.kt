@@ -1,20 +1,15 @@
 package dev.shog.buta.events
 
-import com.sun.security.auth.callback.TextCallbackHandler
 import dev.shog.buta.events.obj.Event
 import dev.shog.buta.util.getChannelsWithPermission
-import discord4j.core.`object`.entity.channel.TextChannel
-import discord4j.core.`object`.util.Permission
 import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
-import reactor.core.publisher.Mono
-import javax.xml.soap.Text
 
 /**
  * A guild join event.
  */
 object GuildJoinEvent : Event() {
-    const val BUTA_JOIN_MESSAGE = "Hello, my name is Buta!" +
+    private const val BUTA_JOIN_MESSAGE = "Hello, my name is Buta!" +
             "\n\nYou can figure out my commands by typing `b!help`."
 
     override fun invoke(event: discord4j.core.event.domain.Event) {

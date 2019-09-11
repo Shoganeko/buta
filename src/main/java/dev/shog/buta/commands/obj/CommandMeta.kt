@@ -8,5 +8,6 @@ data class CommandMeta(
         val commandDesc: String,
         val commands: HashMap<String, String>,
         val isPmAvailable: Boolean,
+        val category: Categories,
         val alias: ArrayList<String>
 )

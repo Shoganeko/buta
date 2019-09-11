@@ -20,7 +20,7 @@ object CommandFactory {
                         cmd.invoke(e, args)
                     }
 
-                    override val meta: CommandMeta = CommandMeta(cmd.commandName, cmd.commandDesc, cmd.helpCommand, cmd.isPmAvailable,  cmd.alias)
+                    override val meta: CommandMeta = CommandMeta(cmd.commandName, cmd.commandDesc, cmd.helpCommand, cmd.isPmAvailable, cmd.category, cmd.alias)
                 }
             }
 
