@@ -34,6 +34,6 @@ object CommandFactory {
             }
         }
 
-        throw Exception("Invaid Command Inputted!")
+        throw Exception("Invalid Command Inputted!")
     }
 }

@@ -23,6 +23,7 @@ val HELP = object : Command("Help", "Get help on a command, or view all commands
                         cmd.meta.commandName.equals(args[0], ignoreCase = true)
                     }
                     .collectList()
+                    .cache()
                     .subscribe { l ->
                         if (l.isEmpty()) {
                             e.message.channel

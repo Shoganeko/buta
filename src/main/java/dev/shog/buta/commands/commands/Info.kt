@@ -1,10 +1,7 @@
 package dev.shog.buta.commands.commands
 
-import dev.shog.buta.commands.obj.Categories
-import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.obj.InfoCommand
 import dev.shog.buta.util.update
-import discord4j.core.event.domain.message.MessageCreateEvent
 
 /**
  * About Buta

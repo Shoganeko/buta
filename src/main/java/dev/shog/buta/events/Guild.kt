@@ -1,5 +1,8 @@
 package dev.shog.buta.events
 
+import dev.shog.buta.LOGGER
+import dev.shog.buta.commands.api.API
+import dev.shog.buta.commands.api.guild.GuildFactory
 import dev.shog.buta.events.obj.Event
 import dev.shog.buta.util.getChannelsWithPermission
 import discord4j.core.event.domain.guild.GuildCreateEvent
@@ -15,7 +18,8 @@ object GuildJoinEvent : Event() {
     override fun invoke(event: discord4j.core.event.domain.Event) {
         require(event is GuildCreateEvent)
 
-        val newToGuild = false // TODO check
+        val newToGuild = API.getObject(API.Type.GUILD, event.guild.id.asLong()) != null
+        val guild = GuildFactory.getGuild(event.guild.id.asLong())
 
         if (newToGuild) {
             getChannelsWithPermission(event.guild)
@@ -34,6 +38,6 @@ object GuildLeaveEvent : Event() {
     override fun invoke(event: discord4j.core.event.domain.Event) {
         require(event is GuildDeleteEvent)
 
-        // TODO do event
+        API.deleteObject(API.Type.GUILD, event.guildId.asLong())
     }
 }

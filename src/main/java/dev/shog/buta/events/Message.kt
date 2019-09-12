@@ -2,6 +2,7 @@ package dev.shog.buta.events
 
 import dev.shog.buta.LOGGER
 import dev.shog.buta.commands.UserThreadHandler
+import dev.shog.buta.commands.api.guild.GuildFactory
 import dev.shog.buta.commands.obj.BuiltCommand
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.events.obj.Event
@@ -24,7 +25,9 @@ object MessageEvent : Event(), CoroutineScope by CoroutineScope(Dispatchers.Unco
                 LOGGER.debug("Starting task for ${event.message.author.get().username}...")
 
                 val isGuild = event.guildId.isPresent
-                val command = getCommandFromMessage(event.message, "!") // TODO Prefix
+                val command = if (isGuild) {
+                    getCommandFromMessage(event.message, GuildFactory.getGuild(event.guildId.get()).getString("prefix") ?: "!")
+                } else getCommandFromMessage(event.message, "!")
 
                 if (command != null) {
                     if (!command.meta.isPmAvailable && !isGuild) {

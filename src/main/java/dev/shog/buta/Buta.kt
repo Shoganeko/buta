@@ -4,6 +4,7 @@ import dev.shog.buta.commands.CommandFactory
 import dev.shog.buta.commands.commands.ABOUT
 import dev.shog.buta.commands.commands.HELP
 import dev.shog.buta.commands.commands.PING
+import dev.shog.buta.commands.commands.PREFIX
 import dev.shog.buta.commands.obj.Command.Companion.COMMANDS
 import dev.shog.buta.events.GuildJoinEvent
 import dev.shog.buta.events.GuildLeaveEvent
@@ -41,6 +42,7 @@ fun main() = runBlocking<Unit> {
         add(CommandFactory.build(PING))
         add(CommandFactory.build(HELP))
         add(CommandFactory.build(ABOUT))
+        add(CommandFactory.build(PREFIX))
     }
 
     CLIENT = DiscordClientBuilder(key as String).build().apply {
