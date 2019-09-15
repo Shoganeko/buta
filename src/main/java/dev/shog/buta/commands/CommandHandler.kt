@@ -2,8 +2,6 @@ package dev.shog.buta.commands
 
 import dev.shog.buta.LOGGER
 import discord4j.core.`object`.entity.User
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import java.util.concurrent.ConcurrentHashMap
 
 /**

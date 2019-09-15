@@ -3,9 +3,6 @@ package dev.shog.buta
 import org.apache.commons.lang3.SystemUtils
 import org.json.JSONObject
 import java.io.File
-import java.lang.Exception
-import java.nio.file.Files
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.system.exitProcess
 
 /**

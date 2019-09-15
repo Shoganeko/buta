@@ -21,17 +21,18 @@ abstract class BuiltCommand {
      * When the command's help command is invoked by a user.
      */
     fun invokeHelp(e: MessageCreateEvent) {
-        e.message.channel.subscribe {
-            it.createEmbed { msg ->
-                msg.update(e.message.author.get())
+        e.message.channel
+                .flatMap {
+                    it.createEmbed { msg ->
+                        msg.update(e.message.author.get())
 
-                msg.setTitle("Help : ${meta.commandName}")
-                msg.setDescription(meta.commandDesc)
+                        msg.setTitle("Help : ${meta.commandName}")
+                        msg.setDescription(meta.commandDesc)
 
-                meta.commands.entries.forEach { pair ->
-                    msg.addField(pair.key, pair.value, true)
-                }
-            }.subscribe()
-        }
+                        meta.commands.entries.forEach { pair ->
+                            msg.addField(pair.key, pair.value, true)
+                        }
+                    }
+                }.subscribe()
     }
 }

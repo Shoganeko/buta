@@ -1,15 +1,14 @@
 package dev.shog.buta
 
 import dev.shog.buta.commands.CommandFactory
-import dev.shog.buta.commands.commands.ABOUT
-import dev.shog.buta.commands.commands.HELP
-import dev.shog.buta.commands.commands.PING
-import dev.shog.buta.commands.commands.PREFIX
+import dev.shog.buta.commands.api.guild.GuildFactory
+import dev.shog.buta.commands.commands.*
 import dev.shog.buta.commands.obj.Command.Companion.COMMANDS
 import dev.shog.buta.events.GuildJoinEvent
 import dev.shog.buta.events.GuildLeaveEvent
 import dev.shog.buta.events.MessageEvent
 import dev.shog.buta.events.PresenceHandler
+import dev.shog.buta.util.getType
 import discord4j.core.DiscordClient
 import discord4j.core.DiscordClientBuilder
 import discord4j.core.event.domain.guild.GuildCreateEvent
@@ -43,6 +42,8 @@ fun main() = runBlocking<Unit> {
         add(CommandFactory.build(HELP))
         add(CommandFactory.build(ABOUT))
         add(CommandFactory.build(PREFIX))
+        add(CommandFactory.build(GUILD_INFO))
+        add(CommandFactory.build(USER_INFO))
     }
 
     CLIENT = DiscordClientBuilder(key as String).build().apply {

@@ -2,7 +2,6 @@ package dev.shog.buta.util
 
 import discord4j.core.`object`.entity.User
 import discord4j.core.spec.EmbedCreateSpec
-import reactor.core.publisher.Flux
 import java.awt.Color
 import java.time.Instant
 import kotlin.random.Random
@@ -35,7 +34,11 @@ fun preset(pre: Pre, vararg replaceable: String, incPrefix: Boolean): String {
 
     var message = pre.message
     for (i in 0 until pre.replaceable) {
-        message = message.replaceFirst("<>", if (incPrefix) { "!" + replaceable[i] } else { replaceable[i] })
+        message = message.replaceFirst("<>", if (incPrefix) {
+            "!" + replaceable[i]  // TODO change with actual prefix
+        } else {
+            replaceable[i]
+        })
     }
 
     return message

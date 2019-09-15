@@ -3,12 +3,9 @@ package dev.shog.buta.events
 import dev.shog.buta.CLIENT
 import dev.shog.buta.LOGGER
 import dev.shog.buta.events.obj.Event
-import discord4j.core.`object`.data.stored.ActivityBean
-import discord4j.core.`object`.data.stored.PresenceBean
 import discord4j.core.`object`.presence.Activity
 import discord4j.core.`object`.presence.Presence
 import discord4j.core.event.domain.lifecycle.ReadyEvent
-import discord4j.gateway.json.response.PresenceResponse
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.concurrent.timerTask

@@ -1,12 +1,13 @@
 package dev.shog.buta.events
 
-import dev.shog.buta.LOGGER
 import dev.shog.buta.commands.api.API
 import dev.shog.buta.commands.api.guild.GuildFactory
 import dev.shog.buta.events.obj.Event
 import dev.shog.buta.util.getChannelsWithPermission
 import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 
 /**
  * A guild join event.
@@ -18,15 +19,14 @@ object GuildJoinEvent : Event() {
     override fun invoke(event: discord4j.core.event.domain.Event) {
         require(event is GuildCreateEvent)
 
-        val newToGuild = API.getObject(API.Type.GUILD, event.guild.id.asLong()) != null
-        val guild = GuildFactory.getGuild(event.guild.id.asLong())
-
-        if (newToGuild) {
-            getChannelsWithPermission(event.guild)
-                    .next()
-                    .flatMap { ch ->
-                        ch.createMessage(BUTA_JOIN_MESSAGE)
-                    }.subscribe()
+        Mono.justOrEmpty(event.guild).subscribe { g ->
+            GuildFactory.getGuild(g.id.asLong())
+                    .switchIfEmpty(
+                            getChannelsWithPermission(g)
+                                    .next()
+                                    .flatMap { ch -> ch.createMessage(BUTA_JOIN_MESSAGE) }
+                                    .then(Mono.empty())
+                    ).subscribe()
         }
     }
 }
@@ -38,6 +38,6 @@ object GuildLeaveEvent : Event() {
     override fun invoke(event: discord4j.core.event.domain.Event) {
         require(event is GuildDeleteEvent)
 
-        API.deleteObject(API.Type.GUILD, event.guildId.asLong())
+        API.deleteObject(API.Type.GUILD, event.guildId.asLong()).subscribe()
     }
 }

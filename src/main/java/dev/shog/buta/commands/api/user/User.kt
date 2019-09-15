@@ -15,7 +15,7 @@ class User(private val user: Long): DataHolder() {
      * Updates something
      */
     fun set(key: String, value: Any) {
-        API.updateObject(API.Type.USER, user, Pair(key, value))
+        API.updateObject(API.Type.USER, user, Pair(key, value)).subscribe()
         data[key] = value
     }
 }

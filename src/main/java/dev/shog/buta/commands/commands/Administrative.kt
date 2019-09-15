@@ -23,17 +23,17 @@ val PREFIX = object : Command("Prefix", "Change or view the prefix in the guild.
             }
 
             e.message.channel.subscribe { ch ->
-                val guild = GuildFactory.getGuild(e.guildId.get())
-
-                guild.set("prefix", args[0])
-
-                ch.createMessage("Your prefix is now: `${guild.getString("prefix")}`").subscribe()
+                GuildFactory.getGuild(e.guildId.get())
+                        .doOnNext { g -> g.set("prefix", args[0]) }
+                        .flatMap { g -> ch.createMessage("Your prefix is now: `${g.getString("prefix")}`") }
+                        .subscribe()
             }
         } else {
-            e.message.channel
-                    .flatMap { ch ->
-                        ch.createMessage("Your prefix is: `${GuildFactory.getGuild(e.guildId.get()).getString("prefix")}`")
-                    }.subscribe()
+            e.message.channel.subscribe { ch ->
+                GuildFactory.getGuild(e.guildId.get())
+                        .flatMap { g -> ch.createMessage("Your prefix is: `${g.getString("prefix")}`") }
+                        .subscribe()
+            }
         }
     }
 }

@@ -15,7 +15,7 @@ class Guild(private val guild: Long): DataHolder() {
      * Updates something
      */
     fun set(key: String, value: Any) {
-        API.updateObject(API.Type.GUILD, guild, Pair(key, value))
+        API.updateObject(API.Type.GUILD, guild, Pair(key, value)).subscribe()
 
         data[key] = value
     }

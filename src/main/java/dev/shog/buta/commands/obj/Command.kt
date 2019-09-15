@@ -1,7 +1,5 @@
 package dev.shog.buta.commands.obj
 
-import dev.shog.buta.commands.commands.HELP
-import dev.shog.buta.commands.commands.PING
 import discord4j.core.event.domain.message.MessageCreateEvent
 
 /**
