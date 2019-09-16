@@ -2,10 +2,12 @@ package dev.shog.buta.commands.commands
 
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
+import dev.shog.buta.commands.permission.PermissionFactory
 import dev.shog.buta.util.Pre
 import dev.shog.buta.util.preset
 import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import java.lang.StringBuilder
 
 /**
@@ -14,67 +16,59 @@ import java.lang.StringBuilder
  */
 val HELP = object : Command("Help", "Get help on a command, or view all commands.",
         hashMapOf(Pair("help", "View all commands."), Pair("help [command]", "Get help on a specific command.")),
-        true, Categories.INFO, arrayListOf()
+        true,
+        Categories.INFO,
+        PermissionFactory.hasPermission(),
+        arrayListOf()
 ) {
-    override suspend fun invoke(e: MessageCreateEvent, args: MutableList<String>) {
+    override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<Void> {
         if (args.size >= 1) {
-            Flux.fromIterable(COMMANDS)
+            return Flux.fromIterable(COMMANDS)
                     .filter { cmd ->
-                        cmd.meta.commandName.equals(args[0], ignoreCase = true)
+                        cmd.commandName.equals(args[0], ignoreCase = true)
                     }
                     .collectList()
                     .cache()
-                    .subscribe { l ->
+                    .flatMap { l ->
                         if (l.isEmpty()) {
                             e.message.channel
                                     .flatMap { ch ->
                                         ch.createMessage(preset(Pre.INV_ARGS, "help [command]", incPrefix = true))
                                     }
-                                    .subscribe()
+                                    .then()
                         } else {
-                            l.firstOrNull()?.invokeHelp(e)
+                            l.firstOrNull()?.invokeHelp(e)?.then()
                         }
                     }
-
-            return
+                    .then()
         } else {
             val str = StringBuilder().apply {
                 append("Invite Buta: https://shog.dev/buta/invite")
                 append("\nButa Support: https://shog.dev/buta/discord")
             }
 
-            for (cat in Categories.values()) {
-                val category = StringBuilder()
+            return Flux.fromIterable(Categories.values().toList())
+                    .flatMap { cat ->
+                        val category = StringBuilder()
 
-                Flux.fromIterable(COMMANDS)
-                        .filter { cmd ->
-                            cmd.meta.category == cat
-                        }
-                        .collectList()
-                        .subscribe { l ->
-                            if (l.isNotEmpty()) {
-                                category.append("\n\n**${cat.name.toLowerCase().capitalize()}**\n")
-
-                                Flux.fromIterable(l)
-                                        .filter { cmd ->
-                                            // TODO see if user has permission
-                                            true
-                                        }
-                                        .doOnNext { cmd ->
-                                            category.append("`${cmd.meta.commandName}`, ")
-                                        }
-                                        .doFinally {
-                                            str.append(category.toString().removeSuffix(", "))
-                                        }
-                                        .subscribe()
-                            }
-                        }
-            }
-
-            e.message.channel
-                    .flatMap { ch ->
-                        ch.createMessage(str.toString())
-                    }.subscribe()
+                        Flux.fromIterable(COMMANDS)
+                                .filter { cmd -> cmd.category == cat }
+                                .filterWhen { cmd -> cmd.permable.check(e) }
+                                .collectList()
+                                .flatMap { l ->
+                                    if (l.isNotEmpty())
+                                        Flux.fromIterable(l)
+                                                .doFirst { category.append("\n\n**${cat.name.toLowerCase().capitalize()}**\n") }
+                                                .doOnNext { cmd -> category.append("`${cmd.commandName}`, ") }
+                                                .doFinally { str.append(category.toString().removeSuffix(", ")) }
+                                                .then()
+                                    else Mono.empty<Void>().then()
+                                }
+                                .then()
+                    }
+                    .then(e.message.channel)
+                    .flatMap { ch -> ch.createMessage(str.toString()) }
+                    .then()
         }
     }
 }

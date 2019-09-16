@@ -1,41 +1,36 @@
 package dev.shog.buta.commands.commands
 
 import dev.shog.buta.commands.obj.InfoCommand
-import dev.shog.buta.util.enabledDisabled
+import dev.shog.buta.commands.permission.PermissionFactory
 import dev.shog.buta.util.update
 import dev.shog.buta.util.yesNo
 import reactor.core.publisher.Mono
-import java.lang.StringBuilder
 import java.text.SimpleDateFormat
-import java.util.*
 
 /**
  * About Buta
  */
-val PING = InfoCommand("Ping", "Pong!", hashMapOf(Pair("ping", "Get the ping of the bot.")), true, arrayListOf()) {
+val PING = InfoCommand("Ping", "Pong!", hashMapOf(Pair("ping", "Get the ping of the bot.")), true, PermissionFactory.hasPermission(), arrayListOf()) {
     it.first.message.channel
             .flatMap { channel ->
-                channel.createEmbed  {
-                    embed -> embed.update(it.first.message.author.get())
-                    embed.setDescription("Pong! ${it.first.client.responseTime}ms")
-                }
-            }.subscribe()
+                channel.createMessage("Pong! ${it.first.client.responseTime}ms")
+            }.then()
 }
 
 /**
  * About Buta
  */
-val ABOUT = InfoCommand("About", "About Buta!", hashMapOf(Pair("about", "About Chad!")), true, arrayListOf()) {
+val ABOUT = InfoCommand("About", "About Buta!", hashMapOf(Pair("about", "About Chad!")), true, PermissionFactory.hasPermission(), arrayListOf()) {
     it.first.message.channel
             .flatMap { channel ->
                 channel.createEmbed  { embed ->
                     embed.update(it.first.message.author.get())
 
                     embed.setTitle("ℹ About Buta")
-                    embed.setDescription("Buta, formerly Chad, is a feature filled Discord bot with moderation commands to gambling commands.")
+                    embed.setDescription("Buta, formerly Chad, is a feature filled Discord bot with commands from moderation to gambling.")
                     embed.setUrl("https://github.com/shoganeko/buta")
                 }
-            }.subscribe()
+            }.then()
 }
 
 /**
@@ -45,7 +40,9 @@ val GUILD_INFO = InfoCommand(
         "GuildInfo", "Information about a Guild!",
         hashMapOf(Pair("guildinfo", "Gets info about the guild!")),
         false,
-        arrayListOf()) {
+        PermissionFactory.hasPermission(),
+        arrayListOf()
+) {
     val strBuilder = StringBuilder()
     it.first.guild.flatMap { guild ->
         Mono.just(guild.name)
@@ -61,7 +58,7 @@ val GUILD_INFO = InfoCommand(
                 .doOnNext { c -> strBuilder.append("\n__Channels__: $c") }
                 .flatMap { _ -> it.first.message.channel }
                 .flatMap { ch -> ch.createMessage(strBuilder.toString()) }
-    }.subscribe()
+    }.then()
 }
 
 /**
@@ -71,8 +68,10 @@ val USER_INFO = InfoCommand(
         "UserInfo", "Information about a User!!",
         hashMapOf(Pair("userinfo", "Gets info about yourself!"), Pair("userinfo [@user]", "Get information about someone else.")),
         false,
-        arrayListOf()) { data ->
-    data.first.guild.subscribe { guild ->
+        PermissionFactory.hasPermission(),
+        arrayListOf()
+) { data ->
+    data.first.guild.doOnNext { guild ->
         data.first.message.userMentions
                 .collectList()
                 .flatMap { users -> Mono.justOrEmpty(if (users.isNotEmpty()) users[0].id else data.first.member.get().id) }
@@ -98,5 +97,5 @@ val USER_INFO = InfoCommand(
                             .flatMap { ch -> ch.createMessage("There was an issue getting the data!") }
                             .subscribe()
                 })
-    }
+    }.then()
 }

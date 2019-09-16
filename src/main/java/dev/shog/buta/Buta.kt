@@ -11,10 +11,13 @@ import dev.shog.buta.events.PresenceHandler
 import dev.shog.buta.util.getType
 import discord4j.core.DiscordClient
 import discord4j.core.DiscordClientBuilder
+import discord4j.core.`object`.presence.Activity
+import discord4j.core.`object`.presence.Presence
 import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
 import discord4j.core.event.domain.lifecycle.ReadyEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
+import discord4j.core.shard.ShardingClientBuilder
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import kotlin.system.exitProcess
@@ -39,14 +42,21 @@ fun main() = runBlocking<Unit> {
 
     COMMANDS.apply {
         add(CommandFactory.build(PING))
-        add(CommandFactory.build(HELP))
+        add(HELP)
         add(CommandFactory.build(ABOUT))
-        add(CommandFactory.build(PREFIX))
+        add(PREFIX)
         add(CommandFactory.build(GUILD_INFO))
         add(CommandFactory.build(USER_INFO))
     }
 
-    CLIENT = DiscordClientBuilder(key as String).build().apply {
+    CLIENT = ShardingClientBuilder(key as String)
+            .build()
+            .map { b -> b.setInitialPresence(Presence.doNotDisturb(Activity.playing("Loading..."))) }
+            .map(DiscordClientBuilder::build)
+            .blockFirst()
+
+
+    CLIENT?.apply {
         eventDispatcher.on(GuildCreateEvent::class.java).subscribe(GuildJoinEvent::invoke)
         eventDispatcher.on(GuildDeleteEvent::class.java).subscribe(GuildLeaveEvent::invoke)
         eventDispatcher.on(MessageCreateEvent::class.java).subscribe(MessageEvent::invoke)

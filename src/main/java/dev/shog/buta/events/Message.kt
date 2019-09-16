@@ -26,17 +26,27 @@ object MessageEvent : Event(), CoroutineScope by CoroutineScope(Dispatchers.Unco
                             .flatMap { content ->
                                 Flux.fromIterable(Command.COMMANDS)
                                         .filter { entry ->
-                                            content.startsWith("${g.getString("prefix")
-                                                    ?: "b!"}${entry.meta.commandName.toLowerCase()}", true)
+                                            content.startsWith("${g.getString("prefix") 
+                                                    ?: "b!"}${entry.commandName.toLowerCase()}", true)
                                         }
                                         .flatMap { entry ->
-                                            if (!entry.meta.isPmAvailable && !event.guildId.isPresent)
-                                                event.message.channel
-                                                        .flatMap { ch -> ch.createMessage("You can't use this here!") }
-                                            else Mono.justOrEmpty(event.message.content)
-                                                    .flatMapMany { msg -> Flux.just(msg.split(" ").toMutableList()) }
-                                                    .doOnNext { l -> l.removeAt(0) }
-                                                    .flatMap { msg -> Mono.just(launch { entry.invoke(event, msg) }) }
+                                            entry.permable.check(event)
+                                                    .flatMap { t ->
+                                                        if (t) {
+                                                            if (!entry.isPmAvailable && !event.guildId.isPresent)
+                                                                event.message.channel
+                                                                        .flatMap { ch -> ch.createMessage("You can't use this here!") }
+                                                                        .then()
+                                                            else Mono.justOrEmpty(event.message.content)
+                                                                    .flatMapMany { msg -> Flux.just(msg.split(" ").toMutableList()) }
+                                                                    .doOnNext { l -> l.removeAt(0) }
+                                                                    .flatMap { msg -> entry.invoke(event, msg) }
+                                                                    .then()
+                                                        } else event.message.channel
+                                                                .flatMap { ch -> ch.createMessage("You don't have permission for this.") }
+                                                                .then()
+                                                    }
+                                                    .then()
                                         }
                                         .next()
                             }
