@@ -1,6 +1,8 @@
 package dev.shog.buta
 
 import dev.shog.DiscordWebhookHandler
+import dev.shog.buta.commands.commands.ABOUT
+import dev.shog.buta.commands.commands.GUILD
 import dev.shog.buta.commands.commands.PING
 import dev.shog.buta.commands.obj.LangFillableContent
 import dev.shog.buta.events.GuildJoinEvent
@@ -99,4 +101,6 @@ fun main(args: Array<String>) = runBlocking<Unit> {
  */
 private fun initCommands() {
     PING
+    ABOUT
+    GUILD
 }

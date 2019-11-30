@@ -14,3 +14,23 @@ ping:
         four: "WHY DO THE PING BE AT {0}MS"
         five: "who let the ping be at {0}ms"
         six: "ping ping ping ping ping ping ping ping ping {0}ms"
+        seven: "WHO LET DA BING BE AT {0}ms"
+about:
+    name: About
+    desc: Get information about Buta.
+    help:
+        - about: About Buta
+    response:
+        default: "Buta is a multi-purpose open-source Discord bot tailored to towards you!"
+guild:
+    name: Guild
+    desc: Get information about your guild.
+    help:
+        - guild: "Get information about your guild."
+        - guild global: "Get information about all the guilds within Buta."
+    response:
+        default-desc: "{0} was created on {1} and currently has {2} members."
+        global-desc: "Buta currently has a total of {0} guilds and {1} users."
+        field-name: "Name"
+        field-userCount: "User Count"
+        field-date: "Creation Date"
