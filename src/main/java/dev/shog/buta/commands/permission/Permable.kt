@@ -4,6 +4,7 @@ import discord4j.core.`object`.entity.Member
 import discord4j.core.`object`.entity.User
 import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 /**
  * A permission handle, from [PermissionFactory].
@@ -22,15 +23,14 @@ abstract class Permable {
     /**
      * Checks a [e] has permission.
      */
-    fun check(e: MessageCreateEvent): Mono<Boolean> =
-            Mono.just(e.guildId.isPresent)
-                    .flatMap {
-                        when {
-                            it && e.member.isPresent -> Mono.just(e.member.get())
-                            it && e.message.author.isPresent -> Mono.just(e.message.author.get())
-                            else -> Mono.empty()
-                        }
-                    }
-                    .flatMap { u -> hasPermission(u) }
-                    .switchIfEmpty(Mono.just(false))
+    fun check(e: MessageCreateEvent): Mono<Boolean> {
+        val user = when {
+            e.member.isPresent -> hasPermission(e.member.get())
+            e.message.author.isPresent -> hasPermission(e.message.author.get())
+            else -> Mono.empty()
+        }
+
+        return user
+                .switchIfEmpty(Mono.just(false))
+    }
 }

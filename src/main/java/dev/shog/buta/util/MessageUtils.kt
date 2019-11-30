@@ -1,7 +1,10 @@
 package dev.shog.buta.util
 
+import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.User
+import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.spec.EmbedCreateSpec
+import reactor.core.publisher.Mono
 import java.awt.Color
 import java.time.Instant
 import kotlin.random.Random
@@ -26,28 +29,8 @@ fun EmbedCreateSpec.update(user: User, color: Color = Color(96, 185, 233)): Embe
 }
 
 /**
- * Uses a [pre]set message and replaces with [replaceable]. Inserts a prefix into each argument if [incPrefix] is true.
+ * Send a simple text message in the channel where [MessageCreateEvent] was created.
  */
-fun preset(pre: Pre, vararg replaceable: String, incPrefix: Boolean): String {
-    if (pre.replaceable != replaceable.size)
-        return pre.defaultMessage
-
-    var message = pre.message
-    for (i in 0 until pre.replaceable) {
-        message = message.replaceFirst("<>", if (incPrefix) {
-            "!" + replaceable[i]  // TODO change with actual prefix
-        } else {
-            replaceable[i]
-        })
-    }
-
-    return message
-}
-
-/**
- * A preset message. The [message], and the amount of things that should be replaced.
- */
-enum class Pre(internal val message: String, internal val replaceable: Int, internal val defaultMessage: String) {
-    INV_ARGS("Invalid Usage!\nProper Usage: `<>`", 1, "Invalid Usage!"),
-    NO_PERM("No Permission!", 0, "No Permission!")
-}
+fun MessageCreateEvent.sendMessage(msg: String): Mono<Message> =
+        message.channel
+                .flatMap { ch -> ch.createMessage(msg) }

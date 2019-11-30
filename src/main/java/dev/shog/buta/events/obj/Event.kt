@@ -1,13 +1,14 @@
 package dev.shog.buta.events.obj
 
 import discord4j.core.event.domain.Event
+import reactor.core.publisher.Mono
 
 /**
  * A event.
  */
-abstract class Event {
+interface Event {
     /**
      * When that event is invoked.
      */
-    abstract fun invoke(event: Event)
+    fun invoke(event: Event): Mono<Void>
 }

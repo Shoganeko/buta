@@ -13,13 +13,10 @@ import reactor.core.publisher.Mono
  * If [isPmAvailable] is true, it can be accessible through pms.
  */
 abstract class Command(
-        val commandName: String,
-        val commandDesc: String,
-        val helpCommand: HashMap<String, String>,
+        val data: LangFillableContent,
         val isPmAvailable: Boolean,
         val category: Categories,
-        val permable: Permable,
-        val alias: ArrayList<String>
+        val permable: Permable
 ) {
     /**
      * When the command is invoked by a user.
@@ -35,14 +32,21 @@ abstract class Command(
                         it.createEmbed { msg ->
                             msg.update(e.message.author.get())
 
-                            msg.setTitle("Help : $commandName")
-                            msg.setDescription(commandDesc)
+                            msg.setTitle("Help : ${data.commandName}")
+                            msg.setDescription(data.commandDesc)
 
-                            helpCommand.entries.forEach { pair ->
+                            data.helpCommand.entries.forEach { pair ->
                                 msg.addField(pair.key, pair.value, true)
                             }
                         }
                     }.then()
+
+    /**
+     * Add the [Command] to [COMMANDS]
+     */
+    fun add() {
+        COMMANDS.add(this)
+    }
 
     companion object {
         /**
