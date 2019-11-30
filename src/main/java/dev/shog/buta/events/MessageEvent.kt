@@ -2,6 +2,7 @@ package dev.shog.buta.events
 
 import dev.shog.buta.commands.UserThreadHandler
 import dev.shog.buta.commands.api.GuildFactory
+import dev.shog.buta.commands.api.UserFactory
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.events.obj.Event
 import discord4j.core.event.domain.message.MessageCreateEvent
@@ -24,7 +25,8 @@ object MessageEvent : Event, CoroutineScope by CoroutineScope(Dispatchers.Unconf
                 && !event.message.author.get().isBot
                 && UserThreadHandler.can(event.message.author.get())
         ) {
-            GuildFactory.get(event.guildId.get().asLong())
+            UserFactory.getOrCreate(event.message.author.get().id.asLong())
+                    .then(GuildFactory.get(event.guildId.get().asLong()))
                     .flatMap { g ->
                         val content = event.message.content
                                 .orElse("")

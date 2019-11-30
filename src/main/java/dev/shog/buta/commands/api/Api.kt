@@ -5,6 +5,7 @@ import dev.shog.buta.commands.api.obj.Guild
 import dev.shog.buta.commands.api.token.TokenManager
 import dev.shog.buta.util.swap
 import dev.shog.buta.commands.api.obj.User
+import discord4j.core.`object`.presence.Activity
 import discord4j.core.`object`.presence.Presence
 import kong.unirest.Unirest
 import org.json.JSONObject
@@ -31,7 +32,7 @@ object Api {
      *  TODO Get all presences from Mojor.
      */
     fun getPresences(): Flux<Presence> =
-            Flux.just(Presence.idle())
+            Flux.just(Presence.idle(Activity.listening("Pepega Clap")))
 
     /** Get the base URL */
     private fun getBaseUrl(): String {
@@ -75,7 +76,7 @@ object Api {
                     .header("Authorization", "token ${tokenManager.getProperToken()}")
                     .header("Content-Type", "application/json")
                     .body(user)
-                    .asJsonAsync()
+                    .asEmptyAsync()
                     .toMono()
                     .then()
 
@@ -87,7 +88,7 @@ object Api {
                     .header("Authorization", "token ${tokenManager.getProperToken()}")
                     .header("Content-Type", "application/json")
                     .body(guild)
-                    .asJsonAsync()
+                    .asEmptyAsync()
                     .toMono()
                     .then()
 

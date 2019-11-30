@@ -1,5 +1,6 @@
 package dev.shog.buta.commands.api
 
+import dev.shog.buta.commands.api.obj.Guild
 import dev.shog.buta.commands.api.obj.User
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
@@ -40,6 +41,24 @@ object UserFactory {
                     .flatMap { user -> Api.uploadUserObject(user) }
 
     /**
+     * Create a user, then retrieve that created user.
+     *
+     * @param id The ID of the user to create.
+     */
+    fun createAndGet(id: Long): Mono<User> =
+            create(id)
+                    .then(get(id))
+
+    /**
+     * Get a user
+     *
+     * @param id The user to get.
+     */
+    fun getOrCreate(id: Long): Mono<User> =
+            get(id)
+                    .switchIfEmpty(createAndGet(id))
+
+    /**
      * Delete [id]
      *
      * @param id The object to delete
@@ -65,5 +84,7 @@ object UserFactory {
     fun get(id: Long): Mono<User> =
             cache[id]?.toMono()
                     ?: Api.getUserObject(id)
+                            .onErrorResume { Mono.empty<User>() }
+                            .flatMap { obj -> if (obj.isInvalid()) Mono.empty<User>() else obj.toMono() }
                             .doOnNext { obj -> if (!obj.isInvalid()) cache[id] = obj }
 }

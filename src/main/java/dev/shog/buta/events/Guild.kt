@@ -8,6 +8,7 @@ import dev.shog.buta.util.getChannelsWithPermission
 import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
 import reactor.core.publisher.Mono
+import reactor.core.publisher.switchIfEmpty
 
 /**
  * A guild join event.
@@ -17,7 +18,6 @@ object GuildJoinEvent : Event {
 
     override fun invoke(event: discord4j.core.event.domain.Event): Mono<Void> {
         require(event is GuildCreateEvent)
-
 
         return GuildFactory.get(event.guild.id.asLong())
                 .switchIfEmpty(
@@ -29,15 +29,6 @@ object GuildJoinEvent : Event {
                                 .flatMap { GuildFactory.create(event.guild.id.asLong()) }
                                 .then(GuildFactory.get(event.guild.id.asLong()))
                 )
-                .thenMany(event.guild.members)
-                .filter { user -> !user.isBot }
-                .flatMap { user ->
-                    UserFactory.get(user.id.asLong())
-                            .switchIfEmpty(
-                                    UserFactory.create(user.id.asLong())
-                                            .then(UserFactory.get(user.id.asLong()))
-                            )
-                }
                 .then()
     }
 }

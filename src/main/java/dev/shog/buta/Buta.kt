@@ -1,6 +1,8 @@
 package dev.shog.buta
 
 import dev.shog.DiscordWebhookHandler
+import dev.shog.buta.commands.api.Api
+import dev.shog.buta.commands.api.UserFactory
 import dev.shog.buta.commands.commands.ABOUT
 import dev.shog.buta.commands.commands.GUILD
 import dev.shog.buta.commands.commands.PING

@@ -1,6 +1,7 @@
 package dev.shog.buta.commands.api
 
 import dev.shog.buta.commands.api.obj.Guild
+import dev.shog.buta.commands.api.obj.User
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 import java.util.concurrent.ConcurrentHashMap
@@ -40,6 +41,15 @@ object GuildFactory {
                     .flatMap { guild -> Api.uploadGuildObject(guild) }
 
     /**
+     * Create a guild, then retrieve that created guild.
+     *
+     * @param id The ID of the guild to create.
+     */
+    fun createAndGet(id: Long): Mono<Guild> =
+            create(id)
+                    .then(get(id))
+
+    /**
      * Use [get] to see if the retrieved object does exist.
      *
      * @param id The object to check if exists.
@@ -66,5 +76,6 @@ object GuildFactory {
             cache[id]?.toMono()
                     ?: Api.getGuildObject(id)
                             .onErrorResume { Mono.empty<Guild>() }
+                            .flatMap { obj -> if (obj.isInvalid()) Mono.empty<Guild>() else obj.toMono() }
                             .doOnNext { obj -> if (!obj.isInvalid()) cache[id] = obj }
 }
