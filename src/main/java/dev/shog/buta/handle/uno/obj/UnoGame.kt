@@ -1,5 +1,6 @@
 package dev.shog.buta.handle.uno.obj
 
+import dev.shog.buta.handle.StatisticsManager
 import dev.shog.buta.util.format
 import discord4j.core.`object`.entity.User
 import discord4j.core.`object`.util.Snowflake
@@ -52,7 +53,10 @@ class UnoGame(private val discordUser: User) {
     fun endGame(userWon: Boolean) {
         games.remove(discordUser.id)
 
-        // TODO stats
+        when (userWon) {
+            true -> StatisticsManager.increaseStatistic("uno-games-won-by-user")
+            false -> StatisticsManager.increaseStatistic("uno-games-won-by-buta")
+        }
     }
 
     /**
