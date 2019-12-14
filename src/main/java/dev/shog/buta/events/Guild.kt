@@ -1,5 +1,6 @@
 package dev.shog.buta.events
 
+import dev.shog.buta.EN_US
 import dev.shog.buta.LOGGER
 import dev.shog.buta.commands.api.GuildFactory
 import dev.shog.buta.commands.api.UserFactory
@@ -14,8 +15,6 @@ import reactor.core.publisher.switchIfEmpty
  * A guild join event.
  */
 object GuildJoinEvent : Event {
-    private const val BUTA_JOIN_MESSAGE = "buta buta buta buta"
-
     override fun invoke(event: discord4j.core.event.domain.Event): Mono<Void> {
         require(event is GuildCreateEvent)
 
@@ -23,7 +22,7 @@ object GuildJoinEvent : Event {
                 .switchIfEmpty(
                         getChannelsWithPermission(event.guild)
                                 .next()
-                                .flatMap { ch -> ch.createMessage(BUTA_JOIN_MESSAGE) }
+                                .flatMap { ch -> ch.createMessage(EN_US.get().getString("join-message")) }
                                 .flatMap { ch -> ch.guild }
                                 .doOnNext { g -> LOGGER.info("Sent join message to ${g.name}") }
                                 .flatMap { GuildFactory.create(event.guild.id.asLong()) }

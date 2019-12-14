@@ -69,4 +69,9 @@ object LangLoader {
          */
         fun get() = phr
     }
+
+    /**
+     * A full message data pack.
+     */
+    data class FullMessageDataPack(val error: JSONObject, val success: JSONObject, val fields: JSONObject, val other: JSONObject)
 }

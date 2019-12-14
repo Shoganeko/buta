@@ -1,6 +1,8 @@
 package dev.shog.buta.util
 
 import discord4j.core.`object`.entity.Message
+import discord4j.core.`object`.entity.MessageChannel
+import discord4j.core.`object`.entity.TextChannel
 import discord4j.core.`object`.entity.User
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.spec.EmbedCreateSpec

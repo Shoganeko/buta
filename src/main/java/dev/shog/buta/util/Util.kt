@@ -14,6 +14,9 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.*
 
+/**
+ * Format [str] with [args]
+ */
 fun formatText(str: String, vararg args: Any): String {
     var newString = str
 

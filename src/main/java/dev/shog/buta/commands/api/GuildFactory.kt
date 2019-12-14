@@ -1,7 +1,6 @@
 package dev.shog.buta.commands.api
 
 import dev.shog.buta.commands.api.obj.Guild
-import dev.shog.buta.commands.api.obj.User
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 import java.util.concurrent.ConcurrentHashMap

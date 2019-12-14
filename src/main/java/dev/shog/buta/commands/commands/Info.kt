@@ -13,7 +13,7 @@ import java.util.*
 /**
  * Ping
  */
-val PING = InfoCommand("ping", true, PermissionFactory.hasPermission()) { it, resp ->
+val PING = InfoCommand("ping") { it, resp ->
     it.first
             .sendMessage(formatText(resp.getString(resp.keySet().random()), it.first.client.responseTime))
             .then()
@@ -22,7 +22,7 @@ val PING = InfoCommand("ping", true, PermissionFactory.hasPermission()) { it, re
 /**
  * About Buta
  */
-val ABOUT = InfoCommand("about", true, PermissionFactory.hasPermission()) { it, resp ->
+val ABOUT = InfoCommand("about") { it, resp ->
     it.first
             .sendMessage(resp.getString("default"))
             .then()
@@ -34,7 +34,7 @@ private val FORMATTER = SimpleDateFormat("MM/dd/yyyy")
 /**
  * About Guild
  */
-val GUILD = InfoCommand("guild", false, PermissionFactory.hasPermission()) { it, resp ->
+val GUILD = InfoCommand("guild", isPmAvailable = false) { it, resp ->
     return@InfoCommand when {
         it.second.size == 0 ->
             it.first.message.channel

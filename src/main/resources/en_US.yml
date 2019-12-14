@@ -1,3 +1,5 @@
+join-message: "Thank you for inviting me!\nMy name's Buta, and you can figure out my commands using `b!help`!"
+
 error:
     internal_error: There was an issue doing that!
     invalid_arguments: Invalid arguments!
@@ -34,3 +36,46 @@ guild:
         field-name: "Name"
         field-userCount: "User Count"
         field-date: "Creation Date"
+uno:
+    name: Uno
+    desc: Play uno with Buta.
+    help:
+        - uno: Play uno
+    response:
+        error:
+            not-seen-cards: "You haven't seen your cards get, use `{p}uno` first!"
+            cannot-call-uno: "You don't have 1 card left!"
+            not-created-game: "You haven't created a game yet!"
+            didnt-call-uno: "You didn't call Uno! You have been given a {0} and {1}!"
+            card-not-exist: "That card doesn't exist!"
+            cant-play-card: "You can't play that card!"
+        success:
+            called-uno: "You have called uno!"
+            manual-game-end: "Ended game!"
+            select-wild-card-color: "What color for the wild card?"
+            user-won-game: "You have won!"
+            buta-won-game: "\n:white_small_square: Buta has won the game!"
+            user-play-card: "\n:white_small_square: You played a {0}."
+            user-skip-buta-turn: ":white_small_square: You skipped Buta's turn!"
+            buta-play-card: "\n:white_small_square: Buta played a {0}."
+            created-game-first: "You have started a game of Uno!\nSelect a playable card below, and play it with `{0}uno play **number**`.\nOnce you're about to play your last card, make sure to type `{0}uno call`."
+            buta-play-card-whileSkipped: "\n:white_small_square: Your turn was skipped, so Buta played a {0}."
+            game-start-time: "You started this game at {0}."
+        other:
+            cards: "**{0}**: {1}\n"
+        fields:
+            buta-cards-field:
+                title: "Buta"
+                desc: "{0} cards"
+            last-played-card:
+                title: "Last Played Card"
+                desc: "{0}"
+            drawn-card:
+                title: "Drawn Card"
+                desc: "{0}"
+            user-cards:
+                title: "Your Cards"
+                desc: "{0}"
+            first-played-card:
+                title: "First Played Card"
+                desc: "{0}"

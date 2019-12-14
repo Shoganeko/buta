@@ -6,6 +6,9 @@ import dev.shog.buta.commands.api.UserFactory
 import dev.shog.buta.commands.commands.ABOUT
 import dev.shog.buta.commands.commands.GUILD
 import dev.shog.buta.commands.commands.PING
+import dev.shog.buta.commands.commands.Uno
+import dev.shog.buta.commands.commands.Uno.Companion.properColors
+import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.obj.LangFillableContent
 import dev.shog.buta.events.GuildJoinEvent
 import dev.shog.buta.events.GuildLeaveEvent
@@ -17,16 +20,19 @@ import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
 import discord4j.core.event.domain.lifecycle.ReadyEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
+import discord4j.core.event.domain.message.ReactionAddEvent
 import discord4j.core.shard.ShardingClientBuilder
+import discord4j.gateway.json.dispatch.MessageReactionAdd
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Hooks
+import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
 
 /**
  * The main LOGGER
  */
-val LOGGER = LoggerFactory.getLogger("Chad Instance")!!
+val LOGGER = LoggerFactory.getLogger("Buta Instance")!!
 
 /**
  * EN US language
@@ -90,6 +96,19 @@ fun main(args: Array<String>) = runBlocking<Unit> {
                 .flatMap { dev.shog.buta.events.MessageEvent.invoke(it) }
                 .subscribe()
 
+        eventDispatcher.on(ReactionAddEvent::class.java)
+                .doOnNext { println("Reaction ADD EVENT") }
+                .filter { event -> Uno.wildWaiting.containsKey(event.userId) }
+                .filter { event -> properColors.contains(event.emoji) }
+                .filter { event ->
+                    val time = Uno.wildWaiting[event.userId]?.time ?: 0
+
+                    // Make sure the request isn't 10 seconds old TODO purge if so
+                    System.currentTimeMillis() - time < TimeUnit.SECONDS.toMillis(10)
+                }
+                .flatMap { ev -> Uno.completedWildCard(ev) }
+                .subscribe()
+
         eventDispatcher.on(ReadyEvent::class.java)
                 .flatMap { PresenceHandler.invoke(it) }
                 .subscribe()
@@ -105,4 +124,5 @@ private fun initCommands() {
     PING
     ABOUT
     GUILD
+    Command.COMMANDS.add(Uno())
 }
