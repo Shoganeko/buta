@@ -122,5 +122,6 @@ private fun initCommands() {
     ABOUT
     GUILD
     HELP
+    SET_PREFIX
     Command.COMMANDS.add(Uno())
 }

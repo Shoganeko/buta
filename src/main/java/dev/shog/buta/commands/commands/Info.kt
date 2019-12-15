@@ -3,6 +3,7 @@ package dev.shog.buta.commands.commands
 import dev.shog.buta.commands.obj.Command.Companion.COMMANDS
 import dev.shog.buta.EN_US
 import dev.shog.buta.LOGGER
+import dev.shog.buta.commands.api.GuildFactory
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.obj.InfoCommand
@@ -11,11 +12,37 @@ import dev.shog.buta.util.formatText
 import dev.shog.buta.util.sendMessage
 import dev.shog.buta.util.update
 import discord4j.core.`object`.util.Image
+import discord4j.core.`object`.util.Permission
 import reactor.core.publisher.Flux
 import reactor.core.publisher.toFlux
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.stream.Collectors
+
+/**
+ * Prefix
+ */
+val SET_PREFIX = InfoCommand("prefix", permable = PermissionFactory.hasPermission(arrayListOf(Permission.ADMINISTRATOR))) { e, args, lang ->
+    if (args.size == 1) {
+        val newPrefix = args[0]
+
+        if (newPrefix.length > 3 || newPrefix.isEmpty())
+            return@InfoCommand e.sendMessage(formatText(lang.getString("wrong-length"), newPrefix.length)).then()
+
+        e.message.guild
+                .map { g -> g.id.asLong() }
+                .flatMap { id -> GuildFactory.get(id) }
+                .doOnNext { g -> g.prefix = newPrefix }
+                .flatMap { g -> GuildFactory.update(g.id, g) }
+                .then(e.sendMessage(formatText(lang.getString("set"), newPrefix)))
+                .then()
+    } else e.message.guild
+            .map { g -> g.id.asLong() }
+            .flatMap { id -> GuildFactory.get(id) }
+            .map { g -> g.prefix }
+            .flatMap { prefix -> e.sendMessage(formatText(lang.getString("prefix"), prefix)) }
+            .then()
+}.build().add()
 
 /**
  * Help

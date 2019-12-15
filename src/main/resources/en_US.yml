@@ -46,6 +46,16 @@ guild:
         field-name: "Name"
         field-userCount: "User Count"
         field-date: "Creation Date"
+prefix:
+    name: Prefix
+    desc: Get and set your Guild's prefix.
+    help:
+        - prefix: "Get your guild's current prefix."
+        - prefix {new prefix}: "Set your guild's prefix."
+    response:
+        prefix: "Your guild's prefix is currently `{0}`."
+        set: "You have set your guild's prefix to `{0}`."
+        wrong-length: "Your prefix should be between 1 and 3 characters, instead of `{0}`."
 uno:
     name: Uno
     desc: Play uno with Buta.
