@@ -1,5 +1,6 @@
 package dev.shog.buta.commands.obj
 
+import dev.shog.buta.commands.api.GuildFactory
 import dev.shog.buta.commands.permission.Permable
 import dev.shog.buta.util.update
 import discord4j.core.event.domain.message.MessageCreateEvent
@@ -27,19 +28,26 @@ abstract class Command(
      * When the command's help command is invoked by a user.
      */
     fun invokeHelp(e: MessageCreateEvent): Mono<Void> =
-            e.message.channel
-                    .flatMap {
-                        it.createEmbed { msg ->
-                            msg.update(e.message.author.get())
+            e.message.guild
+                    .map { g -> g.id.asLong() }
+                    .flatMap { id -> GuildFactory.get(id) }
+                    .zipWith(e.message.channel)
+                    .flatMap { zip ->
+                        val ch = zip.t2
+                        val g = zip.t1
 
-                            msg.setTitle("Help : ${data.commandName}")
-                            msg.setDescription(data.commandDesc)
+                        ch.createEmbed { embed ->
+                            embed.update(e.message.author.get())
+
+                            embed.setTitle(data.commandName)
+                            embed.setDescription(data.commandDesc)
 
                             data.helpCommand.entries.forEach { pair ->
-                                msg.addField(pair.key, pair.value, true)
+                                embed.addField("${g.prefix}${pair.key}", pair.value, false)
                             }
                         }
-                    }.then()
+                    }
+                    .then()
 
     /**
      * Add the [Command] to [COMMANDS]

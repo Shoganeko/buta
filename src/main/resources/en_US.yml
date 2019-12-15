@@ -23,7 +23,17 @@ about:
     help:
         - about: About Buta
     response:
-        default: "Buta is a multi-purpose open-source Discord bot tailored to towards you!"
+        desc: "Support Discord: https://shog.dev/discord"
+help:
+    name: Help
+    desc: Get help about the various commands of Buta.
+    help:
+        - help {command}: Get help about a specific command.
+    response:
+        desc: "Support Discord: https://shog.dev/discord\nThis only shows commands **you** have permission to!"
+        command: "`{0}`, "
+        cat-pair: "**{0}**: \n{1}"
+        inv-cmd: "Invalid command!"
 guild:
     name: Guild
     desc: Get information about your guild.
@@ -40,7 +50,11 @@ uno:
     name: Uno
     desc: Play uno with Buta.
     help:
-        - uno: Play uno
+        - uno: "Play Uno"
+        - uno end: "End the Uno game"
+        - uno draw: "Draw a card"
+        - uno call: "Call Uno, only if you've got one card left"
+        - uno play {card id}: "Play an Uno card"
     response:
         error:
             not-seen-cards: "You haven't seen your cards get, use `{p}uno` first!"

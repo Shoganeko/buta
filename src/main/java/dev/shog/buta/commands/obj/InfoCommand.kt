@@ -14,7 +14,7 @@ data class InfoCommand(
         val name: String,
         val isPmAvailable: Boolean = true,
         val permable: Permable = PermissionFactory.hasPermission(),
-        val invoke: (Pair<MessageCreateEvent, MutableList<String>>, JSONObject) -> (Mono<Void>)
+        val invoke: (MessageCreateEvent, MutableList<String>, JSONObject) -> (Mono<Void>)
 ) {
     /**
      * Build an [InfoCommand]

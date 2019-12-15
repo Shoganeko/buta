@@ -3,10 +3,7 @@ package dev.shog.buta
 import dev.shog.DiscordWebhookHandler
 import dev.shog.buta.commands.api.Api
 import dev.shog.buta.commands.api.UserFactory
-import dev.shog.buta.commands.commands.ABOUT
-import dev.shog.buta.commands.commands.GUILD
-import dev.shog.buta.commands.commands.PING
-import dev.shog.buta.commands.commands.Uno
+import dev.shog.buta.commands.commands.*
 import dev.shog.buta.commands.commands.Uno.Companion.properColors
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.obj.LangFillableContent
@@ -124,5 +121,6 @@ private fun initCommands() {
     PING
     ABOUT
     GUILD
+    HELP
     Command.COMMANDS.add(Uno())
 }

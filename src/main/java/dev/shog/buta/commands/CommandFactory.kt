@@ -20,7 +20,7 @@ object CommandFactory {
             is InfoCommand -> {
                 return object : Command(LangFillableContent.getFromCommandName(cmd.name), cmd.isPmAvailable, Categories.INFO, cmd.permable) {
                     override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<Void> =
-                            cmd.invoke.invoke(Pair(e, args), EN_US.get().getJSONObject(cmd.name).getJSONObject("response"))
+                            cmd.invoke.invoke(e, args, EN_US.get().getJSONObject(cmd.name).getJSONObject("response"))
                 }
             }
         }
