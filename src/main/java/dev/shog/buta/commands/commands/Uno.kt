@@ -2,7 +2,7 @@ package dev.shog.buta.commands.commands
 
 import dev.shog.buta.EN_US
 import dev.shog.buta.commands.obj.Categories
-import dev.shog.buta.commands.obj.Command
+import dev.shog.buta.commands.obj.ICommand
 import dev.shog.buta.commands.obj.LangFillableContent
 import dev.shog.buta.commands.permission.PermissionFactory
 import dev.shog.buta.handle.LangLoader
@@ -25,12 +25,11 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.event.domain.message.ReactionAddEvent
 import reactor.core.publisher.Mono
 import java.util.concurrent.ConcurrentHashMap
-import java.util.stream.Collectors
 
 /**
  * Play Uno
  */
-class Uno(lfc: LangFillableContent = LangFillableContent.getFromCommandName("uno")) : Command(lfc, true, Categories.FUN, PermissionFactory.hasPermission()) {
+class Uno(lfc: LangFillableContent = LangFillableContent.getFromCommandName("uno")) : ICommand(lfc, true, Categories.FUN, PermissionFactory.hasPermission()) {
     companion object {
         private val dataPack by lazy {
             val resp = EN_US.get().getJSONObject("uno").getJSONObject("response")

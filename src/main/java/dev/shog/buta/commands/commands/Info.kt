@@ -1,12 +1,10 @@
 package dev.shog.buta.commands.commands
 
-import dev.shog.buta.commands.obj.Command.Companion.COMMANDS
+import dev.shog.buta.commands.obj.ICommand.Companion.COMMANDS
 import dev.shog.buta.EN_US
-import dev.shog.buta.LOGGER
 import dev.shog.buta.commands.api.GuildFactory
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
-import dev.shog.buta.commands.obj.InfoCommand
 import dev.shog.buta.commands.permission.PermissionFactory
 import dev.shog.buta.util.formatText
 import dev.shog.buta.util.sendMessage
@@ -22,12 +20,12 @@ import java.util.stream.Collectors
 /**
  * Prefix
  */
-val SET_PREFIX = InfoCommand("prefix", permable = PermissionFactory.hasPermission(arrayListOf(Permission.ADMINISTRATOR))) { e, args, lang ->
+val SET_PREFIX = Command("prefix", Categories.ADMINISTRATOR, permable = PermissionFactory.hasPermission(arrayListOf(Permission.ADMINISTRATOR))) { e, args, lang ->
     if (args.size == 1) {
         val newPrefix = args[0]
 
         if (newPrefix.length > 3 || newPrefix.isEmpty())
-            return@InfoCommand e.sendMessage(formatText(lang.getString("wrong-length"), newPrefix.length)).then()
+            return@Command e.sendMessage(formatText(lang.getString("wrong-length"), newPrefix.length)).then()
 
         e.message.guild
                 .map { g -> g.id.asLong() }
@@ -47,11 +45,11 @@ val SET_PREFIX = InfoCommand("prefix", permable = PermissionFactory.hasPermissio
 /**
  * Help
  */
-val HELP = InfoCommand("help") { e, args, lang ->
+val HELP = Command("help", Categories.INFO) { e, args, lang ->
     if (args.size >= 1) {
         val command = args[0]
 
-        return@InfoCommand Flux.fromIterable(COMMANDS)
+        return@Command Flux.fromIterable(COMMANDS)
                 .filter { en -> command.startsWith(en.data.commandName.toLowerCase(), true) }
                 .filterWhen { en -> en.permable.check(e) }
                 .collectList()
@@ -85,7 +83,7 @@ val HELP = InfoCommand("help") { e, args, lang ->
             .collectList()
             .map { list -> list.stream().collect(Collectors.joining("\n\n")) }
 
-    return@InfoCommand e.message.channel
+    return@Command e.message.channel
             .zipWith(helpCommand)
             .flatMap { zip ->
                 val ch = zip.t1
@@ -103,7 +101,7 @@ val HELP = InfoCommand("help") { e, args, lang ->
 /**
  * Ping
  */
-val PING = InfoCommand("ping") { e, _, lang ->
+val PING = Command("ping", Categories.INFO) { e, _, lang ->
     e.sendMessage(formatText(lang.getString(lang.keySet().random()), e.client.responseTime))
             .then()
 }.build().add()
@@ -111,7 +109,7 @@ val PING = InfoCommand("ping") { e, _, lang ->
 /**
  * About Buta
  */
-val ABOUT = InfoCommand("about") { e, _, lang ->
+val ABOUT = Command("about", Categories.INFO) { e, _, lang ->
     e.sendMessage(lang.getString("default"))
             .then()
 }.build().add()
@@ -122,8 +120,8 @@ private val FORMATTER = SimpleDateFormat("MM/dd/yyyy")
 /**
  * About Guild
  */
-val GUILD = InfoCommand("guild", isPmAvailable = false) { e, args, lang ->
-    return@InfoCommand when {
+val GUILD = Command("guild", Categories.INFO, isPmAvailable = false) { e, args, lang ->
+    return@Command when {
         args.size == 0 ->
             e.message.channel
                     .flatMap { ch ->

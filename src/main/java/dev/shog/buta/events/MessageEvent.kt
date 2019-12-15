@@ -3,7 +3,7 @@ package dev.shog.buta.events
 import dev.shog.buta.commands.UserThreadHandler
 import dev.shog.buta.commands.api.GuildFactory
 import dev.shog.buta.commands.api.UserFactory
-import dev.shog.buta.commands.obj.Command
+import dev.shog.buta.commands.obj.ICommand
 import dev.shog.buta.events.obj.Event
 import discord4j.core.event.domain.message.MessageCreateEvent
 import kotlinx.coroutines.CoroutineScope
@@ -40,7 +40,7 @@ object MessageEvent : Event, CoroutineScope by CoroutineScope(Dispatchers.Unconf
                                     } else Mono.empty()
                                 }
                                 .flatMap { con ->
-                                    Flux.fromIterable(Command.COMMANDS)
+                                    Flux.fromIterable(ICommand.COMMANDS)
                                             .filter { en ->
                                                 con?.startsWith(en.data.commandName.toLowerCase(), true) == true
                                             }

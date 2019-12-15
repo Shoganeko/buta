@@ -1,12 +1,9 @@
 package dev.shog.buta
 
 import dev.shog.DiscordWebhookHandler
-import dev.shog.buta.commands.api.Api
-import dev.shog.buta.commands.api.UserFactory
 import dev.shog.buta.commands.commands.*
 import dev.shog.buta.commands.commands.Uno.Companion.properColors
-import dev.shog.buta.commands.obj.Command
-import dev.shog.buta.commands.obj.LangFillableContent
+import dev.shog.buta.commands.obj.ICommand
 import dev.shog.buta.events.GuildJoinEvent
 import dev.shog.buta.events.GuildLeaveEvent
 import dev.shog.buta.events.PresenceHandler
@@ -19,7 +16,6 @@ import discord4j.core.event.domain.lifecycle.ReadyEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.event.domain.message.ReactionAddEvent
 import discord4j.core.shard.ShardingClientBuilder
-import discord4j.gateway.json.dispatch.MessageReactionAdd
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Hooks
@@ -123,5 +119,5 @@ private fun initCommands() {
     GUILD
     HELP
     SET_PREFIX
-    Command.COMMANDS.add(Uno())
+    ICommand.COMMANDS.add(Uno())
 }
