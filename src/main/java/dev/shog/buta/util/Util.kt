@@ -73,7 +73,7 @@ fun Boolean.enableDisable(): String = if (this) "enable" else "disable"
 /**
  * Adds a d onto [enableDisable]
  */
-fun Boolean.enabledDisabled(): String = enabledDisabled() + "d"
+fun Boolean.enabledDisabled(): String = enableDisable() + "d"
 
 /**
  * Turns true into "yes" and false into "no".

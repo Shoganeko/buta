@@ -18,31 +18,6 @@ import java.util.*
 import java.util.stream.Collectors
 
 /**
- * Prefix
- */
-val SET_PREFIX = Command("prefix", Categories.ADMINISTRATOR, permable = PermissionFactory.hasPermission(arrayListOf(Permission.ADMINISTRATOR))) { e, args, lang ->
-    if (args.size == 1) {
-        val newPrefix = args[0]
-
-        if (newPrefix.length > 3 || newPrefix.isEmpty())
-            return@Command e.sendMessage(formatText(lang.getString("wrong-length"), newPrefix.length)).then()
-
-        e.message.guild
-                .map { g -> g.id.asLong() }
-                .flatMap { id -> GuildFactory.get(id) }
-                .doOnNext { g -> g.prefix = newPrefix }
-                .flatMap { g -> GuildFactory.update(g.id, g) }
-                .then(e.sendMessage(formatText(lang.getString("set"), newPrefix)))
-                .then()
-    } else e.message.guild
-            .map { g -> g.id.asLong() }
-            .flatMap { id -> GuildFactory.get(id) }
-            .map { g -> g.prefix }
-            .flatMap { prefix -> e.sendMessage(formatText(lang.getString("prefix"), prefix)) }
-            .then()
-}.build().add()
-
-/**
  * Help
  */
 val HELP = Command("help", Categories.INFO) { e, args, lang ->

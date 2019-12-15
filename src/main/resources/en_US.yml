@@ -17,6 +17,13 @@ ping:
         five: "who let the ping be at {0}ms"
         six: "ping ping ping ping ping ping ping ping ping {0}ms"
         seven: "WHO LET DA BING BE AT {0}ms"
+nsfw:
+    name: NSFW
+    desc: Toggle NSFW status in a channel.
+    help:
+        - nsfw: Toggle on or off NSFW status.
+    response:
+        default: "NSFW status has been `{0}`."
 about:
     name: About
     desc: Get information about Buta.

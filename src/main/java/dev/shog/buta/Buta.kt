@@ -119,6 +119,7 @@ private fun initCommands() {
     GUILD
     HELP
     SET_PREFIX
+    NSFW_TOGGLE
     GAMBLE_BALANCE
     ICommand.COMMANDS.add(Uno())
 }

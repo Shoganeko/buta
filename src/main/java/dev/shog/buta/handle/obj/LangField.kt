@@ -1,7 +1,6 @@
 package dev.shog.buta.handle.obj
 
 import org.json.JSONObject
-import java.lang.Exception
 
 data class LangField(val title: String, val desc: String)
 
