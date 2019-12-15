@@ -121,5 +121,6 @@ private fun initCommands() {
     SET_PREFIX
     NSFW_TOGGLE
     GAMBLE_BALANCE
+    PURGE
     ICommand.COMMANDS.add(Uno())
 }

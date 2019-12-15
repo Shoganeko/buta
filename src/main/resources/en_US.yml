@@ -24,6 +24,14 @@ nsfw:
         - nsfw: Toggle on or off NSFW status.
     response:
         default: "NSFW status has been `{0}`."
+purge:
+    name: Purge
+    desc: Remove a specified amount of messages before your message.
+    help:
+        - purge: "Remove the last 100 messages."
+        - purge {amount}: "Remove up to 500 of the last messages."
+    response:
+        default: "Removed the last `{0}` messages. "
 about:
     name: About
     desc: Get information about Buta.

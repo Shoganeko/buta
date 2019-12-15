@@ -10,6 +10,8 @@ import dev.shog.buta.util.sendMessage
 import discord4j.core.`object`.entity.GuildMessageChannel
 import discord4j.core.`object`.entity.TextChannel
 import discord4j.core.`object`.util.Permission
+import discord4j.rest.json.request.BulkDeleteRequest
+import java.time.Duration
 
 /**
  * Prefix
@@ -46,5 +48,32 @@ val NSFW_TOGGLE = Command("nsfw", Categories.ADMINISTRATOR, isPmAvailable = fals
                 ch.createMessage(formatText(lang.getString("default"), (!ch.isNsfw).enabledDisabled()))
                         .then(ch.edit { che -> che.setNsfw(!ch.isNsfw) })
             }
+            .then()
+}.build().add()
+
+/**
+ * Purge messages
+ */
+val PURGE = Command("purge", Categories.ADMINISTRATOR, isPmAvailable = false, permable = PermissionFactory.hasPermission(arrayListOf(Permission.ADMINISTRATOR))) { e, args, lang ->
+    val amount = if (args.size == 1) {
+        val pre = args[0].toLongOrNull() ?: -1
+
+        if (pre > 500L || 1L > pre)
+            100
+        else pre
+    } else 100
+
+    e.message.channel
+            .ofType(TextChannel::class.java)
+            .flatMapMany { ch ->
+                ch.bulkDelete(ch.getMessagesBefore(e.message.id)
+                        .take(amount)
+                        .map { msg -> msg.id }
+                )
+            }
+            .collectList()
+            .flatMap { e.sendMessage(formatText(lang.getString("default"), amount)) }
+            .delayElement(Duration.ofSeconds(5))
+            .flatMap { msg -> e.message.delete().then(msg.delete()) }
             .then()
 }.build().add()
