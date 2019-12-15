@@ -46,6 +46,15 @@ guild:
         field-name: "Name"
         field-userCount: "User Count"
         field-date: "Creation Date"
+balance:
+    name: Balance
+    desc: Get your balance.
+    help:
+        - balance: "Get your balance."
+        - balance {@user}: "Get another user's balance."
+    response:
+        self: "Your balance is `{0}`."
+        other: "`{0}`'s balance is `{1}`."
 prefix:
     name: Prefix
     desc: Get and set your Guild's prefix.

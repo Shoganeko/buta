@@ -119,5 +119,6 @@ private fun initCommands() {
     GUILD
     HELP
     SET_PREFIX
+    GAMBLE_BALANCE
     ICommand.COMMANDS.add(Uno())
 }
