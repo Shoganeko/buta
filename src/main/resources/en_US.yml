@@ -1,5 +1,8 @@
 join-message: "Thank you for inviting me!\nMy name's Buta, and you can figure out my commands using `b!help`!"
 
+music:
+    stop-playing: "Music has been stopped and cleared due to a disconnection."
+
 error:
     internal_error: There was an issue doing that!
     invalid_arguments: Invalid arguments!

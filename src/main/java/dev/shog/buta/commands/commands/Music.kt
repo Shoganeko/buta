@@ -301,6 +301,7 @@ private fun queueTrack(guild: GuildMusicManager, e: MessageCreateEvent, audioTra
     guild.scheduler.queue(audioTrack)
 
     e.message.channel
+            .doOnNext { ch -> guild.requestChannel = ch }
             .flatMap { ch ->
                 ch.createEmbed { spec ->
                     lang.getJSONObject("queued-song").applyEmbed(spec, e.message.author.get(),

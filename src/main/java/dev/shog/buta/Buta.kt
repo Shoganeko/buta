@@ -103,11 +103,11 @@ fun main(args: Array<String>) = runBlocking<Unit> {
                 .subscribe()
 
         eventDispatcher.on(VoiceStateUpdateEvent::class.java)
-                .flatMap { event ->
-                    event.current.channel
-                            .ofType(Unit::class.java)
-                            .defaultIfEmpty(AudioManager.getGuildMusicManager(event.current.guildId).stop())
+                .doOnNext { event ->
+                    if (event.old.isPresent)
+                        AudioManager.getGuildMusicManager(event.current.guildId).stop()
                 }
+                .subscribe()
 
         eventDispatcher.on(ReadyEvent::class.java)
                 .flatMap { PresenceHandler.invoke(it) }
