@@ -1,6 +1,5 @@
 package dev.shog.buta.commands.api
 
-import dev.shog.buta.commands.api.obj.Guild
 import dev.shog.buta.commands.api.obj.User
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
@@ -33,7 +32,7 @@ object UserFactory {
      *
      * @param id The ID of the object to create.
      */
-    fun create(id: Long): Mono<Void> =
+    private fun create(id: Long): Mono<Void> =
             User()
                     .toMono()
                     .doOnNext { user -> user.id = id }
@@ -45,7 +44,7 @@ object UserFactory {
      *
      * @param id The ID of the user to create.
      */
-    fun createAndGet(id: Long): Mono<User> =
+    private fun createAndGet(id: Long): Mono<User> =
             create(id)
                     .then(get(id))
 

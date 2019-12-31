@@ -24,6 +24,96 @@ nsfw:
         - nsfw: Toggle on or off NSFW status.
     response:
         default: "NSFW status has been `{0}`."
+play:
+    name: Play
+    desc: Play music in a channel.
+    help:
+        - play {song name}: Play a song name.
+    response:
+        no-args: "Please include the song name!"
+        not-in-channel: "You cannot queue songs when you're not in a channel!"
+        not-in-buta-channel: "You aren't in the same voice channel as Buta!"
+        no-matches: "There was no matches for `{0}`."
+        issue-loading: "There was an issue with that track."
+        queued-song:
+            title: "Queued: __{0}__"
+            url: "{0}"
+            field:
+                time-to-play:
+                    title: "Time to Play"
+                    desc: "{0}"
+                    inline: "true"
+                length:
+                    title: "Length"
+                    desc: "{0}"
+                    inline: "true"
+                author:
+                    title: "Author"
+                    desc: "{0}"
+                    inline: "true"
+                queue-pos:
+                    title: "Queue Position"
+                    desc: "{0}"
+                    inline: "true"
+volume:
+    name: Volume
+    desc: Adjust the music player's volume.
+    help:
+        - volume {volume 0 to 100}: Adjust the music player's volume.
+    response:
+        no-args: "Please include a volume!"
+        not-in-channel: "You cannot adjust the volume when you're not in a channel!"
+        not-in-buta-channel: "You aren't in the same voice channel as Buta!"
+        invalid-volume:
+            desc: "Please use a volume between 0 and 100!"
+        set-volume:
+            desc: "Volume has been set to `{0}`."
+leave:
+    name: Leave
+    desc: Leave the voice channel and clear the queue.
+    alias:
+        - disconnect
+    help:
+        - leave: Leave the voice channel and clear the queue.
+    response:
+        disconnect: "Left the voice channel"
+        not-in-channel: "You cannot do this while not in a channel!"
+        not-in-buta-channel: "You aren't in the same voice channel as Buta!"
+pause:
+    name: Pause
+    desc: Pause or resume the music.
+    help:
+        - pause: "Pause or resume the music"
+    response:
+        pause-embed:
+            desc: "Music has been {0}."
+        not-in-channel: "You cannot pause the music when you're not in a channel!"
+        not-in-buta-channel: "You aren't in the same voice channel as Buta!"
+queue:
+    name: Queue
+    desc: Play music in a channel.
+    help:
+        - play {song name}: Play a song name.
+    response:
+        song:
+            title: "{0}"
+            desc: "`{0}` [{1}]"
+            inline: "true"
+        queue:
+            desc: "Currently Playing: `{0}`"
+        not-in-channel: "You cannot view the queue when you're not in a channel!"
+        not-in-buta-channel: "You aren't in the same voice channel as Buta!"
+skip:
+    name: Skip
+    desc: Play music in a channel.
+    help:
+        - play {song name}: Play a song name.
+    response:
+        new-title: "Now Playing: `{0}`"
+        no-next: "There's not a next track!"
+        nothing-playing: "Nothing is playing!"
+        not-in-channel: "You cannot skip songs when you're not in a channel!"
+        not-in-buta-channel: "You aren't in the same voice channel as Buta!"
 purge:
     name: Purge
     desc: Remove a specified amount of messages before your message.
@@ -45,10 +135,12 @@ help:
     help:
         - help {command}: Get help about a specific command.
     response:
-        desc: "Support Discord: https://shog.dev/discord\nThis only shows commands **you** have permission to!"
         command: "`{0}`, "
         cat-pair: "**{0}**: \n{1}"
         inv-cmd: "Invalid command!"
+        help-embed:
+            title: "Help"
+            desc: "Support Discord: https://shog.dev/discord\nThis only shows commands **you** have permission to!\n\n{0}"
 guild:
     name: Guild
     desc: Get information about your guild.
@@ -56,11 +148,21 @@ guild:
         - guild: "Get information about your guild."
         - guild global: "Get information about all the guilds within Buta."
     response:
-        default-desc: "{0} was created on {1} and currently has {2} members."
-        global-desc: "Buta currently has a total of {0} guilds and {1} users."
-        field-name: "Name"
-        field-userCount: "User Count"
-        field-date: "Creation Date"
+        local-guild:
+            image: "{0}"
+            title: "Guild - {0}"
+            field:
+                user-count:
+                    title: "User Count"
+                    desc: "{0}"
+                    inline: "false"
+                date:
+                    title: "Creation Date"
+                    desc: "{0}"
+                    inline: "false"
+        global-guild:
+            desc: "Buta currently has a total of {0} guilds and {1} users."
+            image: "{0}"
 balance:
     name: Balance
     desc: Get your balance.
@@ -104,26 +206,70 @@ uno:
             user-won-game: "You have won!"
             buta-won-game: "\n:white_small_square: Buta has won the game!"
             user-play-card: "\n:white_small_square: You played a {0}."
-            user-skip-buta-turn: ":white_small_square: You skipped Buta's turn!"
+            user-skip-buta-turn: "\n:white_small_square: You skipped Buta's turn!"
             buta-play-card: "\n:white_small_square: Buta played a {0}."
             created-game-first: "You have started a game of Uno!\nSelect a playable card below, and play it with `{0}uno play **number**`.\nOnce you're about to play your last card, make sure to type `{0}uno call`."
             buta-play-card-whileSkipped: "\n:white_small_square: Your turn was skipped, so Buta played a {0}."
             game-start-time: "You started this game at {0}."
         other:
             cards: "**{0}**: {1}\n"
-        fields:
-            buta-cards-field:
-                title: "Buta"
-                desc: "{0} cards"
-            last-played-card:
-                title: "Last Played Card"
+        embeds:
+            init-game:
+                desc: "You have started a game of Uno!\nSelect a playable card below, and play it with `{0}uno play **number**`.\nOnce you're about to play your last card, make sure to type `{0}uno call`."
+                field:
+                    first-played-card:
+                        title: "First Played Card"
+                        desc: "{0}"
+                        inline: "true"
+                    user-cards:
+                        title: "Your Cards"
+                        desc: "{0}"
+                        inline: "false"
+            game-info:
+                desc: "You started this game at {0}."
+                field:
+                    buta-cards:
+                        title: "Buta"
+                        desc: "{0} cards"
+                        inline: "true"
+                    last-played-card:
+                        title: "Last Played Card"
+                        desc: "{0}"
+                        inline: "true"
+                    user-cards:
+                        title: "Your Cards"
+                        desc: "{0}"
+                        inline: "false"
+            play-cards:
                 desc: "{0}"
-            drawn-card:
-                title: "Drawn Card"
-                desc: "{0}"
-            user-cards:
-                title: "Your Cards"
-                desc: "{0}"
-            first-played-card:
-                title: "First Played Card"
-                desc: "{0}"
+                field:
+                    buta-cards:
+                        title: "Buta"
+                        desc: "{0} cards"
+                        inline: "true"
+                    last-played-card:
+                        title: "Last Played Card"
+                        desc: "{0}"
+                        inline: "true"
+                    user-cards:
+                        title: "Your Cards"
+                        desc: "{0}"
+                        inline: "false"
+            draw-card:
+                field:
+                    buta-cards:
+                        title: "Buta"
+                        desc: "{0} cards"
+                        inline: "true"
+                    last-played-card:
+                        title: "Last Played Card"
+                        desc: "{0}"
+                        inline: "true"
+                    drawn-card:
+                        title: "Drawn Card"
+                        desc: "{0}"
+                        inline: "true"
+                    user-cards:
+                        title: "Your Cards"
+                        desc: "{0}"
+                        inline: "false"

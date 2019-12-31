@@ -1,6 +1,5 @@
 package dev.shog.buta.commands.api.token
 
-import org.json.JSONArray
 import java.io.Serializable
 
 /**

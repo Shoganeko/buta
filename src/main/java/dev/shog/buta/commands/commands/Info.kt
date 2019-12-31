@@ -1,16 +1,10 @@
 package dev.shog.buta.commands.commands
 
-import dev.shog.buta.commands.obj.ICommand.Companion.COMMANDS
-import dev.shog.buta.EN_US
-import dev.shog.buta.commands.api.GuildFactory
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
-import dev.shog.buta.commands.permission.PermissionFactory
-import dev.shog.buta.util.formatText
-import dev.shog.buta.util.sendMessage
-import dev.shog.buta.util.update
+import dev.shog.buta.commands.obj.ICommand.Companion.COMMANDS
+import dev.shog.buta.util.*
 import discord4j.core.`object`.util.Image
-import discord4j.core.`object`.util.Permission
 import reactor.core.publisher.Flux
 import reactor.core.publisher.toFlux
 import java.text.SimpleDateFormat
@@ -41,12 +35,11 @@ val HELP = Command("help", Categories.INFO) { e, args, lang ->
                 COMMANDS.toFlux()
                         .filter { cmd -> cmd.category == cat }
                         .filterWhen { cmd -> cmd.permable.hasPermission(e.message.author.get()) }
-                        .map { cmd -> formatText(lang.getString("command"), cmd.data.commandName) }
+                        .map { cmd -> lang.getString("command").form(cmd.data.commandName) }
                         .collectList()
                         .filter { list -> list.isNotEmpty() }
                         .map { list ->
-                            formatText(
-                                    lang.getString("cat-pair"),
+                            lang.getString("cat-pair").form(
                                     cat.name.capitalize(),
                                     list
                                             .stream()
@@ -63,11 +56,11 @@ val HELP = Command("help", Categories.INFO) { e, args, lang ->
             .flatMap { zip ->
                 val ch = zip.t1
 
-                ch.createEmbed { embed ->
-                    embed.update(e.message.author.get())
-                    embed.setTitle("Help")
-
-                    embed.setDescription(lang.getString("desc") + "\n\n" + zip.t2)
+                ch.createEmbed { spec ->
+                    lang.getJSONObject("help-embed").applyEmbed(spec, e.message.author.get(),
+                            hashMapOf("desc" to arrayListOf(zip.t2)),
+                            hashMapOf()
+                    )
                 }
             }
             .then()
@@ -77,7 +70,7 @@ val HELP = Command("help", Categories.INFO) { e, args, lang ->
  * Ping
  */
 val PING = Command("ping", Categories.INFO) { e, _, lang ->
-    e.sendMessage(formatText(lang.getString(lang.keySet().random()), e.client.responseTime))
+    e.sendMessage(lang.getString(lang.keySet().random()).form(e.client.responseTime))
             .then()
 }.build().add()
 
@@ -99,19 +92,25 @@ val GUILD = Command("guild", Categories.INFO, isPmAvailable = false) { e, args, 
     return@Command when {
         args.size == 0 ->
             e.message.channel
-                    .flatMap { ch ->
-                        e.message.guild
-                                .flatMap { g ->
-                                    ch.createEmbed { embed ->
-                                        embed.update(e.member.get())
+                    .zipWith(e.message.guild)
+                    .flatMap { zip ->
+                        val ch = zip.t1
+                        val g = zip.t2
 
-                                        embed.addField(lang.getString("field-name"), g.name, false)
-                                        embed.addField(lang.getString("field-userCount"), g.memberCount.asInt.toString(), false)
-                                        embed.addField(lang.getString("field-date"), FORMATTER.format(Date.from(g.id.timestamp)), false)
-
-                                        embed.setImage(g.getIconUrl(Image.Format.JPEG).orElse(""))
-                                    }
-                                }
+                        ch.createEmbed { spec ->
+                            lang.getJSONObject("local-guild").applyEmbed(
+                                    spec,
+                                    e.message.author.get(),
+                                    hashMapOf(
+                                            "image" to g.getIconUrl(Image.Format.JPEG).orElse("").ar(),
+                                            "title" to g.name.ar()
+                                    ),
+                                    hashMapOf(
+                                            "user-count" to FieldReplacement(null, g.memberCount.asInt.toString().ar()),
+                                            "date" to FieldReplacement(null, FORMATTER.format(Date.from(g.id.timestamp)).ar())
+                                    )
+                            )
+                        }
                     }
                     .then()
 
@@ -127,19 +126,22 @@ val GUILD = Command("guild", Categories.INFO, isPmAvailable = false) { e, args, 
                                                 .map { list -> list.size }
                                 )
                                 .flatMap { list ->
-                                    ch.createEmbed { embed ->
-                                        embed.update(e.member.get())
-
-                                        embed.setDescription(formatText(lang.getString("global-desc"), list.t1, list.t2))
-
-                                        embed.setImage("https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fi.imgur.com%2FgDe7MRn.png&f=1&nofb=1") // PogU
+                                    ch.createEmbed { spec ->
+                                        lang.getJSONObject("local-guild").applyEmbed(
+                                                spec,
+                                                e.message.author.get(),
+                                                hashMapOf(
+                                                        "image" to "https://cdn.frankerfacez.com/emoticon/256055/4".ar(),
+                                                        "desc" to arrayListOf(list.t1.toString(), list.t2.toString())
+                                                ),
+                                                hashMapOf()
+                                        )
                                     }
                                 }
                     }
                     .then()
 
         else ->
-            e.sendMessage(EN_US.get().getJSONObject("error").getString("invalid_arguments"))
-                    .then()
+            e.sendMessage(getError("invalid_arguments")).then()
     }
 }.build().add()

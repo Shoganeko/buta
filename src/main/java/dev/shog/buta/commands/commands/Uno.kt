@@ -1,21 +1,18 @@
 package dev.shog.buta.commands.commands
 
 import dev.shog.buta.EN_US
+import dev.shog.buta.commands.api.GuildFactory
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.ICommand
 import dev.shog.buta.commands.obj.LangFillableContent
 import dev.shog.buta.commands.permission.PermissionFactory
 import dev.shog.buta.handle.LangLoader
-import dev.shog.buta.handle.obj.getField
 import dev.shog.buta.handle.uno.handle.ButaAi
-import dev.shog.buta.handle.uno.obj.UnoGame
-import dev.shog.buta.util.format
-import dev.shog.buta.util.formatText
-import dev.shog.buta.util.sendMessage
-import dev.shog.buta.util.update
 import dev.shog.buta.handle.uno.obj.Card
 import dev.shog.buta.handle.uno.obj.CardColor
 import dev.shog.buta.handle.uno.obj.CardType
+import dev.shog.buta.handle.uno.obj.UnoGame
+import dev.shog.buta.util.*
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.MessageChannel
 import discord4j.core.`object`.entity.User
@@ -26,135 +23,128 @@ import discord4j.core.event.domain.message.ReactionAddEvent
 import reactor.core.publisher.Mono
 import java.util.concurrent.ConcurrentHashMap
 
+internal val lfc = LangFillableContent.getFromCommandName("uno")
+
 /**
  * Play Uno
  */
-class Uno(lfc: LangFillableContent = LangFillableContent.getFromCommandName("uno")) : ICommand(lfc, true, Categories.FUN, PermissionFactory.hasPermission()) {
-    companion object {
-        private val dataPack by lazy {
-            val resp = EN_US.get().getJSONObject("uno").getJSONObject("response")
-            val error = resp.getJSONObject("error")
-            val success = resp.getJSONObject("success")
-            val fields = resp.getJSONObject("fields")
-            val other = resp.getJSONObject("other")
+object Uno : ICommand(lfc, true, Categories.FUN, PermissionFactory.hasPermission()) {
+    private val dataPack by lazy {
+        val resp = EN_US.get().getJSONObject("uno").getJSONObject("response")
+        val error = resp.getJSONObject("error")
+        val success = resp.getJSONObject("success")
+        val embeds = resp.getJSONObject("embeds")
+        val other = resp.getJSONObject("other")
 
-            return@lazy LangLoader.FullMessageDataPack(error, success, fields, other)
-        }
+        return@lazy LangLoader.FullMessageDataPack(error, success, embeds, other)
+    }
 
-        /**
-         * If Buta is waiting for a user to fulfill their Wild request
-         */
-        val wildWaiting = ConcurrentHashMap<Snowflake, PendingWildCardColorSelect>()
+    /**
+     * If Buta is waiting for a user to fulfill their Wild request
+     */
+    val wildWaiting = ConcurrentHashMap<Snowflake, PendingWildCardColorSelect>()
 
-        /**
-         * If the user has selected the color for their wild card, or if they're just playing a card.
-         */
-        private fun playCard(user: User, channel: MessageChannel, uno: UnoGame, card: Card): Mono<Void> {
-            val playedCard = uno.user.play(card)
-            if (!playedCard.successful)
-                return channel
-                        .createMessage(dataPack.error.getString("cant-play-card"))
-                        .then()
-
-            val userWon = uno.user.cards.getSize() == 0
-
+    /**
+     * If the user has selected the color for their wild card, or if they're just playing a card.
+     */
+    private fun playCard(user: User, channel: MessageChannel, uno: UnoGame, card: Card): Mono<Void> {
+        val playedCard = uno.user.play(card)
+        if (!playedCard.successful)
             return channel
-                    .createEmbed { embed ->
-                        embed.update(user)
+                    .createMessage(dataPack.error.getString("cant-play-card"))
+                    .then()
 
-                        uno.addHistory(formatText(dataPack.success.getString("user-play-card"), card))
+        val userWon = uno.user.cards.getSize() == 0
 
-                        when {
-                            userWon ->
-                                uno.addHistory(dataPack.success.getString("user-won-game"))
+        return channel
+                .createEmbed { embed ->
+                    embed.update(user)
 
-                            playedCard.shouldSkipTurn ->
-                                uno.addHistory(dataPack.success.getString("user-skip-buta-turn"))
+                    uno.addHistory(dataPack.success.getString("user-play-card").form(card))
 
-                            else -> ButaAi(uno).play().also { aiCard ->
-                                val butaPlayed = uno.buta.play(aiCard)
+                    when {
+                        userWon ->
+                            uno.addHistory(dataPack.success.getString("user-won-game"))
 
-                                uno.addHistory(formatText(dataPack.success.getString("buta-play-card"), aiCard))
+                        playedCard.shouldSkipTurn ->
+                            uno.addHistory(dataPack.success.getString("user-skip-buta-turn"))
 
-                                var cont = butaPlayed.shouldSkipTurn
-                                while (cont) {
-                                    val aiPlay = ButaAi(uno).play()
-                                    val unoAiPlay = uno.buta.play(aiPlay)
+                        else -> ButaAi(uno).play().also { aiCard ->
+                            val butaPlayed = uno.buta.play(aiCard)
 
-                                    uno.addHistory(formatText(dataPack.success.getString("buta-play-card-whileSkipped"), aiPlay))
+                            uno.addHistory(dataPack.success.getString("buta-play-card").form(aiCard))
 
-                                    cont = unoAiPlay.shouldSkipTurn
-                                }
+                            var cont = butaPlayed.shouldSkipTurn
+                            while (cont) {
+                                val aiPlay = ButaAi(uno).play()
+                                val unoAiPlay = uno.buta.play(aiPlay)
+
+                                uno.addHistory(dataPack.success.getString("buta-play-card-whileSkipped").form(aiPlay))
+
+                                cont = unoAiPlay.shouldSkipTurn
                             }
                         }
-
-                        var desc = uno.getHistory().removePrefix("\n")
-
-                        val butaCards = dataPack.fields.getJSONObject("buta-cards-field").getField()
-                        val lastPlayedCard = dataPack.fields.getJSONObject("last-played-card").getField()
-                        val userCards = dataPack.fields.getJSONObject("user-cards").getField()
-
-                        val built = buildString {
-                            uno.user.cards.cards.forEachIndexed { i, c ->
-                                append(formatText(dataPack.other.getString("cards"), i + 1, c))
-                            }
-                        }
-
-                        embed.addField(butaCards.title, formatText(butaCards.desc, uno.buta.cards.getSize()), true)
-                        embed.addField(lastPlayedCard.title, formatText(lastPlayedCard.desc, uno.playedCards.last()), true)
-                        embed.addField(userCards.title, formatText(userCards.desc, built), false)
-
-                        if (uno.buta.cards.getSize() == 0) {
-                            desc += dataPack.success.getString("buta-won-game")
-                            uno.endGame(false)
-                        }
-
-                        embed.setDescription(desc)
                     }
+
+                    var desc = uno.getHistory().removePrefix("\n")
+
+                    if (uno.buta.cards.getSize() == 0) {
+                        desc += dataPack.success.getString("buta-won-game")
+                        uno.endGame(false)
+                    }
+
+                    dataPack.embeds.getJSONObject("play-cards").applyEmbed(embed, user,
+                            hashMapOf("desc" to desc.ar()),
+                            hashMapOf(
+                                    "buta-cards" to FieldReplacement(null, uno.buta.cards.getSize().toString().ar()),
+                                    "last-played-card" to FieldReplacement(null, uno.playedCards.last().ar()),
+                                    "user-cards" to FieldReplacement(null, getUserCards(uno).ar())
+                            )
+                    )
+                }
+                .then()
+    }
+
+    private val BLUE: ReactionEmoji = ReactionEmoji.unicode("\uD83D\uDCD8")
+    private val RED: ReactionEmoji = ReactionEmoji.unicode("\uD83D\uDCD5")
+    private val YELLOW: ReactionEmoji = ReactionEmoji.unicode("\uD83D\uDCD9")
+    private val GREEN: ReactionEmoji = ReactionEmoji.unicode("\uD83D\uDCD7")
+
+    /**
+     * Proper reaction emojis.
+     */
+    val properColors = arrayListOf(BLUE, RED, YELLOW, GREEN)
+
+    /**
+     * Complete a wild card request with the inputted color.
+     */
+    fun completedWildCard(ev: ReactionAddEvent): Mono<Void> {
+        val selectedColor = when (ev.emoji) {
+            BLUE -> CardColor.BLUE
+            RED -> CardColor.RED
+            GREEN -> CardColor.GREEN
+            YELLOW -> CardColor.YELLOW
+
+            else -> return ev.channel
+                    .flatMap { ch -> ch.createMessage("Invalid emoji, somehow.") }
                     .then()
         }
 
-        val BLUE: ReactionEmoji = ReactionEmoji.unicode("\uD83D\uDCD8")
-        val RED: ReactionEmoji = ReactionEmoji.unicode("\uD83D\uDCD5")
-        val YELLOW: ReactionEmoji = ReactionEmoji.unicode("\uD83D\uDCD9")
-        val GREEN: ReactionEmoji = ReactionEmoji.unicode("\uD83D\uDCD7")
-
-        /**
-         * Proper reaction emojis.
-         */
-        val properColors = arrayListOf(BLUE, RED, YELLOW, GREEN)
-
-        /**
-         * Complete a wild card request with the inputted color.
-         */
-        fun completedWildCard(ev: ReactionAddEvent): Mono<Void> {
-            val selectedColor = when (ev.emoji) {
-                BLUE -> CardColor.BLUE
-                RED -> CardColor.RED
-                GREEN -> CardColor.GREEN
-                YELLOW -> CardColor.YELLOW
-
-                else -> return ev.channel
-                        .flatMap { ch -> ch.createMessage("Invalid emoji, somehow.") }
+        val pending = wildWaiting[ev.userId]
+                ?: return ev.channel
+                        .flatMap { ch -> ch.createMessage("Can't find pending request!") }
                         .then()
-            }
 
-            val pending = wildWaiting[ev.userId]
-                    ?: return ev.channel
-                            .flatMap { ch -> ch.createMessage("Can't find pending request!") }
-                            .then()
+        wildWaiting.remove(ev.userId)
 
-            wildWaiting.remove(ev.userId)
-
-            return pending.message
-                    .delete()
-                    .then(ev.user)
-                    .zipWith(ev.channel)
-                    .flatMap { userChannel -> playCard(userChannel.t1, userChannel.t2, pending.unoGame, Card(selectedColor, pending.wildCardType, null)) }
-        }
-
-        data class PendingWildCardColorSelect(val wildCardType: CardType, val unoGame: UnoGame, val time: Long, val message: Message)
+        return pending.message
+                .delete()
+                .then(ev.user)
+                .zipWith(ev.channel)
+                .flatMap { userChannel -> playCard(userChannel.t1, userChannel.t2, pending.unoGame, Card(selectedColor, pending.wildCardType, null)) }
     }
+
+    data class PendingWildCardColorSelect(val wildCardType: CardType, val unoGame: UnoGame, val time: Long, val message: Message)
 
     override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<Void> {
         if (!e.message.author.isPresent)
@@ -205,22 +195,14 @@ class Uno(lfc: LangFillableContent = LangFillableContent.getFromCommandName("uno
                                 ch.createEmbed { embed ->
                                     val drawn = uno.user.draw(1)
 
-                                    val lastPlayedCard = dataPack.fields.getJSONObject("last-played-card").getField()
-                                    val drawnCard = dataPack.fields.getJSONObject("drawn-card").getField()
-                                    val butaCards = dataPack.fields.getJSONObject("buta-cards-field").getField()
-                                    val userCards = dataPack.fields.getJSONObject("user-cards").getField()
-
-                                    embed.addField(butaCards.title, formatText(butaCards.desc, uno.buta.cards.getSize()), true)
-                                    embed.addField(lastPlayedCard.title, formatText(lastPlayedCard.desc, uno.playedCards.last()), true)
-                                    embed.addField(drawnCard.title, formatText(drawnCard.desc, drawn[0]), true)
-
-                                    val built = buildString {
-                                        uno.user.cards.cards.forEachIndexed { i, c ->
-                                            append(formatText(dataPack.other.getString("cards"), i + 1, c))
-                                        }
-                                    }
-
-                                    embed.addField(userCards.title, formatText(userCards.desc, built), false)
+                                    dataPack.embeds.getJSONObject("draw-card").applyEmbed(embed, e.message.author.get(),
+                                            fields = hashMapOf(
+                                                    "buta-cards" to FieldReplacement(null, uno.buta.cards.getSize().toString().ar()),
+                                                    "last-played-card" to FieldReplacement(null, uno.playedCards.last().ar()),
+                                                    "drawn-card" to FieldReplacement(null, drawn[0].ar()),
+                                                    "user-cards" to FieldReplacement(null, getUserCards(uno).ar())
+                                            )
+                                    )
                                 }
                             }
                             .then()
@@ -244,7 +226,7 @@ class Uno(lfc: LangFillableContent = LangFillableContent.getFromCommandName("uno
                     if (uno.user.cards.getSize() == 1 && !uno.userCalledUno) {
                         val drawn = uno.user.draw(2)
 
-                        return e.sendMessage(formatText(dataPack.error.getString("didnt-call-uno"), drawn[0], drawn[1]))
+                        return e.sendMessage(dataPack.error.getString("didnt-call-uno").form(drawn[0], drawn[1]))
                                 .then()
                     }
 
@@ -278,45 +260,44 @@ class Uno(lfc: LangFillableContent = LangFillableContent.getFromCommandName("uno
         val uno = game.second
 
         return e.message.channel
-                .flatMap { ch ->
+                .zipWith(GuildFactory.get(e.guildId.get().asLong()))
+                .flatMap { zip ->
+                    val ch = zip.t1
+                    val g = zip.t2
+
                     ch.createEmbed { embed ->
                         if (game.first) {
-                            // TODO add proper prefix
-                            embed.setDescription(formatText(dataPack.success.getString("created-game-first"), "b!"))
-
                             val init = uno.initGame()
-                            val firstPlayedCard = dataPack.fields.getJSONObject("first-played-card").getField()
-                            val userCards = dataPack.fields.getJSONObject("user-cards").getField()
 
-                            embed.addField(firstPlayedCard.title, formatText(firstPlayedCard.desc, init), true)
-
-                            val built = buildString {
-                                uno.user.cards.cards.forEachIndexed { i, c ->
-                                    append(formatText(dataPack.other.getString("cards"), i + 1, c))
-                                }
-                            }
-
-                            embed.addField(userCards.title, formatText(userCards.desc, built), false)
+                            dataPack.embeds.getJSONObject("init-game").applyEmbed(embed, e.message.author.get(),
+                                    hashMapOf("desc" to g.prefix.ar()),
+                                    hashMapOf(
+                                            "first-played-card" to FieldReplacement(null, init.ar()),
+                                            "user-cards" to FieldReplacement(null, getUserCards(uno).ar())
+                                    )
+                            )
                         } else {
-                            embed.setDescription(formatText(dataPack.success.getString("game-start-time"), uno.startedAt.format()))
-
-                            val butaCards = dataPack.fields.getJSONObject("buta-cards-field").getField()
-                            val lastPlayedCard = dataPack.fields.getJSONObject("last-played-card").getField()
-                            val userCards = dataPack.fields.getJSONObject("user-cards").getField()
-
-                            embed.addField(butaCards.title, formatText(butaCards.desc, uno.buta.cards.getSize()), true)
-                            embed.addField(lastPlayedCard.title, formatText(lastPlayedCard.desc, uno.playedCards.last()), true)
-
-                            val built = buildString {
-                                uno.user.cards.cards.forEachIndexed { i, c ->
-                                    append(formatText(dataPack.other.getString("cards"), i + 1, c))
-                                }
-                            }
-
-                            embed.addField(userCards.title, formatText(userCards.desc, built), false)
+                            dataPack.embeds.getJSONObject("game-info").applyEmbed(embed, e.message.author.get(),
+                                    hashMapOf("desc" to uno.startedAt.format().ar()),
+                                    hashMapOf(
+                                            "buta-cards" to FieldReplacement(null, uno.buta.cards.getSize().toString().ar()),
+                                            "last-played-card" to FieldReplacement(null, uno.playedCards.last().ar()),
+                                            "user-cards" to FieldReplacement(null, getUserCards(uno).ar())
+                                    )
+                            )
                         }
                     }
                 }
                 .then()
     }
+
+    /**
+     * Build a user's cards.
+     */
+    private fun getUserCards(uno: UnoGame): String =
+            buildString {
+                uno.user.cards.cards.forEachIndexed { i, c ->
+                    append(dataPack.other.getString("cards").form(i + 1, c))
+                }
+            }
 }

@@ -10,9 +10,8 @@ import discord4j.core.`object`.presence.Activity
 import discord4j.core.`object`.presence.Presence
 import discord4j.core.event.domain.lifecycle.ReadyEvent
 import reactor.core.publisher.Mono
-import java.util.*
-import kotlin.collections.ArrayList
 import reactor.kotlin.core.publisher.toMono
+import java.util.*
 import kotlin.concurrent.timerTask
 
 /**

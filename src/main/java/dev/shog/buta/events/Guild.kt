@@ -3,13 +3,11 @@ package dev.shog.buta.events
 import dev.shog.buta.EN_US
 import dev.shog.buta.LOGGER
 import dev.shog.buta.commands.api.GuildFactory
-import dev.shog.buta.commands.api.UserFactory
 import dev.shog.buta.events.obj.Event
 import dev.shog.buta.util.getChannelsWithPermission
 import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
 import reactor.core.publisher.Mono
-import reactor.core.publisher.switchIfEmpty
 
 /**
  * A guild join event.

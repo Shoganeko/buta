@@ -9,13 +9,13 @@ import reactor.core.publisher.Mono
 /**
  * The main command interface.
  *
- * The command can be invoked by a user sending a message with the prefix then [commandName] in a channel where Buta can see it.
+ * The command can be invoked by a user sending a message with the prefix then [data] in a channel where Buta can see it.
  *
  * If [isPmAvailable] is true, it can be accessible through pms.
  */
 abstract class ICommand(
         val data: LangFillableContent,
-        val isPmAvailable: Boolean,
+        private val isPmAvailable: Boolean,
         val category: Categories,
         val permable: Permable
 ) {

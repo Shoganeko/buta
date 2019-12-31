@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import org.json.JSONObject
-import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toMono
 
 /**
  * Load languages.
@@ -73,5 +71,5 @@ object LangLoader {
     /**
      * A full message data pack.
      */
-    data class FullMessageDataPack(val error: JSONObject, val success: JSONObject, val fields: JSONObject, val other: JSONObject)
+    data class FullMessageDataPack(val error: JSONObject, val success: JSONObject, val embeds: JSONObject, val other: JSONObject)
 }

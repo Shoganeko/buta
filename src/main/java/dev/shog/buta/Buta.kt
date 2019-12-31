@@ -2,14 +2,15 @@ package dev.shog.buta
 
 import dev.shog.DiscordWebhookHandler
 import dev.shog.buta.commands.commands.*
-import dev.shog.buta.commands.commands.Uno.Companion.properColors
 import dev.shog.buta.commands.obj.ICommand
 import dev.shog.buta.events.GuildJoinEvent
 import dev.shog.buta.events.GuildLeaveEvent
 import dev.shog.buta.events.PresenceHandler
 import dev.shog.buta.handle.LangLoader
+import dev.shog.buta.handle.audio.AudioManager
 import discord4j.core.DiscordClient
 import discord4j.core.DiscordClientBuilder
+import discord4j.core.event.domain.VoiceStateUpdateEvent
 import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
 import discord4j.core.event.domain.lifecycle.ReadyEvent
@@ -90,9 +91,8 @@ fun main(args: Array<String>) = runBlocking<Unit> {
                 .subscribe()
 
         eventDispatcher.on(ReactionAddEvent::class.java)
-                .doOnNext { println("Reaction ADD EVENT") }
                 .filter { event -> Uno.wildWaiting.containsKey(event.userId) }
-                .filter { event -> properColors.contains(event.emoji) }
+                .filter { event -> Uno.properColors.contains(event.emoji) }
                 .filter { event ->
                     val time = Uno.wildWaiting[event.userId]?.time ?: 0
 
@@ -101,6 +101,13 @@ fun main(args: Array<String>) = runBlocking<Unit> {
                 }
                 .flatMap { ev -> Uno.completedWildCard(ev) }
                 .subscribe()
+
+        eventDispatcher.on(VoiceStateUpdateEvent::class.java)
+                .flatMap { event ->
+                    event.current.channel
+                            .ofType(Unit::class.java)
+                            .defaultIfEmpty(AudioManager.getGuildMusicManager(event.current.guildId).stop())
+                }
 
         eventDispatcher.on(ReadyEvent::class.java)
                 .flatMap { PresenceHandler.invoke(it) }
@@ -118,9 +125,10 @@ private fun initCommands() {
     ABOUT
     GUILD
     HELP
+    MUSIC_PLAY
     SET_PREFIX
     NSFW_TOGGLE
     GAMBLE_BALANCE
     PURGE
-    ICommand.COMMANDS.add(Uno())
+    ICommand.COMMANDS.add(Uno)
 }

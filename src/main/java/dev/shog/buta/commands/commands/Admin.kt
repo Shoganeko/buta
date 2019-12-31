@@ -5,12 +5,10 @@ import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.permission.PermissionFactory
 import dev.shog.buta.util.enabledDisabled
-import dev.shog.buta.util.formatText
+import dev.shog.buta.util.form
 import dev.shog.buta.util.sendMessage
-import discord4j.core.`object`.entity.GuildMessageChannel
 import discord4j.core.`object`.entity.TextChannel
 import discord4j.core.`object`.util.Permission
-import discord4j.rest.json.request.BulkDeleteRequest
 import java.time.Duration
 
 /**
@@ -21,20 +19,20 @@ val SET_PREFIX = Command("prefix", Categories.ADMINISTRATOR, permable = Permissi
         val newPrefix = args[0]
 
         if (newPrefix.length > 3 || newPrefix.isEmpty())
-            return@Command e.sendMessage(formatText(lang.getString("wrong-length"), newPrefix.length)).then()
+            return@Command e.sendMessage(lang.getString("wrong-length").form(newPrefix.length)).then()
 
         e.message.guild
                 .map { g -> g.id.asLong() }
                 .flatMap { id -> GuildFactory.get(id) }
                 .doOnNext { g -> g.prefix = newPrefix }
                 .flatMap { g -> GuildFactory.update(g.id, g) }
-                .then(e.sendMessage(formatText(lang.getString("set"), newPrefix)))
+                .then(e.sendMessage(lang.getString("set").form(newPrefix)))
                 .then()
     } else e.message.guild
             .map { g -> g.id.asLong() }
-            .flatMap { id -> GuildFactory.get(id) }
+            .flatMap(GuildFactory::get)
             .map { g -> g.prefix }
-            .flatMap { prefix -> e.sendMessage(formatText(lang.getString("prefix"), prefix)) }
+            .flatMap { p -> e.sendMessage(lang.getString("prefix").form(p)) }
             .then()
 }.build().add()
 
@@ -45,7 +43,7 @@ val NSFW_TOGGLE = Command("nsfw", Categories.ADMINISTRATOR, isPmAvailable = fals
     e.message.channel
             .ofType(TextChannel::class.java)
             .flatMap { ch ->
-                ch.createMessage(formatText(lang.getString("default"), (!ch.isNsfw).enabledDisabled()))
+                ch.createMessage(lang.getString("default").form(ch.isNsfw.not().enabledDisabled()))
                         .then(ch.edit { che -> che.setNsfw(!ch.isNsfw) })
             }
             .then()
@@ -58,9 +56,7 @@ val PURGE = Command("purge", Categories.ADMINISTRATOR, isPmAvailable = false, pe
     val amount = if (args.size == 1) {
         val pre = args[0].toLongOrNull() ?: -1
 
-        if (pre > 500L || 1L > pre)
-            100
-        else pre
+        if (pre > 500L || 1L > pre) 100 else pre
     } else 100
 
     e.message.channel
@@ -72,7 +68,7 @@ val PURGE = Command("purge", Categories.ADMINISTRATOR, isPmAvailable = false, pe
                 )
             }
             .collectList()
-            .flatMap { e.sendMessage(formatText(lang.getString("default"), amount)) }
+            .flatMap { e.sendMessage(lang.getString("default").form(amount)) }
             .delayElement(Duration.ofSeconds(5))
             .flatMap { msg -> e.message.delete().then(msg.delete()) }
             .then()
