@@ -3,6 +3,7 @@ package dev.shog.buta.commands.obj
 import dev.shog.buta.EN_US
 import dev.shog.buta.commands.permission.Permable
 import dev.shog.buta.commands.permission.PermissionFactory
+import discord4j.core.`object`.entity.Message
 import discord4j.core.event.domain.message.MessageCreateEvent
 import org.json.JSONObject
 import reactor.core.publisher.Mono
@@ -15,7 +16,7 @@ data class Command(
         val category: Categories,
         val isPmAvailable: Boolean = true,
         val permable: Permable = PermissionFactory.hasPermission(),
-        val invoke: (MessageCreateEvent, MutableList<String>, JSONObject) -> (Mono<Void>)
+        val invoke: (MessageCreateEvent, MutableList<String>, JSONObject) -> Mono<Void>
 ) {
     /**
      * Build an [Command]

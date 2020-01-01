@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import dev.shog.buta.LOGGER
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.handle.audio.AudioManager
@@ -61,10 +62,9 @@ private fun audioCommand(
                                                 vc
                                                         .join { spec -> spec.setProvider(guild.provider) }
                                                         .doOnNext { join -> guild.connection = join }
-                                                        .thenReturn(true)
-                                            else false.toMono()
+                                                        .flatMap { inVoice }
+                                            else notEntered
                                         }
-                                        .flatMap { bool -> if (bool) inVoice else notEntered }
                             }
                 } else notInVoice
             }
@@ -110,7 +110,7 @@ val MUSIC_PLAY = Command("play", Categories.MUSIC) { e, args, lang ->
 
     audioCommand(
             e,
-            play(e, AudioManager.getGuildMusicManager(e.guildId.get()), identifier, lang).toMono().then(),
+            play(e, AudioManager.getGuildMusicManager(e.guildId.get()), identifier, lang),
             true,
             e.sendMessage(lang.getString("not-in-channel")).then(),
             e.sendMessage(lang.getString("not-in-buta-channel")).then()
@@ -265,34 +265,37 @@ private fun skip(e: MessageCreateEvent, guild: GuildMusicManager, lang: JSONObje
 /**
  * Load a track on [guild] using [identifier] and [e].
  */
-private fun play(e: MessageCreateEvent, guild: GuildMusicManager, identifier: String, lang: JSONObject) {
-    AudioManager.playerManager.loadItem("ytsearch:$identifier", object : AudioLoadResultHandler {
-        override fun playlistLoaded(playlist: AudioPlaylist?) {
-            if (playlist == null || playlist.tracks.isEmpty()) {
-                noMatches()
-                return
-            }
+private fun play(e: MessageCreateEvent, guild: GuildMusicManager, identifier: String, lang: JSONObject): Mono<Void> =
+        e.message.channel
+                .doOnNext {
+                    AudioManager.playerManager.loadItem("ytsearch:$identifier", object : AudioLoadResultHandler {
+                        override fun playlistLoaded(playlist: AudioPlaylist?) {
+                            if (playlist == null || playlist.tracks.isEmpty()) {
+                                noMatches()
+                                return
+                            }
 
-            val track = playlist.tracks.first()
+                            val track = playlist.tracks.first()
 
-            queueTrack(guild, e, track, lang)
-        }
+                            queueTrack(guild, e, track, lang)
+                        }
 
-        override fun noMatches() {
-            e.sendMessage(lang.getString("no-matches").form(identifier))
-                    .subscribe()
-        }
+                        override fun noMatches() {
+                            e.sendMessage(lang.getString("no-matches").form(identifier))
+                                    .subscribe()
+                        }
 
-        override fun trackLoaded(track: AudioTrack?) {
-            queueTrack(guild, e, track!!, lang)
-        }
+                        override fun trackLoaded(track: AudioTrack?) {
+                            queueTrack(guild, e, track!!, lang)
+                        }
 
-        override fun loadFailed(exception: FriendlyException?) {
-            e.sendMessage(lang.getString("issue-loading"))
-                    .subscribe()
-        }
-    })
-}
+                        override fun loadFailed(exception: FriendlyException?) {
+                            e.sendMessage(lang.getString("issue-loading"))
+                                    .subscribe()
+                        }
+                    })
+                }
+                .then()
 
 /**
  * Load a track for [guild] using [e] and [audioTrack].

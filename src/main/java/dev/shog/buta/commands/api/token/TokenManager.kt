@@ -56,7 +56,7 @@ class TokenManager {
             if (schedule)
                 Timer().schedule(timerTask { renewToken().subscribe() }, token.expiresOn)
 
-            LOGGER.debug("Found token in file!")
+            LOGGER.info("Token has been found in file!")
             return token
         }
 
@@ -78,7 +78,7 @@ class TokenManager {
 
                             Timer().schedule(timerTask { renewToken().subscribe() }, newExpire)
 
-                            LOGGER.debug("Successfully created token!")
+                            LOGGER.info("Successfully created token!")
                         } else {
                             LOGGER.fatal("Failed to create token, exited!").subscribe()
                             exitProcess(-1)
@@ -124,7 +124,7 @@ class TokenManager {
 
                             Timer().schedule(timerTask { renewToken().subscribe() }, newExpire)
 
-                            LOGGER.debug("Successfully renewed token!")
+                            LOGGER.info("Token has been renewed successfully.")
                         } else {
                             LOGGER.fatal("Failed to create token, exited!").subscribe()
                             exitProcess(-1)

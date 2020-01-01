@@ -126,6 +126,7 @@ private fun initCommands() {
     GUILD
     HELP
     MUSIC_PLAY
+    DOG_FACT
     SET_PREFIX
     NSFW_TOGGLE
     GAMBLE_BALANCE

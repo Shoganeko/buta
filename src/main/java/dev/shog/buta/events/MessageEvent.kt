@@ -39,10 +39,13 @@ object MessageEvent : Event, CoroutineScope by CoroutineScope(Dispatchers.Unconf
                                                 .toMono()
                                     } else Mono.empty()
                                 }
+                                .map { data -> data.split(" ") }
+                                .filter { split -> split.isNotEmpty() }
                                 .flatMap { con ->
                                     Flux.fromIterable(ICommand.COMMANDS)
                                             .filter { en ->
-                                                con?.startsWith(en.data.commandName.toLowerCase(), true) == true
+                                                con[0].startsWith(en.data.commandName.toLowerCase(), true)
+                                                        || en.data.alias.contains(con[0])
                                             }
                                             .filterWhen { en -> en.permable.check(event) }
                                             .collectList()
@@ -50,11 +53,8 @@ object MessageEvent : Event, CoroutineScope by CoroutineScope(Dispatchers.Unconf
                                                 if (commandList.isNotEmpty()) {
                                                     val entry = commandList[0]!!
 
-                                                    Mono.justOrEmpty(con)
-                                                            .flatMapMany { msg ->
-                                                                Flux.just(msg?.split(" ")?.toMutableList()
-                                                                        ?: mutableListOf("cmdstring"))
-                                                            }
+                                                    con.toMutableList()
+                                                            .toMono()
                                                             .doOnNext { l -> l.removeAt(0) }
                                                             .flatMap { msg -> entry.invoke(event, msg) }
                                                             .then()

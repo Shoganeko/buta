@@ -43,6 +43,7 @@ val HELP = Command("help", Categories.INFO) { e, args, lang ->
                                     cat.name.capitalize(),
                                     list
                                             .stream()
+                                            .map { str -> str.toLowerCase() }
                                             .collect(Collectors.joining())
                             )
                         }

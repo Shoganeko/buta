@@ -8,4 +8,6 @@ class User : ButaObject {
     override var id: Long = 0
 
     var bal: Long = 0L
+    var lastDailyReward: Long = -1
+    var xp: Long = -1
 }
