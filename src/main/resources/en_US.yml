@@ -225,6 +225,20 @@ help:
         help-embed:
             title: "Help"
             desc: "Support Discord: https://shog.dev/discord\nThis only shows commands **you** have permission to!\n\n{0}"
+joinrole:
+    name: JoinRole
+    desc: Have a role that is given to everyone on join.
+    help:
+        - joinrole: "View the Join Role status."
+        - joinrole role {role name}: "Set a Join Role using the role's name."
+        - joinrole set {true/false}: "Turn Join Role on or off."
+    response:
+        on-set: "Join role is currently `{0}` and set to `{1}`.\nMake sure the bot has permission to add this role to others. This will **NOT** work without the permission `Adminstrator`, and won't if the bot doesn't have correct hierarchy. (Bot needs role over role to set)"
+        un-set: "Join role is currently `{0}` and unset."
+        set: "Join role has been set to `{0}`."
+        toggle: "Join role has been `{0}`."
+        invalid-role: "That role couldn't be found!"
+        invalid-args: "Invalid arguments!"
 dailyreward:
     name: DailyReward
     desc: Get a daily reward every 24 hours!

@@ -1,6 +1,7 @@
 package dev.shog.buta
 
 import dev.shog.DiscordWebhookHandler
+import dev.shog.buta.commands.api.GuildFactory
 import dev.shog.buta.commands.commands.*
 import dev.shog.buta.commands.obj.ICommand
 import dev.shog.buta.events.GuildJoinEvent
@@ -10,9 +11,12 @@ import dev.shog.buta.handle.LangLoader
 import dev.shog.buta.handle.audio.AudioManager
 import discord4j.core.DiscordClient
 import discord4j.core.DiscordClientBuilder
+import discord4j.core.`object`.util.Permission
+import discord4j.core.`object`.util.Snowflake
 import discord4j.core.event.domain.VoiceStateUpdateEvent
 import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
+import discord4j.core.event.domain.guild.MemberJoinEvent
 import discord4j.core.event.domain.lifecycle.ReadyEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.event.domain.message.ReactionAddEvent
@@ -20,6 +24,7 @@ import discord4j.core.shard.ShardingClientBuilder
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Hooks
+import reactor.core.publisher.Mono
 import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
 
@@ -106,6 +111,27 @@ fun main(args: Array<String>) = runBlocking<Unit> {
                 .doOnNext { event ->
                     if (event.old.isPresent)
                         AudioManager.getGuildMusicManager(event.current.guildId).stop()
+                }
+                .subscribe()
+
+        eventDispatcher.on(MemberJoinEvent::class.java)
+                .filterWhen { e ->
+                    e.client.self
+                            .flatMap { self -> self.asMember(e.guildId) }
+                            .flatMap { member -> member.basePermissions }
+                            .map { perms -> perms.contains(Permission.ADMINISTRATOR) }
+                }
+                .flatMap { e ->
+                    GuildFactory.get(e.guildId.asLong())
+                            .map { guild -> guild.joinRole }
+                            .filter { duo -> duo.first == true && duo.second != null && duo.second != -1L}
+                            .filterWhen { duo ->
+                                e.client.self
+                                        .flatMap { self -> self.asMember(e.guildId) }
+                                        .zipWith(e.guild.flatMap { guild -> guild.getRoleById(Snowflake.of(duo.second!!)) })
+                                        .flatMap { zip -> zip.t1.hasHigherRoles(mutableListOf(zip.t2)) }
+                            }
+                            .flatMap { duo -> e.member.addRole(Snowflake.of(duo.second!!)) }
                 }
                 .subscribe()
 
