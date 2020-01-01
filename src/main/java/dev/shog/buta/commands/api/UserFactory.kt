@@ -24,6 +24,7 @@ object UserFactory {
         if (id != user.id)
             return Mono.error(Exception("Invalid user object!"))
 
+        cache[id] = user
         return Api.updateUserObject(user)
     }
 

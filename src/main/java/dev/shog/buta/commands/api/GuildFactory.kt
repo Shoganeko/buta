@@ -24,6 +24,7 @@ object GuildFactory {
         if (id != guild.id)
             return Mono.error(Exception("Invalid user object!"))
 
+        cache[id] = guild
         return Api.updateGuildObject(guild)
     }
 

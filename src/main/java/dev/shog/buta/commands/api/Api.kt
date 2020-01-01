@@ -96,7 +96,7 @@ object Api {
      * Update a [user] object to the database.
      */
     fun updateUserObject(user: User): Mono<Void> =
-            Unirest.put("$BASE_URL/v2/buta/${user.id}/2")
+            Unirest.patch("$BASE_URL/v2/buta/${user.id}/2")
                     .header("Authorization", "token ${tokenManager.getProperToken()}")
                     .header("Content-Type", "application/json")
                     .body(user)

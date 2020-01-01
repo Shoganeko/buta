@@ -225,6 +225,16 @@ help:
         help-embed:
             title: "Help"
             desc: "Support Discord: https://shog.dev/discord\nThis only shows commands **you** have permission to!\n\n{0}"
+dailyreward:
+    name: DailyReward
+    desc: Get a daily reward every 24 hours!
+    alias:
+        - daily
+    help:
+        - dailyreward: Get a daily reward, or see how much time you have left.
+    response:
+        successful: "You have received your daily reward of `{0}`!"
+        unsuccessful: "You need to wait `{0}` until you can get your daily reward!"
 guild:
     name: Guild
     desc: Get information about your guild.

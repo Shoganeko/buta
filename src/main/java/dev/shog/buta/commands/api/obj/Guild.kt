@@ -1,5 +1,8 @@
 package dev.shog.buta.commands.api.obj
 
+import dev.shog.trans.Duo
+import dev.shog.trans.duo
+
 /**
  * A guild object.
  */
@@ -8,9 +11,9 @@ class Guild : ButaObject {
     override var id: Long = 0
 
     var prefix: String = "b!"
-    var joinMessage: Pair<Boolean, String> = false to "{user} has joined {guild-name}!"
-    var leaveMessage: Pair<Boolean, String> = false to "{user} has joined {guild-name}!"
-    var joinRole: Pair<Boolean, Long> = false to -1L
-    var swearFilter: Pair<Boolean, String> = false to "{user} you cannot swear!"
-    var disabledCategories: Pair<Boolean, ArrayList<String>> = false to arrayListOf()
+    var joinMessage: Duo<Boolean, String> = false duo "{user} has joined {guild-name}!"
+    var leaveMessage: Duo<Boolean, String> = false duo "{user} has joined {guild-name}!"
+    var joinRole: Duo<Boolean, Long> = false duo -1L
+    var swearFilter: Duo<Boolean, String> = false duo "{user} you cannot swear!"
+    var disabledCategories: Duo<Boolean, ArrayList<String>> = false duo arrayListOf()
 }
