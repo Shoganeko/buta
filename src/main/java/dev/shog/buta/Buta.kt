@@ -98,8 +98,7 @@ fun main(args: Array<String>) = runBlocking<Unit> {
                 .subscribe()
 
         eventDispatcher.on(ReactionAddEvent::class.java)
-                .filter { event -> Uno.wildWaiting.containsKey(event.userId) }
-                .filter { event -> Uno.properColors.contains(event.emoji) }
+                .filter { event -> Uno.wildWaiting.containsKey(event.userId) && Uno.properColors.contains(event.emoji) }
                 .filter { event ->
                     val time = Uno.wildWaiting[event.userId]?.time ?: 0
 
@@ -110,10 +109,8 @@ fun main(args: Array<String>) = runBlocking<Unit> {
                 .subscribe()
 
         eventDispatcher.on(VoiceStateUpdateEvent::class.java)
-                .doOnNext { event ->
-                    if (event.old.isPresent)
-                        AudioManager.getGuildMusicManager(event.current.guildId).stop()
-                }
+                .filter { event -> event.old.isPresent }
+                .doOnNext { event -> AudioManager.getGuildMusicManager(event.current.guildId).stop() }
                 .subscribe()
 
         eventDispatcher.on(MemberJoinEvent::class.java)

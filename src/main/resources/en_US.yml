@@ -1,4 +1,4 @@
-join-message: "Thank you for inviting me!\nMy name's Buta, and you can figure out my commands using `b!help`!"
+join-message: "Thank you for inviting me!\nMy name's Buta, and you can view my commands using `b!help`!"
 
 music:
     stop-playing: "Music has been stopped and cleared due to a disconnection."
@@ -13,8 +13,8 @@ catfact:
     help:
         - catfact: Get a cat fact.
     alias:
-        - df
-        - dfact
+        - cf
+        - cfact
     response:
         fact: "{0}"
 dogfact:
@@ -212,7 +212,7 @@ about:
     help:
         - about: About Buta
     response:
-        desc: "Support Discord: https://shog.dev/discord"
+        default: "Support Discord: https://shog.dev/discord\n\nIf there's an issue, please feel inclined to report it at https://github.com/shoganeko/buta"
 help:
     name: Help
     desc: Get help about the various commands of Buta.
