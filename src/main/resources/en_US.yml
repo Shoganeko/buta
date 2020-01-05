@@ -249,6 +249,21 @@ dailyreward:
     response:
         successful: "You have received your daily reward of `{0}`!"
         unsuccessful: "You need to wait `{0}` until you can get your daily reward!"
+presence:
+    name: Presence
+    desc: Update the presence
+    alias:
+        - pres
+    help:
+        - presence: Update the presence.
+        - presence local: Locally update the presences.
+        - presence server: Externally update the presences.
+        - presence dump: Dump all locally stored presences.
+    response:
+        update: "Presence has been updated!"
+        server-side: "Presences have been updated externally."
+        dump: "Presence Dump: {0}"
+        client-side: "Presences have been updated locally"
 guild:
     name: Guild
     desc: Get information about your guild.

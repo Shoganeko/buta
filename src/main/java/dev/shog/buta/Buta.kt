@@ -24,9 +24,11 @@ import discord4j.core.shard.ShardingClientBuilder
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Hooks
-import reactor.core.publisher.Mono
 import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
+
+/** Developers */
+val DEV = arrayOf(274712215024697345L)
 
 /**
  * The main LOGGER
@@ -155,6 +157,7 @@ private fun initCommands() {
     DOG_FACT
     SET_PREFIX
     NSFW_TOGGLE
+    PRESENCE
     GAMBLE_BALANCE
     PURGE
     ICommand.COMMANDS.add(Uno)

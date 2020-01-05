@@ -29,10 +29,46 @@ object Api {
     private val tokenManager = TokenManager()
 
     /**
-     *  TODO Get all presences from Mojor.
+     * Refresh the presences Mojor-side.
+     *
+     * @return If the request was successful.
+     */
+    fun refreshPresences(): Mono<Boolean> =
+            Unirest.post("https://api.shog.dev/v2/buta/presences")
+                    .header("Authorization", "token ${tokenManager.getProperToken()}")
+                    .asEmptyAsync()
+                    .toMono()
+                    .map { request -> request.isSuccess }
+
+    /**
+     * Get presences from mojor
      */
     fun getPresences(): Flux<Presence> =
-            Flux.just(Presence.idle(Activity.listening("Pepega Clap")))
+            Unirest.get("https://api.shog.dev/v2/buta/presences")
+                    .header("Authorization", "token ${tokenManager.getProperToken()}")
+                    .asJsonAsync()
+                    .toMono()
+                    .map { js -> js.body.array }
+                    .flatMapIterable { ar -> ar.toMutableList() }
+                    .map { any ->
+                        val obj = any as kong.unirest.json.JSONObject
+
+                        val activity = when (obj.getInt("activityType")) {
+                            1 -> Activity.playing(obj.getString("statusText"))
+                            2 -> Activity.watching(obj.getString("statusText"))
+                            3 -> Activity.listening(obj.getString("statusText"))
+
+                            else -> Activity.playing("")
+                        }
+
+                        when (obj.getInt("statusType")) {
+                            1 -> Presence.online(activity)
+                            2 -> Presence.invisible()
+                            3 -> Presence.idle(activity)
+                            4 -> Presence.doNotDisturb(activity)
+                            else -> Presence.invisible()
+                        }
+                    }
 
     /** Get the base URL */
     private fun getBaseUrl(): String {
@@ -56,6 +92,7 @@ object Api {
                     .header("Authorization", "token ${tokenManager.getProperToken()}")
                     .asObjectAsync(Guild::class.java)
                     .toMono()
+                    .filter { obj -> obj.isSuccess }
                     .map { obj -> obj.body }
 
     /**
@@ -66,7 +103,8 @@ object Api {
                     .header("Authorization", "token ${tokenManager.getProperToken()}")
                     .asObjectAsync(User::class.java)
                     .toMono()
-                    .map { obj -> if (obj.isSuccess) obj.body else User().apply { this.id = -1 } }
+                    .filter { obj -> obj.isSuccess }
+                    .map { obj -> obj.body }
 
     /**
      * Upload a [user] object to the database.

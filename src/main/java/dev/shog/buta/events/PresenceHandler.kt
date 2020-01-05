@@ -21,16 +21,12 @@ object PresenceHandler : Event {
     /**
      * The presences.
      */
-    private val presences = arrayListOf(
-            Presence.idle(Activity.streaming("POGGERS", "https://twitch.tv/xqcow")),
-            Presence.doNotDisturb(Activity.streaming("POGGERS", "https://twitch.tv/xqcow")),
-            Presence.online(Activity.streaming("POGGERS", "https://twitch.tv/xqcow"))
-    )
+    val presences = arrayListOf(Presence.idle(Activity.playing("PepeLaugh")))
 
     /**
      * Gets presences and adds them to [presences].
      */
-    private fun updatePresences(): Mono<Void> =
+    fun updatePresences(): Mono<Void> =
             Api.getPresences()
                     .collectList()
                     .doOnNext { presences.clear() }
@@ -41,19 +37,18 @@ object PresenceHandler : Event {
      * Gets a random presence from [presences] and updates [CLIENT].
      */
     private fun updateTimer(client: DiscordClient) {
-        Timer().schedule(timerTask {
+        Timer().schedule(timerTask { update(client).subscribe() }, 10000, TIMER_UPDATE_EVERY)
+    }
+
+    /**
+     * Update Presence
+     */
+    fun update(client: DiscordClient): Mono<Void> =
             presences
                     .random()
                     .toMono()
-                    .doOnNext { LOGGER.debug("Updating presence to ${it.activity.get().name} ${it.status.value}") }
-                    .flatMap {
-                        client.updatePresence(it)
-                                .then(DiscordWebhookHandler
-                                        .sendMessage("Updated Presence: ${it.activity.get().name} ${it.status.value}"))
-                    }
-                    .subscribe()
-        }, 10000, TIMER_UPDATE_EVERY)
-    }
+                    .doOnNext { LOGGER.info("Updating presence to ${it.activity.get().name} ${it.status.value}") }
+                    .flatMap { client.updatePresence(it) }
 
     override fun invoke(event: discord4j.core.event.domain.Event): Mono<Void> {
         require(event is ReadyEvent)

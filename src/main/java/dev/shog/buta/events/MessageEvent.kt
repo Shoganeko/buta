@@ -1,10 +1,13 @@
 package dev.shog.buta.events
 
+import dev.shog.buta.DEV
 import dev.shog.buta.commands.UserThreadHandler
 import dev.shog.buta.commands.api.GuildFactory
 import dev.shog.buta.commands.api.UserFactory
+import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.ICommand
 import dev.shog.buta.events.obj.Event
+import dev.shog.buta.util.sendMessage
 import discord4j.core.event.domain.message.MessageCreateEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -52,6 +55,14 @@ object MessageEvent : Event, CoroutineScope by CoroutineScope(Dispatchers.Unconf
                                             .flatMap { commandList ->
                                                 if (commandList.isNotEmpty()) {
                                                     val entry = commandList[0]!!
+
+                                                    if (
+                                                            entry.category == Categories.DEVELOPER
+                                                            && !DEV.contains(event.message.author.get().id.asLong())
+                                                    )
+                                                        return@flatMap event
+                                                                .sendMessage("You must be a developer")
+                                                                .then()
 
                                                     con.toMutableList()
                                                             .toMono()
