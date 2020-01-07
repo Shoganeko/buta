@@ -4,6 +4,7 @@ import dev.shog.buta.commands.api.Api
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.events.PresenceHandler
+import dev.shog.buta.handle.StatisticsManager
 import dev.shog.buta.util.form
 import dev.shog.buta.util.sendMessage
 import reactor.kotlin.core.publisher.toMono
@@ -42,4 +43,14 @@ val PRESENCE = Command("presence", Categories.DEVELOPER) { e, args, lang ->
                     .then()
         }
     }
+}.build().add()
+
+/**
+ * Dump statistics.
+ */
+val STAT_DUMP = Command("statdump", Categories.DEVELOPER) { e, _, lang ->
+    StatisticsManager.dump()
+            .toMono()
+            .flatMap { dump -> e.sendMessage(lang.getString("dump").form(dump)) }
+            .then()
 }.build().add()

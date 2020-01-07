@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap
  */
 object StatisticsManager {
     private val statistics = ConcurrentHashMap<String, Any>()
+    fun dump() = statistics.toString()
 
     /**
      * Set a statistic using it's [key].

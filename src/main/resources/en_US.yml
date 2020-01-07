@@ -249,6 +249,13 @@ dailyreward:
     response:
         successful: "You have received your daily reward of `{0}`!"
         unsuccessful: "You need to wait `{0}` until you can get your daily reward!"
+statdump:
+    name: StatDump
+    desc: Dump statistics.
+    help:
+        - statdump: Dump statistics.
+    response:
+        dump: "Statistics Dump: ```{0}```"
 presence:
     name: Presence
     desc: Update the presence
