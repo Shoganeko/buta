@@ -192,14 +192,15 @@ private fun queue(e: MessageCreateEvent, guild: GuildMusicManager, lang: JSONObj
 /**
  * Disconnect from [guild] using [e]
  */
-private fun disconnect(e: MessageCreateEvent, guild: GuildMusicManager, lang: JSONObject): Mono<Void> {
-    try {
-        guild.connection?.disconnect() // Message is handled in VoiceUpdate event
-    } catch (ex: Exception) {
-    }
-
-    return Mono.empty()
-}
+private fun disconnect(e: MessageCreateEvent, guild: GuildMusicManager, lang: JSONObject): Mono<Void> =
+        e.message.channel
+                .doOnNext { ch -> guild.requestChannel = ch }
+                .doOnNext {
+                    try {
+                        guild.connection?.disconnect() // Message is handled in VoiceUpdate event
+                    } catch (ex: Exception) {
+                    }
+                }.then()
 
 /**
  * Pause [guild] using [e]
