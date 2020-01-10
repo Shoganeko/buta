@@ -23,11 +23,7 @@ object MessageEvent : Event, CoroutineScope by CoroutineScope(Dispatchers.Unconf
     override fun invoke(event: discord4j.core.event.domain.Event): Mono<Void> {
         require(event is MessageCreateEvent)
 
-        return if (
-                event.message.author.isPresent
-                && !event.message.author.get().isBot
-                && UserThreadHandler.can(event.message.author.get())
-        ) {
+        return if (event.message.author.isPresent && !event.message.author.get().isBot) {
             UserFactory.getOrCreate(event.message.author.get().id.asLong())
                     .then(GuildFactory.get(event.guildId.get().asLong()))
                     .flatMap { g ->
@@ -64,16 +60,19 @@ object MessageEvent : Event, CoroutineScope by CoroutineScope(Dispatchers.Unconf
                                                                 .sendMessage("You must be a developer")
                                                                 .then()
 
+                                                    if (!UserThreadHandler.can(event.message.author.get(), entry.data.commandName))
+                                                        return@flatMap Mono.empty<Void>()
+
                                                     con.toMutableList()
                                                             .toMono()
                                                             .doOnNext { l -> l.removeAt(0) }
                                                             .flatMap { msg -> entry.invoke(event, msg) }
+                                                            .doFinally { UserThreadHandler.finish(event.message.author.get(), entry.data.commandName) }
                                                             .then()
                                                 } else Mono.empty()
                                             }
                                 }
                     }
-                    .doFinally { UserThreadHandler.finish(event.message.author.get()) }
         } else Mono.empty()
     }
 }

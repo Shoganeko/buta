@@ -15,6 +15,7 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 import org.json.JSONObject
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
+import java.lang.Exception
 import java.util.stream.Collectors
 
 /**
@@ -157,15 +158,6 @@ val MUSIC_QUEUE = Command("queue", Categories.MUSIC) { e, _, lang ->
 }.build().add()
 
 /**
- * Disconnect from [guild] using [e]
- */
-private fun disconnect(e: MessageCreateEvent, guild: GuildMusicManager, lang: JSONObject): Mono<Void> {
-    guild.stop()
-
-    return e.sendMessage(lang.getString("disconnect")).then()
-}
-
-/**
  * Get a queue from [guild] using [e]
  */
 private fun queue(e: MessageCreateEvent, guild: GuildMusicManager, lang: JSONObject): Mono<Void> {
@@ -195,6 +187,18 @@ private fun queue(e: MessageCreateEvent, guild: GuildMusicManager, lang: JSONObj
                 }
             }
             .then()
+}
+
+/**
+ * Disconnect from [guild] using [e]
+ */
+private fun disconnect(e: MessageCreateEvent, guild: GuildMusicManager, lang: JSONObject): Mono<Void> {
+    try {
+        guild.connection?.disconnect() // Message is handled in VoiceUpdate event
+    } catch (ex: Exception) {
+    }
+
+    return Mono.empty()
 }
 
 /**

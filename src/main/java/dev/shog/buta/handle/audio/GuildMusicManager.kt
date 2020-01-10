@@ -41,13 +41,14 @@ class GuildMusicManager(manager: AudioPlayerManager) {
     /**
      * Stop playing, clear tracks, and disconnect.
      */
-    fun stop() {
+    fun stop(sendMessage: Boolean) {
         scheduler.clearTracks()
         player.stopTrack()
 
-        requestChannel
-                ?.createMessage(EN_US.get().getJSONObject("music").getString("stop-playing"))
-                ?.subscribe()
+        if (sendMessage)
+            requestChannel
+                    ?.createMessage(EN_US.get().getJSONObject("music").getString("stop-playing"))
+                    ?.subscribe()
 
         try {
             connection?.disconnect()

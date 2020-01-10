@@ -111,7 +111,8 @@ fun main(args: Array<String>) = runBlocking<Unit> {
         eventDispatcher.on(VoiceStateUpdateEvent::class.java)
                 .filter { event -> event.current.userId == event.client.selfId.get() }
                 .filter { event -> !event.current.channelId.isPresent }
-                .doOnNext { event -> AudioManager.getGuildMusicManager(event.current.guildId).stop() }
+                .map { event -> AudioManager.getGuildMusicManager(event.current.guildId) }
+                .doOnNext { guild -> guild.stop(true) }
                 .subscribe()
 
         eventDispatcher.on(MemberJoinEvent::class.java)

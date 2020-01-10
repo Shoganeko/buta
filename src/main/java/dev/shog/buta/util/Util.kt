@@ -14,6 +14,9 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
 
 /** Turns ms into a seconds, day and hours format */
 fun Long.fancyDate(): String {
@@ -79,6 +82,13 @@ fun formatTextArray(str: String, args: Collection<*>): String {
 
     return newString
 }
+
+fun <K, V> Map<K, V>.getOrNull(key: K): V? =
+        try {
+            this[key]
+        } catch (ex: Exception) {
+            null
+        }
 
 /**
  * How old is
@@ -175,7 +185,7 @@ fun Logger.fatal(err: String): Mono<Void> =
 /**
  * Format using [formatTextArray].
  */
-fun String.form(vararg args: Any): String =
+fun String.form(vararg args: Any?): String =
         formatTextArray(this, args.toList())
 
 /**

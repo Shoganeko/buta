@@ -1,7 +1,7 @@
 join-message: "Thank you for inviting me!\nMy name's Buta, and you can view my commands using `b!help`!"
 
 music:
-    stop-playing: "Music has been stopped and cleared due to a disconnection."
+    stop-playing: "Disconnected from voice channel."
 
 error:
     internal_error: There was an issue doing that!
@@ -154,7 +154,6 @@ leave:
     help:
         - leave: Leave the voice channel and clear the queue.
     response:
-        disconnect: "Left the voice channel"
         not-in-channel: "You cannot do this while not in a channel!"
         not-in-buta-channel: "You aren't in the same voice channel as Buta!"
 pause:
@@ -256,6 +255,16 @@ statdump:
         - statdump: Dump statistics.
     response:
         dump: "Statistics Dump: ```{0}```"
+viewthreads:
+    name: ViewThreads
+    desc: View your current threads.
+    help:
+        - viewthreads: View your current threads.
+        - viewthreads clear: Clear your current threads.
+    response:
+        cleared: "Threads have been cleared"
+        response: "{0}"
+
 presence:
     name: Presence
     desc: Update the presence
