@@ -2,12 +2,14 @@ package dev.shog.buta
 
 import dev.shog.DiscordWebhookHandler
 import dev.shog.buta.commands.api.GuildFactory
+import dev.shog.buta.commands.api.token.Token
 import dev.shog.buta.commands.commands.*
 import dev.shog.buta.commands.obj.ICommand
 import dev.shog.buta.events.GuildJoinEvent
 import dev.shog.buta.events.GuildLeaveEvent
 import dev.shog.buta.events.PresenceHandler
 import dev.shog.buta.handle.LangLoader
+import dev.shog.buta.handle.StatisticsManager
 import dev.shog.buta.handle.audio.AudioManager
 import discord4j.core.DiscordClient
 import discord4j.core.DiscordClientBuilder
@@ -21,10 +23,14 @@ import discord4j.core.event.domain.lifecycle.ReadyEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.event.domain.message.ReactionAddEvent
 import discord4j.core.shard.ShardingClientBuilder
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Hooks
+import java.io.*
+import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.concurrent.timerTask
 import kotlin.system.exitProcess
 
 /** Developers */
@@ -140,6 +146,9 @@ fun main(args: Array<String>) = runBlocking<Unit> {
                 .flatMap { PresenceHandler.invoke(it) }
                 .subscribe()
     }
+
+    Runtime.getRuntime().addShutdownHook(Thread(StatisticsManager::save))
+    Timer().schedule(timerTask { StatisticsManager.save() }, 0, 1000 * 60 * 60) // Hourly
 
     CLIENT?.login()?.block()
 }

@@ -253,8 +253,10 @@ statdump:
     desc: Dump statistics.
     help:
         - statdump: Dump statistics.
+        - statdump save: Save statistics to disk.
     response:
         dump: "Statistics Dump: ```{0}```"
+        saved: "Statistics have been saved to disk!"
 viewthreads:
     name: ViewThreads
     desc: View your current threads.

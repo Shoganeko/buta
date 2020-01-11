@@ -50,7 +50,12 @@ val PRESENCE = Command("presence", Categories.DEVELOPER) { e, args, lang ->
 /**
  * Dump statistics.
  */
-val STAT_DUMP = Command("statdump", Categories.DEVELOPER) { e, _, lang ->
+val STAT_DUMP = Command("statdump", Categories.DEVELOPER) { e, args, lang ->
+    if (args.size == 1 && args[0].equals("save", true))
+        return@Command e.sendMessage(lang.getString("saved"))
+                .doOnNext { StatisticsManager.save() }
+                .then()
+
     StatisticsManager.dump()
             .toMono()
             .flatMap { dump -> e.sendMessage(lang.getString("dump").form(dump)) }

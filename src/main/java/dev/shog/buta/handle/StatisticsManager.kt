@@ -1,13 +1,54 @@
 package dev.shog.buta.handle
 
+import dev.shog.buta.FileHandler
+import dev.shog.buta.LOGGER
+import java.io.File
+import java.io.FileOutputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Manage statistics
  */
 object StatisticsManager {
-    private val statistics = ConcurrentHashMap<String, Any>()
+    var statistics = ConcurrentHashMap<String, Any>()
     fun dump() = statistics.toString()
+
+    init {
+        val file = File(FileHandler.BUTA_DIR.path + "${File.separator}statCache")
+
+        if (!file.exists())
+            file.createNewFile()
+        else {
+            try {
+                val ois = ObjectInputStream(file.inputStream())
+
+                statistics = ois.readObject() as? ConcurrentHashMap<String, Any>
+                        ?: ConcurrentHashMap()
+            } catch (e: Exception) {
+            }
+        }
+    }
+
+    /**
+     * Save stats to disk
+     */
+    fun save() {
+        LOGGER.info("Saving statistics to disk...")
+
+        val file = File(FileHandler.BUTA_DIR.path + "${File.separator}statCache")
+
+        if (!file.exists())
+            file.createNewFile()
+
+        val stats = statistics
+        val oos = ObjectOutputStream(FileOutputStream(file))
+
+        oos.writeObject(stats)
+
+        LOGGER.info("Statistics have been saved to disk!")
+    }
 
     /**
      * Set a statistic using it's [key].
