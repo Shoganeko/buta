@@ -53,7 +53,7 @@ val APP = AppBuilder()
         .usingConfig(ConfigHandler.createConfig(ConfigHandler.ConfigType.YML, "buta", ButaConfig()))
         .withCache()
         .withName("buta")
-        .withVersion(1.0F)
+        .withVersion(1.1F)
         .withWebhook { DiscordWebhook(this!!.asObject<ButaConfig>().webhook ?: "") }
         .build()
 

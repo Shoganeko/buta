@@ -3,7 +3,6 @@ package dev.shog.buta.commands.api.factory
 import dev.shog.buta.commands.api.Api
 import dev.shog.buta.commands.api.obj.ButaObject
 import dev.shog.buta.commands.api.obj.Guild
-import dev.shog.buta.commands.api.obj.User
 import reactor.core.publisher.Mono
 import reactor.core.publisher.toMono
 

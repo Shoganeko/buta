@@ -4,9 +4,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import dev.shog.buta.EN_US
 import discord4j.core.`object`.entity.MessageChannel
-import discord4j.core.`object`.entity.TextChannel
 import discord4j.voice.VoiceConnection
-import java.lang.Exception
 
 /**
  * A guild music manager.

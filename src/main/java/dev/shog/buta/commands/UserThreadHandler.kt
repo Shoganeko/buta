@@ -2,9 +2,7 @@ package dev.shog.buta.commands
 
 import dev.shog.buta.LOGGER
 import discord4j.core.`object`.entity.User
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.collections.ArrayList
 
 /**
  * Handles user's thread limit

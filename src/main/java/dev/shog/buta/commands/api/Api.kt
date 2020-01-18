@@ -2,17 +2,13 @@ package dev.shog.buta.commands.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import dev.shog.buta.APP
-import dev.shog.buta.LOGGER
 import dev.shog.buta.PRODUCTION
 import dev.shog.buta.commands.api.obj.Guild
 import dev.shog.buta.commands.api.obj.User
 import dev.shog.buta.handle.ButaConfig
-import dev.shog.buta.util.info
 import dev.shog.buta.util.logRequest
 import dev.shog.lib.token.TokenManager
 import dev.shog.lib.util.eitherOr
-import dev.shog.lib.util.toEnabledDisabled
-import dev.shog.lib.util.toSuccessfulFailed
 import discord4j.core.`object`.presence.Activity
 import discord4j.core.`object`.presence.Presence
 import kong.unirest.Unirest
