@@ -12,6 +12,7 @@ import dev.shog.lib.util.eitherOr
 import discord4j.core.`object`.presence.Activity
 import discord4j.core.`object`.presence.Presence
 import kong.unirest.Unirest
+import kong.unirest.json.JSONArray
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
@@ -55,7 +56,8 @@ object Api {
                     .asJsonAsync()
                     .toMono()
                     .logRequest("GET", "/v2/buta/presences")
-                    .map { js -> js.body.array }
+                    .map { js -> js.body.`object`.getString("payload") }
+                    .map { payload -> JSONArray(payload) }
                     .flatMapIterable { ar -> ar.toMutableList() }
                     .map { any ->
                         val obj = any as kong.unirest.json.JSONObject
