@@ -74,13 +74,6 @@ fun <T> Mono<T>.info(func: (T) -> String): Mono<T> =
         doOnNext { LOGGER.info(func.invoke(it)) }
 
 /**
- * A fatal [err].
- */
-fun Logger.fatal(err: String): Mono<Void> =
-        APP.getWebhook().sendMessage("FATAL (@everyone) - $err")
-                .doOnNext { this.error("FATAL - $err") }
-
-/**
  * Format using [formatTextArray].
  */
 fun String.form(vararg args: Any?): String =
