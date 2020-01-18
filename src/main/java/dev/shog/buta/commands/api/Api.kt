@@ -1,18 +1,24 @@
 package dev.shog.buta.commands.api
 
-import dev.shog.buta.FileHandler
+import com.fasterxml.jackson.databind.ObjectMapper
+import dev.shog.buta.APP
+import dev.shog.buta.LOGGER
+import dev.shog.buta.PRODUCTION
 import dev.shog.buta.commands.api.obj.Guild
-import dev.shog.buta.commands.api.token.TokenManager
-import dev.shog.buta.util.swap
 import dev.shog.buta.commands.api.obj.User
+import dev.shog.buta.handle.ButaConfig
+import dev.shog.buta.util.info
+import dev.shog.buta.util.logRequest
+import dev.shog.lib.token.TokenManager
+import dev.shog.lib.util.eitherOr
+import dev.shog.lib.util.toEnabledDisabled
+import dev.shog.lib.util.toSuccessfulFailed
 import discord4j.core.`object`.presence.Activity
 import discord4j.core.`object`.presence.Presence
 import kong.unirest.Unirest
-import org.json.JSONObject
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
-import kotlin.system.exitProcess
+import reactor.kotlin.core.publisher.toMono
 
 /**
  * The Mojor/Buta API
@@ -21,12 +27,15 @@ object Api {
     /**
      * The base URL for making request
      */
-    val BASE_URL: String = getBaseUrl()
+    private val BASE_URL: String = getBaseUrl()
 
     /**
      * The token manager
      */
-    private val tokenManager = TokenManager()
+    private val tokenManager by lazy {
+        val cfg = APP.getConfigObject<ButaConfig>()
+        TokenManager(cfg.creds?.first ?: "", cfg.creds?.second ?: "", "buta")
+    }
 
     /**
      * Refresh the presences Mojor-side.
@@ -36,9 +45,10 @@ object Api {
     fun refreshPresences(): Mono<Boolean> =
             Unirest.post("https://api.shog.dev/v2/buta/presences")
                     .header("Authorization", "token ${tokenManager.getProperToken()}")
-                    .asEmptyAsync()
+                    .asStringAsync()
                     .toMono()
-                    .map { request -> request.isSuccess }
+                    .logRequest("POST", "/v2/buta/presences")
+                    .map { req -> req.isSuccess }
 
     /**
      * Get presences from mojor
@@ -48,6 +58,7 @@ object Api {
                     .header("Authorization", "token ${tokenManager.getProperToken()}")
                     .asJsonAsync()
                     .toMono()
+                    .logRequest("GET", "/v2/buta/presences")
                     .map { js -> js.body.array }
                     .flatMapIterable { ar -> ar.toMutableList() }
                     .map { any ->
@@ -72,16 +83,12 @@ object Api {
 
     /** Get the base URL */
     private fun getBaseUrl(): String {
-        val obj = try {
-            JSONObject(FileHandler.get("api-base-url").toString())
-        } catch (e: Exception) {
-            exitProcess(-1)
-        }
+        val cfg = APP.getConfigObject<ButaConfig>()
 
-        val prod = obj.getString("prod")
-        val dev = obj.getString("dev")
+        val prod = cfg.api?.second ?: ""
+        val dev = cfg.api?.first ?: ""
 
-        return swap(prod, dev)
+        return PRODUCTION.eitherOr(prod, dev)
     }
 
     /**
@@ -90,10 +97,12 @@ object Api {
     fun getGuildObject(id: Long): Mono<Guild> =
             Unirest.get("$BASE_URL/v2/buta/$id/1")
                     .header("Authorization", "token ${tokenManager.getProperToken()}")
-                    .asObjectAsync(Guild::class.java)
+                    .asJsonAsync()
                     .toMono()
-                    .filter { obj -> obj.isSuccess }
-                    .map { obj -> obj.body }
+                    .logRequest("GET", "/v2/buta/$id/1")
+                    .filter { req -> req.isSuccess }
+                    .map { req -> req.body.`object`.getJSONObject("payload") }
+                    .map { payload -> ObjectMapper().readValue(payload.toString(), Guild::class.java) }
 
     /**
      * Get a user object by their [id].
@@ -101,10 +110,12 @@ object Api {
     fun getUserObject(id: Long): Mono<User> =
             Unirest.get("$BASE_URL/v2/buta/$id/2")
                     .header("Authorization", "token ${tokenManager.getProperToken()}")
-                    .asObjectAsync(User::class.java)
+                    .asJsonAsync()
                     .toMono()
+                    .logRequest("GET", "/v2/buta/$id/2")
                     .filter { obj -> obj.isSuccess }
-                    .map { obj -> obj.body }
+                    .map { req -> req.body.`object`.getJSONObject("payload") }
+                    .map { payload -> ObjectMapper().readValue(payload.toString(), User::class.java) }
 
     /**
      * Upload a [user] object to the database.
@@ -114,8 +125,9 @@ object Api {
                     .header("Authorization", "token ${tokenManager.getProperToken()}")
                     .header("Content-Type", "application/json")
                     .body(user)
-                    .asEmptyAsync()
+                    .asJsonAsync()
                     .toMono()
+                    .logRequest("PUT", "/v2/buta/${user.id}/2")
                     .then()
 
     /**
@@ -126,8 +138,9 @@ object Api {
                     .header("Authorization", "token ${tokenManager.getProperToken()}")
                     .header("Content-Type", "application/json")
                     .body(guild)
-                    .asEmptyAsync()
+                    .asJsonAsync()
                     .toMono()
+                    .logRequest("PUT", "/v2/buta/${guild.id}/1")
                     .then()
 
     /**
@@ -140,6 +153,7 @@ object Api {
                     .body(user)
                     .asJsonAsync()
                     .toMono()
+                    .logRequest("PATCH", "/v2/buta/${user.id}/2")
                     .then()
 
     /**
@@ -152,16 +166,18 @@ object Api {
                     .body(guild)
                     .asJsonAsync()
                     .toMono()
+                    .logRequest("PATCH", "/v2/buta/${guild.id}/1")
                     .then()
 
     /**
      * Delete a [id] object from the database.
      */
     fun deleteUserObject(id: Long): Mono<Void> =
-            Unirest.put("$BASE_URL/v2/buta/$id/2")
+            Unirest.delete("$BASE_URL/v2/buta/$id/2")
                     .header("Authorization", "token ${tokenManager.getProperToken()}")
                     .asJsonAsync()
                     .toMono()
+                    .logRequest("DELETE", "/v2/buta/$id/2")
                     .then()
 
     /**
@@ -172,5 +188,6 @@ object Api {
                     .header("Authorization", "token ${tokenManager.getProperToken()}")
                     .asJsonAsync()
                     .toMono()
+                    .logRequest("DELETE", "/v2/buta/$id/1")
                     .then()
 }

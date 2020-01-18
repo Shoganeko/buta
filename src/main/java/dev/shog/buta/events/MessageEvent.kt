@@ -2,8 +2,8 @@ package dev.shog.buta.events
 
 import dev.shog.buta.DEV
 import dev.shog.buta.commands.UserThreadHandler
-import dev.shog.buta.commands.api.GuildFactory
-import dev.shog.buta.commands.api.UserFactory
+import dev.shog.buta.commands.api.factory.GuildFactory
+import dev.shog.buta.commands.api.factory.UserFactory
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.ICommand
 import dev.shog.buta.events.obj.Event
@@ -24,8 +24,14 @@ object MessageEvent : Event, CoroutineScope by CoroutineScope(Dispatchers.Unconf
         require(event is MessageCreateEvent)
 
         return if (event.message.author.isPresent && !event.message.author.get().isBot) {
-            UserFactory.getOrCreate(event.message.author.get().id.asLong())
-                    .then(GuildFactory.get(event.guildId.get().asLong()))
+            val obj = event.message.author.get().id.asLong()
+
+            UserFactory.objectExists(obj)
+                    .doOnNext {
+                        if (!it)
+                            UserFactory.createObject(obj).subscribe()
+                    }
+                    .flatMap { GuildFactory.getObject(event.guildId.get().asLong()) }
                     .flatMap { g ->
                         val content = event.message.content
                                 .orElse("")

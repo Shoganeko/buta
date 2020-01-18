@@ -1,7 +1,7 @@
 package dev.shog.buta.handle.uno.obj
 
 import dev.shog.buta.handle.StatisticsManager
-import dev.shog.buta.util.format
+import dev.shog.lib.util.defaultFormat
 import discord4j.core.`object`.entity.User
 import discord4j.core.`object`.util.Snowflake
 import java.util.concurrent.ConcurrentHashMap
@@ -80,7 +80,7 @@ class UnoGame(private val discordUser: User) {
                     .map { history[it] }
                     .forEach { hist ->
                         if (includeTime)
-                            append(hist.time.format() + " " + hist.history)
+                            append(hist.time.defaultFormat() + " " + hist.history)
                         else append(hist.history)
                     }
         }

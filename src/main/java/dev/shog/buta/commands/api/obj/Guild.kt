@@ -1,7 +1,7 @@
 package dev.shog.buta.commands.api.obj
 
-import dev.shog.trans.Duo
-import dev.shog.trans.duo
+import dev.shog.lib.transport.Duo
+import dev.shog.lib.transport.duo
 
 /**
  * A guild object.

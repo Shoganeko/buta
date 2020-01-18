@@ -1,8 +1,0 @@
-token: empty
-api-base-url:
-    prod: empty
-    dev: empty
-discord-webhook: empty
-creds:
-    username: empty
-    password: empty

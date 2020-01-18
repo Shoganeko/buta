@@ -1,7 +1,7 @@
 package dev.shog.buta.commands.commands
 
 import dev.shog.buta.EN_US
-import dev.shog.buta.commands.api.GuildFactory
+import dev.shog.buta.commands.api.factory.GuildFactory
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.ICommand
 import dev.shog.buta.commands.obj.LangFillableContent
@@ -13,6 +13,7 @@ import dev.shog.buta.handle.uno.obj.CardColor
 import dev.shog.buta.handle.uno.obj.CardType
 import dev.shog.buta.handle.uno.obj.UnoGame
 import dev.shog.buta.util.*
+import dev.shog.lib.util.defaultFormat
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.MessageChannel
 import discord4j.core.`object`.entity.User
@@ -260,7 +261,7 @@ object Uno : ICommand(lfc, true, Categories.FUN, PermissionFactory.hasPermission
         val uno = game.second
 
         return e.message.channel
-                .zipWith(GuildFactory.get(e.guildId.get().asLong()))
+                .zipWith(GuildFactory.getObject(e.guildId.get().asLong()))
                 .flatMap { zip ->
                     val ch = zip.t1
                     val g = zip.t2
@@ -278,7 +279,7 @@ object Uno : ICommand(lfc, true, Categories.FUN, PermissionFactory.hasPermission
                             )
                         } else {
                             dataPack.embeds.getJSONObject("game-info").applyEmbed(embed, e.message.author.get(),
-                                    hashMapOf("desc" to uno.startedAt.format().ar()),
+                                    hashMapOf("desc" to uno.startedAt.defaultFormat().ar()),
                                     hashMapOf(
                                             "buta-cards" to FieldReplacement(null, uno.buta.cards.getSize().toString().ar()),
                                             "last-played-card" to FieldReplacement(null, uno.playedCards.last().ar()),

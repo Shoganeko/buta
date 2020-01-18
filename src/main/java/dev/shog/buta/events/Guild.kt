@@ -2,9 +2,10 @@ package dev.shog.buta.events
 
 import dev.shog.buta.EN_US
 import dev.shog.buta.LOGGER
-import dev.shog.buta.commands.api.GuildFactory
+import dev.shog.buta.commands.api.factory.GuildFactory
 import dev.shog.buta.events.obj.Event
 import dev.shog.buta.util.getChannelsWithPermission
+import dev.shog.buta.util.info
 import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
 import reactor.core.publisher.Mono
@@ -16,16 +17,17 @@ object GuildJoinEvent : Event {
     override fun invoke(event: discord4j.core.event.domain.Event): Mono<Void> {
         require(event is GuildCreateEvent)
 
-        return GuildFactory.get(event.guild.id.asLong())
-                .switchIfEmpty(
-                        getChannelsWithPermission(event.guild)
-                                .next()
-                                .flatMap { ch -> ch.createMessage(EN_US.get().getString("join-message")) }
-                                .flatMap { ch -> ch.guild }
-                                .doOnNext { g -> LOGGER.info("Sent join message to ${g.name}") }
-                                .flatMap { GuildFactory.create(event.guild.id.asLong()) }
-                                .then(GuildFactory.get(event.guild.id.asLong()))
-                )
+        return GuildFactory.getObject(event.guild.id.asLong())
+                .hasElement()
+                .filter { !it }
+                .flatMap {
+                    getChannelsWithPermission(event.guild)
+                            .next()
+                            .flatMap { ch -> ch.createMessage(EN_US.get().getString("join-message")) }
+                            .flatMap { ch -> ch.guild }
+                            .info { g -> "Join message has been sent to ${g.name}." }
+                            .flatMap { GuildFactory.createObject(event.guild.id.asLong()) }
+                }
                 .then()
     }
 }
@@ -37,6 +39,6 @@ object GuildLeaveEvent : Event {
     override fun invoke(event: discord4j.core.event.domain.Event): Mono<Void> {
         require(event is GuildDeleteEvent)
 
-        return GuildFactory.delete(event.guildId.asLong())
+        return GuildFactory.deleteObject(event.guildId.asLong())
     }
 }

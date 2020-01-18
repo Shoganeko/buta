@@ -1,14 +1,13 @@
 package dev.shog.buta.commands.commands
 
-import dev.shog.buta.commands.api.GuildFactory
-import dev.shog.buta.commands.api.UserFactory
+import dev.shog.buta.commands.api.factory.GuildFactory
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.permission.PermissionFactory
-import dev.shog.buta.util.enabledDisabled
 import dev.shog.buta.util.form
 import dev.shog.buta.util.sendMessage
-import dev.shog.trans.duo
+import dev.shog.lib.transport.duo
+import dev.shog.lib.util.toEnabledDisabled
 import discord4j.core.`object`.entity.Guild
 import discord4j.core.`object`.entity.Role
 import discord4j.core.`object`.entity.TextChannel
@@ -31,14 +30,14 @@ val SET_PREFIX = Command("prefix", Categories.ADMINISTRATOR, permable = Permissi
 
         e.message.guild
                 .map { g -> g.id.asLong() }
-                .flatMap { id -> GuildFactory.get(id) }
+                .flatMap { id -> GuildFactory.getObject(id) }
                 .doOnNext { g -> g.prefix = newPrefix }
-                .flatMap { g -> GuildFactory.update(g.id, g) }
+                .flatMap { g -> GuildFactory.updateObject(g.id, g) }
                 .then(e.sendMessage(lang.getString("set").form(newPrefix)))
                 .then()
     } else e.message.guild
             .map { g -> g.id.asLong() }
-            .flatMap(GuildFactory::get)
+            .flatMap(GuildFactory::getObject)
             .map { g -> g.prefix }
             .flatMap { p -> e.sendMessage(lang.getString("prefix").form(p)) }
             .then()
@@ -51,7 +50,7 @@ val NSFW_TOGGLE = Command("nsfw", Categories.ADMINISTRATOR, isPmAvailable = fals
     e.message.channel
             .ofType(TextChannel::class.java)
             .flatMap { ch ->
-                ch.createMessage(lang.getString("default").form(ch.isNsfw.not().enabledDisabled()))
+                ch.createMessage(lang.getString("default").form(ch.isNsfw.not().toEnabledDisabled()))
                         .then(ch.edit { che -> che.setNsfw(!ch.isNsfw) })
             }
             .then()
@@ -102,13 +101,13 @@ internal fun getRole(long: Long?, guild: Mono<Guild>): Mono<String> {
 
 val JOIN_ROLE = Command("joinrole", Categories.ADMINISTRATOR, isPmAvailable = false, permable = PermissionFactory.hasPermission(arrayListOf(Permission.ADMINISTRATOR))) { e, args, lang ->
     if (args.isEmpty()) {
-        val guild = GuildFactory.get(e.guildId.get().asLong())
+        val guild = GuildFactory.getObject(e.guildId.get().asLong())
 
         return@Command guild
                 .map { g -> g.joinRole }
                 .flatMap { role -> Mono.zip(getRole(role.second, e.guild), role.toMono()) }
                 .flatMap { zip ->
-                    val en = zip.t2.first?.enabledDisabled() ?: "disabled"
+                    val en = zip.t2.first?.toEnabledDisabled() ?: "disabled"
 
                     if (zip.t2.second == null)
                         e.sendMessage(lang.getString("un-set").form(en, zip.t1))
@@ -133,9 +132,9 @@ val JOIN_ROLE = Command("joinrole", Categories.ADMINISTRATOR, isPmAvailable = fa
                             e.sendMessage(lang.getString("invalid-role"))
                         } else e.sendMessage(lang.getString("set").form(built.toLowerCase()))
                                 .flatMap {
-                                    GuildFactory.get(e.guildId.get().asLong())
+                                    GuildFactory.getObject(e.guildId.get().asLong())
                                             .map { guild -> guild.apply { joinRole = joinRole.first!! duo roleId } }
-                                            .flatMap { guild -> GuildFactory.update(guild.id, guild) }
+                                            .flatMap { guild -> GuildFactory.updateObject(guild.id, guild) }
                                 }
                     }
                     .then()
@@ -147,10 +146,10 @@ val JOIN_ROLE = Command("joinrole", Categories.ADMINISTRATOR, isPmAvailable = fa
 
             val boolean = args[1].toBoolean()
 
-            e.sendMessage(lang.getString("toggle").form(boolean.enabledDisabled()))
-                    .flatMap { GuildFactory.get(e.guildId.get().asLong()) }
+            e.sendMessage(lang.getString("toggle").form(boolean.toEnabledDisabled()))
+                    .flatMap { GuildFactory.getObject(e.guildId.get().asLong()) }
                     .map { guild -> guild.apply { joinRole = boolean duo (joinRole.second ?: -1) } }
-                    .flatMap { guild -> GuildFactory.update(guild.id, guild) }
+                    .flatMap { guild -> GuildFactory.updateObject(guild.id, guild) }
                     .then()
         }
 

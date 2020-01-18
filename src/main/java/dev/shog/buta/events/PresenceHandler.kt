@@ -1,6 +1,5 @@
 package dev.shog.buta.events
 
-import dev.shog.DiscordWebhookHandler
 import dev.shog.buta.CLIENT
 import dev.shog.buta.LOGGER
 import dev.shog.buta.commands.api.Api

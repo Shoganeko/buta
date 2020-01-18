@@ -1,6 +1,6 @@
 package dev.shog.buta.commands.obj
 
-import dev.shog.buta.commands.api.GuildFactory
+import dev.shog.buta.commands.api.factory.GuildFactory
 import dev.shog.buta.commands.permission.Permable
 import dev.shog.buta.util.update
 import discord4j.core.event.domain.message.MessageCreateEvent
@@ -30,7 +30,7 @@ abstract class ICommand(
     fun invokeHelp(e: MessageCreateEvent): Mono<Void> =
             e.message.guild
                     .map { g -> g.id.asLong() }
-                    .flatMap { id -> GuildFactory.get(id) }
+                    .flatMap { id -> GuildFactory.getObject(id) }
                     .zipWith(e.message.channel)
                     .flatMap { zip ->
                         val ch = zip.t2
