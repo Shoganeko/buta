@@ -45,7 +45,7 @@ class GuildMusicManager(manager: AudioPlayerManager) {
 
         if (sendMessage)
             requestChannel
-                    ?.createMessage(EN_US.get().getJSONObject("music").getString("stop-playing"))
+                    ?.createMessage(EN_US.getEntry("music.stop-playing"))
                     ?.subscribe()
 
         try {

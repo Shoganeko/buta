@@ -1,5 +1,6 @@
 package dev.shog.buta.commands.commands
 
+import dev.shog.buta.EN_US
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.obj.ICommand.Companion.COMMANDS
@@ -143,6 +144,6 @@ val GUILD = Command("guild", Categories.INFO, isPmAvailable = false) { e, args, 
                     .then()
 
         else ->
-            e.sendMessage(getError("invalid_arguments")).then()
+            e.sendMessage(EN_US.getEntry("error.invalid_arguments")).then()
     }
 }.build().add()

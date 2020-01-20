@@ -22,7 +22,7 @@ object GuildJoinEvent : Event {
                 .flatMap {
                     getChannelsWithPermission(event.guild)
                             .next()
-                            .flatMap { ch -> ch.createMessage(EN_US.get().getString("join-message")) }
+                            .flatMap { ch -> ch.createMessage(EN_US.getString("join-message")) }
                             .flatMap { ch -> ch.guild }
                             .info { g -> "Join message has been sent to ${g.name}." }
                             .flatMap { GuildFactory.createObject(event.guild.id.asLong()) }

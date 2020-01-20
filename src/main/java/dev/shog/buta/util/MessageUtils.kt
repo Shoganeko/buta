@@ -1,5 +1,6 @@
 package dev.shog.buta.util
 
+import dev.shog.buta.EN_US
 import dev.shog.buta.handle.obj.getField
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.User
@@ -25,7 +26,7 @@ fun EmbedCreateSpec.updateDefault(color: Color = Color(Random.nextInt(), Random.
  * Updates [EmbedCreateSpec] with proper footer, and avatar url, and applies [updateDefault].
  */
 fun EmbedCreateSpec.update(user: User, color: Color = Color(96, 185, 233)): EmbedCreateSpec {
-    setFooter("Requested by ${user.username}", user.avatarUrl)
+    setFooter(EN_US.getEntry("embed.request").form(user.username), user.avatarUrl)
 
     return updateDefault(color)
 }

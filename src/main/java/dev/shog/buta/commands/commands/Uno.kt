@@ -31,7 +31,7 @@ internal val lfc = LangFillableContent.getFromCommandName("uno")
  */
 object Uno : ICommand(lfc, true, Categories.FUN, PermissionFactory.hasPermission()) {
     private val dataPack by lazy {
-        val resp = EN_US.get().getJSONObject("uno").getJSONObject("response")
+        val resp = EN_US.getJSONObject("uno").getJSONObject("response")
         val error = resp.getJSONObject("error")
         val success = resp.getJSONObject("success")
         val embeds = resp.getJSONObject("embeds")
@@ -149,7 +149,7 @@ object Uno : ICommand(lfc, true, Categories.FUN, PermissionFactory.hasPermission
 
     override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<Void> {
         if (!e.message.author.isPresent)
-            return e.sendMessage(EN_US.get().getJSONObject("errors").getString("internal_error")).then()
+            return e.sendMessage(EN_US.getEntry("error.invalid_arguments")).then()
 
         val author = e.message.author.get()
 
@@ -211,7 +211,7 @@ object Uno : ICommand(lfc, true, Categories.FUN, PermissionFactory.hasPermission
 
                 "play" -> {
                     if (args.size < 2)
-                        return e.sendMessage(EN_US.get().getJSONObject("error").getString("invalid_arguments")).then()
+                        return e.sendMessage(EN_US.getEntry("error.invalid_arguments")).then()
 
                     val game = UnoGame.getGame(author)
                     val uno = game.second
@@ -222,7 +222,7 @@ object Uno : ICommand(lfc, true, Categories.FUN, PermissionFactory.hasPermission
                                 .then()
 
                     val number = args[1].toIntOrNull()?.minus(1)
-                            ?: return e.sendMessage(EN_US.get().getJSONObject("error").getString("invalid_arguments")).then()
+                            ?: return e.sendMessage(EN_US.getEntry("error.invalid_arguments")).then()
 
                     if (uno.user.cards.getSize() == 1 && !uno.userCalledUno) {
                         val drawn = uno.user.draw(2)

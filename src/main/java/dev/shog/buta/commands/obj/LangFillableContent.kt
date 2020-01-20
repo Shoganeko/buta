@@ -19,7 +19,7 @@ data class LangFillableContent(
          * Get a [LangFillableContent] from [name].
          */
         fun getFromCommandName(name: String): LangFillableContent {
-            val lang = EN_US.get()
+            val lang = EN_US
 
             if (!lang.has(name) && lang[name] is JSONObject)
                 return LangFillableContent("ERROR", "Could not find data in language yml!", mutableListOf(), hashMapOf())

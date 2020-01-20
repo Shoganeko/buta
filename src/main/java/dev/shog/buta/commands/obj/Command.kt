@@ -22,6 +22,6 @@ data class Command(
      */
     fun build() = object : ICommand(LangFillableContent.getFromCommandName(name), isPmAvailable, category, permable) {
         override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<Void> =
-                invoke.invoke(e, args, EN_US.get().getJSONObject(name).getJSONObject("response"))
+                invoke.invoke(e, args, EN_US.getJSONObject(name).getJSONObject("response"))
     }
 }

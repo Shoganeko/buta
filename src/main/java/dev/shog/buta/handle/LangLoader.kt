@@ -45,27 +45,32 @@ object LangLoader {
     /**
      * Turn a [jsonNode] and [lang] into a [LangInstance]
      */
-    private fun toLangInstance(jsonNode: JsonNode, lang: String): LangInstance {
-        val li = LangInstance(lang)
-        li.phr = JSONObject(jsonNode.toString())
-        return li
-    }
+    private fun toLangInstance(jsonNode: JsonNode, lang: String): LangInstance =
+            LangInstance(lang, jsonNode.toString())
 
     /**e
      * A language instance.
      *
      * @param lang The language string. Ex: en_US
+     * @param langString The actual language.
      */
-    class LangInstance internal constructor(private val lang: String) {
+    data class LangInstance internal constructor(private val lang: String, private val langString: String) : JSONObject(langString) {
         /**
-         * The phrases.
+         * Get a string using an error like `errors.niceerror.invalidargs`
          */
-        internal lateinit var phr: JSONObject
+        fun getEntry(entry: String): String {
+            val split = entry.split(".").toMutableList()
+            val last = split.last()
 
-        /**
-         * Get an instance of [phr].
-         */
-        fun get() = phr
+            split.removeAt(split.size - 1)
+
+            var pointer = this as JSONObject
+            for (spl in split) {
+                pointer = pointer.getJSONObject(spl)
+            }
+
+            return pointer.getString(last)
+        }
     }
 
     /**

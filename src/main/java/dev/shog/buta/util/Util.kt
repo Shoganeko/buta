@@ -87,9 +87,3 @@ fun <T : HttpResponse<*>> Mono<T>.logRequest(method: String, url: String): Mono<
  */
 fun String.formArray(args: ArrayList<*>): String =
         formatTextArray(this, args)
-
-/**
- * Get error by [err].
- */
-fun getError(err: String): String =
-        EN_US.get().getJSONObject("error").getString(err)

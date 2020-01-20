@@ -3,6 +3,9 @@ join-message: "Thank you for inviting me!\nMy name's Buta, and you can view my c
 music:
     stop-playing: "Disconnected from voice channel."
 
+embed:
+    request: "Requested by {0}"
+
 error:
     internal_error: There was an issue doing that!
     invalid_arguments: Invalid arguments!
