@@ -267,6 +267,7 @@
     <inspection_tool class="JavaLangInvokeHandleSignature" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="JavaReflectionInvocation" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="JoinDeclarationAndAssignment" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="KDocMissingDocumentation" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="KeySetIterationMayUseEntrySet" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="KotlinDoubleNegation" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="KotlinRedundantOverride" enabled="true" level="ERROR" enabled_by_default="true" />
@@ -678,10 +679,6 @@
     <inspection_tool class="UnnecessaryUnaryMinus" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="UnnecessaryUnicodeEscape" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="UnnecessaryVariable" enabled="true" level="ERROR" enabled_by_default="true" />
-    <inspection_tool class="UnpredictableBigDecimalConstructorCall" enabled="true" level="WARNING" enabled_by_default="true">
-      <option name="ignoreReferences" value="true" />
-      <option name="ignoreComplexLiterals" value="false" />
-    </inspection_tool>
     <inspection_tool class="UnusedAssignment" enabled="true" level="ERROR" enabled_by_default="true">
       <option name="REPORT_PREFIX_EXPRESSIONS" value="false" />
       <option name="REPORT_POSTFIX_EXPRESSIONS" value="true" />

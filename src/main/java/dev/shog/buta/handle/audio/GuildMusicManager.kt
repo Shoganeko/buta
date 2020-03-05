@@ -3,7 +3,7 @@ package dev.shog.buta.handle.audio
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import dev.shog.buta.EN_US
-import discord4j.core.`object`.entity.MessageChannel
+import discord4j.core.`object`.entity.channel.MessageChannel
 import discord4j.voice.VoiceConnection
 
 /**

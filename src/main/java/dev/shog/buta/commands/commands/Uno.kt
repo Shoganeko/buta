@@ -15,8 +15,8 @@ import dev.shog.buta.handle.uno.obj.UnoGame
 import dev.shog.buta.util.*
 import dev.shog.lib.util.defaultFormat
 import discord4j.core.`object`.entity.Message
-import discord4j.core.`object`.entity.MessageChannel
 import discord4j.core.`object`.entity.User
+import discord4j.core.`object`.entity.channel.MessageChannel
 import discord4j.core.`object`.reaction.ReactionEmoji
 import discord4j.core.`object`.util.Snowflake
 import discord4j.core.event.domain.message.MessageCreateEvent

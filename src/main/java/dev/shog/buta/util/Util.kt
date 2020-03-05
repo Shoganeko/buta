@@ -1,14 +1,11 @@
 package dev.shog.buta.util
 
-import dev.shog.buta.APP
-import dev.shog.buta.EN_US
 import dev.shog.buta.LOGGER
 import dev.shog.lib.util.toSuccessfulFailed
 import discord4j.core.`object`.entity.Guild
-import discord4j.core.`object`.entity.TextChannel
+import discord4j.core.`object`.entity.channel.TextChannel
 import discord4j.core.`object`.util.Permission
 import kong.unirest.HttpResponse
-import org.slf4j.Logger
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.*
@@ -40,31 +37,14 @@ fun getChannelsWithPermission(guild: Guild): Flux<TextChannel> {
     return guild.channels
             .ofType(TextChannel::class.java)
             .filterWhen { ch ->
-                ch.getEffectivePermissions(ch.client.selfId.get())
-                        .map { chl ->
-                            chl.contains(Permission.SEND_MESSAGES)
-                        }
-            }
-}
-
-/**
- * Gets the type of
- */
-fun getType(any: Any): Mono<String> =
-        Flux.fromIterable(Types.values().toList())
-                .filter { o -> o.name.toLowerCase() == any::class.java.simpleName.toLowerCase() }
-                .collectList()
-                .flatMap { o ->
-                    if (o.size != 1)
-                        Mono.empty()
-                    else Mono.just(o[0].name.toLowerCase())
+                ch.client.selfId.flatMap { id ->
+                    ch.getEffectivePermissions(id)
+                            .map { chl ->
+                                chl.contains(Permission.SEND_MESSAGES)
+                                        && chl.contains(Permission.EMBED_LINKS)
+                            }
                 }
-
-/**
- * The different types for the API update object method.
- */
-internal enum class Types {
-    DOUBLE, STRING, INT, LONG
+            }
 }
 
 /**

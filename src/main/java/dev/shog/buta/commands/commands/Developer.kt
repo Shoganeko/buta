@@ -13,6 +13,11 @@ import reactor.kotlin.core.publisher.toMono
 import java.util.stream.Collectors
 
 /**
+ * Initialize developer commands
+ */
+fun initDev() = Unit
+
+/**
  * Manage presence on Discord.
  */
 val PRESENCE = Command("presence", Categories.DEVELOPER) { e, args, lang ->

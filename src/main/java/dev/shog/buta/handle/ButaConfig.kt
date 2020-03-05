@@ -9,5 +9,6 @@ data class ButaConfig(
         val token: String? = "",
         val api: Duo<String, String>? = Duo("production", "dev"),
         val webhook: String? = "",
-        val creds: Duo<String, String>? = Duo("username", "password")
+        val creds: Duo<String, String>? = Duo("username", "password"),
+        val stocks: String? = ""
 )

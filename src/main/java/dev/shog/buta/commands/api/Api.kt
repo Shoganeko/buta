@@ -48,6 +48,20 @@ object Api {
                     .map { req -> req.isSuccess }
 
     /**
+     * Get swears from mojor.
+     */
+    fun getSwears(): Flux<String> =
+            Unirest.get("https://api.shog.dev/v2/buta/swears")
+                    .header("Authorization", "token ${tokenManager.getProperToken()}")
+                    .asJsonAsync()
+                    .toMono()
+                    .logRequest("GET", "/v2/buta/swears")
+                    .map { js -> js.body.`object`.getString("payload") }
+                    .map(::JSONArray)
+                    .flatMapIterable { ar -> ar.toMutableList() }
+                    .map(Any::toString)
+
+    /**
      * Get presences from mojor
      */
     fun getPresences(): Flux<Presence> =

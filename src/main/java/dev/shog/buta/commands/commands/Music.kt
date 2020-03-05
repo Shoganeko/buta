@@ -14,8 +14,13 @@ import dev.shog.lib.util.fancyDate
 import discord4j.core.event.domain.message.MessageCreateEvent
 import org.json.JSONObject
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
+import reactor.kotlin.core.publisher.toMono
 import java.util.stream.Collectors
+
+/**
+ * Initialize audio commands.
+ */
+fun initAudio() = Unit
 
 /**
  * An audio command. This allows different actions to be executed depending on the situation.

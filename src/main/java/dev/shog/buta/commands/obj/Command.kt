@@ -15,13 +15,13 @@ data class Command(
         val category: Categories,
         val isPmAvailable: Boolean = true,
         val permable: Permable = PermissionFactory.hasPermission(),
-        val invoke: (MessageCreateEvent, MutableList<String>, JSONObject) -> Mono<Void>
+        val invoke: (MessageCreateEvent, MutableList<String>, JSONObject) -> Mono<*>
 ) {
     /**
      * Build an [Command]
      */
     fun build() = object : ICommand(LangFillableContent.getFromCommandName(name), isPmAvailable, category, permable) {
-        override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<Void> =
+        override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<*> =
                 invoke.invoke(e, args, EN_US.getJSONObject(name).getJSONObject("response"))
     }
 }

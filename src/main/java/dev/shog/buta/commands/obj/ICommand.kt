@@ -22,12 +22,12 @@ abstract class ICommand(
     /**
      * When the command is invoked by a user.
      */
-    abstract fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<Void>
+    abstract fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<*>
 
     /**
      * When the command's help command is invoked by a user.
      */
-    fun invokeHelp(e: MessageCreateEvent): Mono<Void> =
+    fun invokeHelp(e: MessageCreateEvent): Mono<*> =
             e.message.guild
                     .map { g -> g.id.asLong() }
                     .flatMap { id -> GuildFactory.getObject(id) }

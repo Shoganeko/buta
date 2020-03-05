@@ -5,6 +5,7 @@ import dev.shog.buta.commands.api.factory.GuildFactory
 import dev.shog.buta.events.obj.Event
 import dev.shog.buta.util.getChannelsWithPermission
 import dev.shog.buta.util.info
+import discord4j.core.`object`.util.Permission
 import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
 import reactor.core.publisher.Mono

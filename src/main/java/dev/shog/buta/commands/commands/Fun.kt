@@ -7,7 +7,12 @@ import dev.shog.buta.util.ar
 import dev.shog.buta.util.form
 import dev.shog.buta.util.sendMessage
 import kong.unirest.Unirest
-import reactor.core.publisher.toMono
+import reactor.kotlin.core.publisher.toMono
+
+/**
+ * Initialize fun commands.
+ */
+fun initFun() = Unit
 
 /**
  * Dog Fact
@@ -48,7 +53,7 @@ val CAT_GALLERY = Command("catgallery", Categories.FUN) { e, _, lang ->
                 e.message.channel
                         .flatMap { ch ->
                             ch.createEmbed { spec ->
-                                lang.getJSONObject("embed").applyEmbed(spec, e.message.author.get(), hashMapOf("thumb" to url.ar()))
+                                lang.getJSONObject("embed").applyEmbed(spec, e.message.author.get(), hashMapOf("image" to url.ar()))
                             }
                         }
             }
@@ -68,7 +73,7 @@ val DOG_GALLERY = Command("doggallery", Categories.FUN) { e, _, lang ->
                 e.message.channel
                         .flatMap { ch ->
                             ch.createEmbed { spec ->
-                                lang.getJSONObject("embed").applyEmbed(spec, e.message.author.get(), hashMapOf("thumb" to url.ar()))
+                                lang.getJSONObject("embed").applyEmbed(spec, e.message.author.get(), hashMapOf("image" to url.ar()))
                             }
                         }
             }
