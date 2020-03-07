@@ -1,11 +1,16 @@
 package dev.shog.buta.commands.commands
 
+import dev.shog.buta.EN_US
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
+import dev.shog.buta.handle.reddit.PostType
+import dev.shog.buta.handle.reddit.RedditHandler
 import dev.shog.buta.util.applyEmbed
 import dev.shog.buta.util.ar
 import dev.shog.buta.util.form
 import dev.shog.buta.util.sendMessage
+import discord4j.core.`object`.entity.channel.GuildChannel
+import discord4j.core.`object`.entity.channel.TextChannel
 import kong.unirest.Unirest
 import reactor.kotlin.core.publisher.toMono
 
@@ -38,6 +43,50 @@ val CAT_FACT = Command("catfact", Categories.FUN) { e, _, lang ->
             .map { obj -> obj.getString("fact") }
             .flatMap { fact -> e.sendMessage(lang.getString("fact").form(fact as String)) }
             .then()
+}.build().add()
+
+/**
+ * Reddit
+ */
+val REDDIT = Command("reddit", Categories.FUN) { e, args, lang ->
+    if (args.isEmpty()) {
+        return@Command e.sendMessage(EN_US.getEntry("error.invalid_arguments")).then()
+    } else {
+        val post = RedditHandler.getPost(args[0], PostType.HOT)
+
+        if (post == null)
+            return@Command e.sendMessage(lang.getString("invalid-subreddit")).then()
+        else {
+            val nsfw = e.message.channel
+                    .ofType(TextChannel::class.java)
+                    .map { ch -> ch.isNsfw }
+                    .map { nsfw -> !nsfw && post.data.getBoolean("over_18") }
+
+            return@Command nsfw.flatMap { invalid ->
+                if (invalid) {
+                    e.sendMessage(lang.getString("no-nsfw")).then()
+                } else {
+                    e.message.channel
+                            .flatMap { ch ->
+                                ch.createEmbed { spec ->
+                                    lang.getJSONObject("reddit-post").applyEmbed(
+                                            spec, e.message.author.get(),
+                                            hashMapOf(
+                                                    "url" to post.data.getString("permalink").ar(),
+                                                    "title" to post.data.getString("title").ar(),
+                                                    "desc" to arrayListOf(
+                                                            post.data.getLong("ups").toString(),
+                                                            post.data.getLong("num_comments").toString()
+                                                    ),
+                                                    "image" to post.data.getString("url").ar()
+                                            ), hashMapOf()
+                                    )
+                                }
+                            }
+                }
+            }
+        }
+    }
 }.build().add()
 
 /**

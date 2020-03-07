@@ -11,6 +11,8 @@ import dev.shog.buta.handle.ButaConfig
 import dev.shog.buta.handle.LangLoader
 import dev.shog.buta.handle.StatisticsManager
 import dev.shog.buta.handle.audio.AudioManager
+import dev.shog.buta.handle.reddit.PostType
+import dev.shog.buta.handle.reddit.RedditHandler
 import dev.shog.buta.util.sendMessage
 import dev.shog.lib.app.AppBuilder
 import dev.shog.lib.cfg.ConfigHandler

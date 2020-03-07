@@ -70,6 +70,21 @@ doggallery:
         embed:
             desc: "Retrieved from thedogapi.com"
             image: "{0}"
+reddit:
+    name: Reddit
+    desc: Get a hot post from a Subreddit
+    help:
+        - reddit {subreddit}: Get a hot post from a subreddit.
+    alias:
+        - rd
+    response:
+        no-nsfw: "The post is NSFW, and the channel isn't!"
+        invalid-subreddit: "This subreddit doesn't exist!"
+        reddit-post:
+            title: "{0}"
+            url: "http://reddit.com{0}"
+            desc: "**Vote**: {0} / **Comments**: {1}"
+            image: "{0}"
 randomword:
     name: RandomWord
     desc: Get a random word.

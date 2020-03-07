@@ -48,6 +48,12 @@ fun getChannelsWithPermission(guild: Guild): Flux<TextChannel> {
 }
 
 /**
+ * [this] ?: [t]
+ */
+fun <T : Any> T?.orElse(t: T): T =
+        this ?: t
+
+/**
  * Log [message] to [LOGGER].
  */
 fun <T> Mono<T>.info(func: (T) -> String): Mono<T> =
