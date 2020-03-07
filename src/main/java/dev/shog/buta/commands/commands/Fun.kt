@@ -9,7 +9,6 @@ import dev.shog.buta.util.applyEmbed
 import dev.shog.buta.util.ar
 import dev.shog.buta.util.form
 import dev.shog.buta.util.sendMessage
-import discord4j.core.`object`.entity.channel.GuildChannel
 import discord4j.core.`object`.entity.channel.TextChannel
 import kong.unirest.Unirest
 import reactor.kotlin.core.publisher.toMono

@@ -1,6 +1,5 @@
 package dev.shog.buta
 
-import com.mitchtalmadge.asciidata.graph.ASCIIGraph
 import dev.shog.buta.commands.api.factory.GuildFactory
 import dev.shog.buta.commands.commands.*
 import dev.shog.buta.commands.obj.ICommand
@@ -11,18 +10,13 @@ import dev.shog.buta.handle.ButaConfig
 import dev.shog.buta.handle.LangLoader
 import dev.shog.buta.handle.StatisticsManager
 import dev.shog.buta.handle.audio.AudioManager
-import dev.shog.buta.handle.reddit.PostType
-import dev.shog.buta.handle.reddit.RedditHandler
-import dev.shog.buta.util.sendMessage
 import dev.shog.lib.app.AppBuilder
 import dev.shog.lib.cfg.ConfigHandler
 import dev.shog.lib.hook.DiscordWebhook
 import discord4j.core.DiscordClient
-import discord4j.core.DiscordClientBuilder
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.util.Permission
 import discord4j.core.`object`.util.Snowflake
-import discord4j.core.event.EventDispatcher
 import discord4j.core.event.domain.VoiceStateUpdateEvent
 import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
@@ -58,7 +52,7 @@ val APP = AppBuilder()
         .usingConfig(ConfigHandler.createConfig(ConfigHandler.ConfigType.YML, "buta", ButaConfig()))
         .withCache()
         .withName("buta")
-        .withVersion(1.1F)
+        .withVersion(1.2F)
         .withWebhook { DiscordWebhook(this!!.asObject<ButaConfig>().webhook ?: "") }
         .build()
 

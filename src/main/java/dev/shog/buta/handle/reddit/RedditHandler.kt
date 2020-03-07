@@ -1,11 +1,7 @@
 package dev.shog.buta.handle.reddit
 
-import dev.shog.buta.util.orElse
 import kong.unirest.Unirest
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import org.json.JSONObject
-import kotlin.random.Random
 
 /**
  * This class works by caching previously requested posts, and then using them when they're requested.

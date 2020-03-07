@@ -1,6 +1,7 @@
 package dev.shog.buta.handle
 
 import dev.shog.lib.transport.Duo
+import dev.shog.buta.APP
 
 /**
  * The config for [APP].

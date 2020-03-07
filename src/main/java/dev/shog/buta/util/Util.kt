@@ -54,7 +54,7 @@ fun <T : Any> T?.orElse(t: T): T =
         this ?: t
 
 /**
- * Log [message] to [LOGGER].
+ * Log [func] to [LOGGER].
  */
 fun <T> Mono<T>.info(func: (T) -> String): Mono<T> =
         doOnNext { LOGGER.info(func.invoke(it)) }
