@@ -33,6 +33,8 @@ as well as other features.
 |b!pause|Pause or resume the music player.|Music|
 |b!leave|Leave the voice channel.|Music|
 |b!skip|Skip the currently playing song.|Music|
+|b!reddit|View image reddit posts|Fun|
+|b!stv|View stocks (w/ graph)|Info|
 
 
 # Disclaimer
