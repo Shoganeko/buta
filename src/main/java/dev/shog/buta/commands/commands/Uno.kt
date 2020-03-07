@@ -1,12 +1,12 @@
 package dev.shog.buta.commands.commands
 
-import dev.shog.buta.EN_US
+
 import dev.shog.buta.commands.api.factory.GuildFactory
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.ICommand
 import dev.shog.buta.commands.obj.LangFillableContent
 import dev.shog.buta.commands.permission.PermissionFactory
-import dev.shog.buta.handle.LangLoader
+import dev.shog.buta.handle.msg.MessageHandler
 import dev.shog.buta.handle.uno.handle.ButaAi
 import dev.shog.buta.handle.uno.obj.Card
 import dev.shog.buta.handle.uno.obj.CardColor
@@ -31,13 +31,13 @@ internal val lfc = LangFillableContent.getFromCommandName("uno")
  */
 object Uno : ICommand(lfc, true, Categories.FUN, PermissionFactory.hasPermission()) {
     private val dataPack by lazy {
-        val resp = EN_US.getJSONObject("uno").getJSONObject("response")
+        val resp = MessageHandler.data.getJSONObject("uno").getJSONObject("response")
         val error = resp.getJSONObject("error")
         val success = resp.getJSONObject("success")
         val embeds = resp.getJSONObject("embeds")
         val other = resp.getJSONObject("other")
 
-        return@lazy LangLoader.FullMessageDataPack(error, success, embeds, other)
+        return@lazy MessageHandler.FullMessageDataPack(error, success, embeds, other)
     }
 
     /**
@@ -149,7 +149,7 @@ object Uno : ICommand(lfc, true, Categories.FUN, PermissionFactory.hasPermission
 
     override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<Void> {
         if (!e.message.author.isPresent)
-            return e.sendMessage(EN_US.getEntry("error.invalid_arguments")).then()
+            return e.sendMessage("error.invalid_arguments").then()
 
         val author = e.message.author.get()
 
@@ -211,7 +211,7 @@ object Uno : ICommand(lfc, true, Categories.FUN, PermissionFactory.hasPermission
 
                 "play" -> {
                     if (args.size < 2)
-                        return e.sendMessage(EN_US.getEntry("error.invalid_arguments")).then()
+                        return e.sendMessage("error.invalid_arguments").then()
 
                     val game = UnoGame.getGame(author)
                     val uno = game.second
@@ -222,7 +222,7 @@ object Uno : ICommand(lfc, true, Categories.FUN, PermissionFactory.hasPermission
                                 .then()
 
                     val number = args[1].toIntOrNull()?.minus(1)
-                            ?: return e.sendMessage(EN_US.getEntry("error.invalid_arguments")).then()
+                            ?: return e.sendMessage("error.invalid_arguments").then()
 
                     if (uno.user.cards.getSize() == 1 && !uno.userCalledUno) {
                         val drawn = uno.user.draw(2)

@@ -1,7 +1,7 @@
 package dev.shog.buta.commands.commands
 
 import com.mitchtalmadge.asciidata.graph.ASCIIGraph
-import dev.shog.buta.EN_US
+
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.obj.ICommand.Companion.COMMANDS
@@ -216,7 +216,7 @@ val STOCK_VIEW = Command("stockview", Categories.INFO, isPmAvailable = false) { 
         }
     }
 
-    return@Command e.sendMessage(EN_US.getEntry("error.invalid_arguments"))
+    return@Command e.sendMessage("error.invalid_arguments")
 }.build().add()
 
 /**
@@ -276,6 +276,6 @@ val GUILD = Command("guild", Categories.INFO, isPmAvailable = false) { e, args, 
                     .then()
 
         else ->
-            e.sendMessage(EN_US.getEntry("error.invalid_arguments")).then()
+            e.sendMessage("error.invalid_arguments").then()
     }
 }.build().add()

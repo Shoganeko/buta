@@ -1,6 +1,7 @@
 package dev.shog.buta.commands.obj
 
-import dev.shog.buta.EN_US
+
+import dev.shog.buta.handle.msg.MessageHandler
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.random.Random
@@ -24,7 +25,7 @@ data class LangFillableContent(
          * Get a [LangFillableContent] from [name].
          */
         fun getFromCommandName(name: String): LangFillableContent {
-            val lang = EN_US
+            val lang = MessageHandler.data
 
             if (!lang.has(name) && lang[name] is JSONObject)
                 return LangFillableContent("ERROR", "Could not find data in language yml!", mutableListOf(), hashMapOf())

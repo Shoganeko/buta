@@ -1,6 +1,5 @@
 package dev.shog.buta.commands.commands
 
-import dev.shog.buta.EN_US
 import dev.shog.buta.commands.api.factory.GuildFactory
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
@@ -98,7 +97,7 @@ val SWEAR_FILTER = Command("swearfilter", Categories.ADMINISTRATOR, isPmAvailabl
                     .then()
         }
 
-        else -> e.sendMessage(EN_US.getEntry("error.invalid_arguments")).then()
+        else -> e.sendMessage("error.invalid_arguments").then()
     }
 }.build().add()
 

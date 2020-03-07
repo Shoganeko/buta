@@ -7,7 +7,7 @@ import dev.shog.buta.events.GuildJoinEvent
 import dev.shog.buta.events.GuildLeaveEvent
 import dev.shog.buta.events.PresenceHandler
 import dev.shog.buta.handle.ButaConfig
-import dev.shog.buta.handle.LangLoader
+import dev.shog.buta.handle.msg.MessageHandler
 import dev.shog.buta.handle.StatisticsManager
 import dev.shog.buta.handle.audio.AudioManager
 import dev.shog.lib.app.AppBuilder
@@ -39,11 +39,6 @@ val DEV = arrayOf(274712215024697345L)
  * The main LOGGER
  */
 val LOGGER = LoggerFactory.getLogger("Buta Instance")!!
-
-/**
- * EN US language
- */
-val EN_US = LangLoader.loadLang("en_US")
 
 /**
  * App

@@ -1,6 +1,6 @@
 package dev.shog.buta.commands.commands
 
-import dev.shog.buta.EN_US
+
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.handle.reddit.PostType
@@ -49,7 +49,7 @@ val CAT_FACT = Command("catfact", Categories.FUN) { e, _, lang ->
  */
 val REDDIT = Command("reddit", Categories.FUN) { e, args, lang ->
     if (args.isEmpty()) {
-        return@Command e.sendMessage(EN_US.getEntry("error.invalid_arguments")).then()
+        return@Command e.sendMessage("error.invalid_arguments").then()
     } else {
         val post = RedditHandler.getPost(args[0], PostType.HOT)
 

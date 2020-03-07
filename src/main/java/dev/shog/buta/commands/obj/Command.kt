@@ -1,8 +1,9 @@
 package dev.shog.buta.commands.obj
 
-import dev.shog.buta.EN_US
+
 import dev.shog.buta.commands.permission.Permable
 import dev.shog.buta.commands.permission.PermissionFactory
+import dev.shog.buta.handle.msg.MessageHandler
 import discord4j.core.event.domain.message.MessageCreateEvent
 import org.json.JSONObject
 import reactor.core.publisher.Mono
@@ -28,6 +29,6 @@ data class Command(
      */
     fun build() = object : ICommand(LangFillableContent.getFromCommandName(name), isPmAvailable, category, permable) {
         override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<*> =
-                invoke.invoke(e, args, EN_US.getJSONObject(name).getJSONObject("response"))
+                invoke.invoke(e, args, MessageHandler.data.getJSONObject(name).getJSONObject("response"))
     }
 }
