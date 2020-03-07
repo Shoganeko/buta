@@ -4,6 +4,12 @@ import dev.shog.lib.transport.Duo
 
 /**
  * The config for [APP].
+ *
+ * @param token The bot's token.
+ * @param api The API url for production and dev.
+ * @param webhook The Discord webhook
+ * @param creds The API credentials.
+ * @param stocks The stocks API key
  */
 data class ButaConfig(
         val token: String? = "",

@@ -12,6 +12,11 @@ import reactor.core.publisher.Mono
  * The command can be invoked by a user sending a message with the prefix then [data] in a channel where Buta can see it.
  *
  * If [isPmAvailable] is true, it can be accessible through pms.
+ *
+ * @param data The language data.
+ * @param isPmAvailable If the command can be used through PM.
+ * @param category The command's category.
+ * @param permable The permable for the command.
  */
 abstract class ICommand(
         val data: LangFillableContent,

@@ -7,6 +7,11 @@ import kotlin.random.Random
 
 /**
  * Command data that can be filled from lang.
+ *
+ * @param commandName The command's name.
+ * @param commandDesc The command's description.
+ * @param alias The command's aliases.
+ * @param helpCommand The help command.
  */
 data class LangFillableContent(
         val commandName: String,

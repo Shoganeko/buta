@@ -9,6 +9,12 @@ import reactor.core.publisher.Mono
 
 /**
  * A command.
+ *
+ * @param name The name of the command.
+ * @param category The command's category.
+ * @param isPmAvailable If the command can be used through PM.
+ * @param permable The command's permable.
+ * @param invoke What should happen when the command is invoked.
  */
 data class Command(
         val name: String,
