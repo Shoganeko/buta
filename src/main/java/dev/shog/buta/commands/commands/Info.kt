@@ -6,6 +6,7 @@ import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.obj.ICommand.Companion.COMMANDS
 import dev.shog.buta.handle.StockHandler
+import dev.shog.buta.handle.msg.sendMessageHandler
 import dev.shog.buta.util.*
 import discord4j.core.`object`.util.Image
 import reactor.core.publisher.Flux
@@ -216,7 +217,7 @@ val STOCK_VIEW = Command("stockview", Categories.INFO, isPmAvailable = false) { 
         }
     }
 
-    return@Command e.sendMessage("error.invalid_arguments")
+    return@Command e.sendMessageHandler("error.invalid_arguments")
 }.build().add()
 
 /**
@@ -276,6 +277,6 @@ val GUILD = Command("guild", Categories.INFO, isPmAvailable = false) { e, args, 
                     .then()
 
         else ->
-            e.sendMessage("error.invalid_arguments").then()
+            e.sendMessageHandler("error.invalid_arguments").then()
     }
 }.build().add()

@@ -2,7 +2,7 @@ package dev.shog.buta.handle.audio
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
-import dev.shog.buta.handle.msg.sendMessage
+import dev.shog.buta.handle.msg.sendMessageHandler
 
 import discord4j.core.`object`.entity.channel.MessageChannel
 import discord4j.voice.VoiceConnection
@@ -45,7 +45,7 @@ class GuildMusicManager(manager: AudioPlayerManager) {
         player.stopTrack()
 
         if (sendMessage)
-            requestChannel?.sendMessage("music.stop-playing")?.subscribe()
+            requestChannel?.sendMessageHandler("music.stop-playing")?.subscribe()
         try {
             connection?.disconnect()
         } catch (ex: Exception) { // I don't know why there's an error, but a try block fixes it :)

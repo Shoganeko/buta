@@ -25,6 +25,9 @@ object MessageEvent : Event, CoroutineScope by CoroutineScope(Dispatchers.Unconf
     override fun invoke(event: discord4j.core.event.domain.Event): Mono<Void> {
         require(event is MessageCreateEvent)
 
+        if (!event.message.author.isPresent || !event.guildId.isPresent)
+            return Mono.empty()
+
         val obj = event.message.author.get().id.asLong()
 
         return UserFactory.objectExists(obj)

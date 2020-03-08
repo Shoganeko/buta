@@ -1,14 +1,14 @@
 package dev.shog.buta.commands.commands
 
-
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
-import dev.shog.buta.handle.reddit.PostType
-import dev.shog.buta.handle.reddit.RedditHandler
 import dev.shog.buta.util.applyEmbed
 import dev.shog.buta.util.ar
 import dev.shog.buta.util.form
 import dev.shog.buta.util.sendMessage
+import dev.shog.buta.handle.msg.sendMessageHandler
+import dev.shog.buta.handle.reddit.PostType
+import dev.shog.buta.handle.reddit.RedditHandler
 import discord4j.core.`object`.entity.channel.TextChannel
 import kong.unirest.Unirest
 import reactor.kotlin.core.publisher.toMono
@@ -49,7 +49,7 @@ val CAT_FACT = Command("catfact", Categories.FUN) { e, _, lang ->
  */
 val REDDIT = Command("reddit", Categories.FUN) { e, args, lang ->
     if (args.isEmpty()) {
-        return@Command e.sendMessage("error.invalid_arguments").then()
+        return@Command e.sendMessageHandler("error.invalid_arguments").then()
     } else {
         val post = RedditHandler.getPost(args[0], PostType.HOT)
 

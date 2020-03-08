@@ -4,6 +4,7 @@ import dev.shog.buta.commands.api.factory.GuildFactory
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.permission.PermissionFactory
+import dev.shog.buta.handle.msg.sendMessageHandler
 import dev.shog.buta.util.form
 import dev.shog.buta.util.sendMessage
 import dev.shog.lib.transport.Duo
@@ -91,13 +92,13 @@ val SWEAR_FILTER = Command("swearfilter", Categories.ADMINISTRATOR, isPmAvailabl
                     .doOnNext { obj -> setTo = (obj.swearFilter.first ?: false).not() }
                     .doOnNext { obj -> obj.swearFilter = Duo(setTo, obj.swearFilter.second) }
                     .flatMap { obj ->
-                        e.sendMessage(lang.getString("toggle").form(setTo))
+                        e.sendMessage(lang.getString("toggle").form(setTo.toEnabledDisabled()))
                                 .flatMap { GuildFactory.updateObject(e.guildId.get().asLong(), obj) }
                     }
                     .then()
         }
 
-        else -> e.sendMessage("error.invalid_arguments").then()
+        else -> e.sendMessageHandler("error.invalid_arguments").then()
     }
 }.build().add()
 
