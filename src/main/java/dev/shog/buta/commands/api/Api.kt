@@ -11,6 +11,7 @@ import dev.shog.lib.token.TokenManager
 import dev.shog.lib.util.eitherOr
 import discord4j.core.`object`.presence.Activity
 import discord4j.core.`object`.presence.Presence
+import discord4j.discordjson.json.gateway.StatusUpdate
 import kong.unirest.Unirest
 import kong.unirest.json.JSONArray
 import reactor.core.publisher.Flux
@@ -31,7 +32,8 @@ object Api {
      */
     private val tokenManager by lazy {
         val cfg = APP.getConfigObject<ButaConfig>()
-        TokenManager(cfg.creds?.first ?: "", cfg.creds?.second ?: "", "buta")
+
+        TokenManager(cfg.creds?.first ?: "", cfg.creds?.second ?: "", APP)
     }
 
     /**
@@ -64,7 +66,7 @@ object Api {
     /**
      * Get presences from mojor
      */
-    fun getPresences(): Flux<Presence> =
+    fun getPresences(): Flux<StatusUpdate> =
             Unirest.get("https://api.shog.dev/v2/buta/presences")
                     .header("Authorization", "token ${tokenManager.getProperToken()}")
                     .asJsonAsync()

@@ -241,7 +241,7 @@ val GUILD = Command("guild", Categories.INFO, isPmAvailable = false) { e, args, 
                                             "title" to g.name.ar()
                                     ),
                                     hashMapOf(
-                                            "user-count" to FieldReplacement(null, g.memberCount.asInt.toString().ar()),
+                                            "user-count" to FieldReplacement(null, g.memberCount.toString().ar()),
                                             "date" to FieldReplacement(null, FORMATTER.format(Date.from(g.id.timestamp)).ar())
                                     )
                             )

@@ -20,7 +20,7 @@ object PresenceHandler : Event {
     /**
      * The presences.
      */
-    val presences = arrayListOf(Presence.idle(Activity.playing("PepeLaugh")))
+    val presences = arrayListOf(Presence.doNotDisturb())
 
     /**
      * Gets presences and adds them to [presences].
@@ -46,7 +46,7 @@ object PresenceHandler : Event {
             presences
                     .random()
                     .toMono()
-                    .doOnNext { LOGGER.info("Updating presence to ${it.activity.get().name} ${it.status.value}") }
+                    .doOnNext { LOGGER.info("Updating presence to ${it.status()}") }
                     .flatMap { client.updatePresence(it) }
 
     override fun invoke(event: discord4j.core.event.domain.Event): Mono<Void> {

@@ -4,7 +4,7 @@ import dev.shog.buta.LOGGER
 import dev.shog.lib.util.toSuccessfulFailed
 import discord4j.core.`object`.entity.Guild
 import discord4j.core.`object`.entity.channel.TextChannel
-import discord4j.core.`object`.util.Permission
+import discord4j.rest.util.Permission
 import kong.unirest.HttpResponse
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono

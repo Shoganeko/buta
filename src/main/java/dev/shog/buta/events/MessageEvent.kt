@@ -8,6 +8,7 @@ import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.ICommand
 import dev.shog.buta.events.obj.Event
 import dev.shog.buta.handle.SwearFilter
+import dev.shog.buta.util.orElse
 import dev.shog.buta.util.sendMessage
 import discord4j.core.event.domain.message.MessageCreateEvent
 import kotlinx.coroutines.CoroutineScope
