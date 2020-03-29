@@ -33,8 +33,8 @@ dependencies {
     compile "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.3.0"
     compile 'com.konghq:unirest-java:3.1.02'
     compile 'com.sedmelluq:lavaplayer:1.3.32'
+    compile 'com.github.Shoganeko:lib:cff636a19f'
     compile 'com.mitchtalmadge:ascii-data:1.4.0'
-    compile 'com.github.Shoganeko:lib:08226aab2a'
 }
 compileKotlin {
     kotlinOptions {

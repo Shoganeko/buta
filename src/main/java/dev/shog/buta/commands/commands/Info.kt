@@ -8,7 +8,7 @@ import dev.shog.buta.commands.obj.ICommand.Companion.COMMANDS
 import dev.shog.buta.handle.StockHandler
 import dev.shog.buta.handle.msg.sendMessageHandler
 import dev.shog.buta.util.*
-import discord4j.core.`object`.util.Image
+import discord4j.rest.util.Image
 import reactor.core.publisher.Flux
 import reactor.core.publisher.toFlux
 import java.text.DecimalFormat

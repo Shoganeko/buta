@@ -13,8 +13,8 @@ import dev.shog.lib.util.toEnabledDisabled
 import discord4j.core.`object`.entity.Guild
 import discord4j.core.`object`.entity.Role
 import discord4j.core.`object`.entity.channel.TextChannel
-import discord4j.core.`object`.util.Snowflake
 import discord4j.rest.util.Permission
+import discord4j.rest.util.Snowflake
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import java.time.Duration

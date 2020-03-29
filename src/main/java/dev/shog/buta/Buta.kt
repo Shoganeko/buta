@@ -15,10 +15,8 @@ import dev.shog.lib.hook.DiscordWebhook
 import dev.shog.lib.hook.WebhookUser
 import dev.shog.lib.util.ArgsHandler
 import dev.shog.lib.util.logDiscord
-import dev.shog.lib.util.logThis
 import discord4j.core.DiscordClient
 import discord4j.core.GatewayDiscordClient
-import discord4j.core.`object`.util.Snowflake
 import discord4j.core.event.domain.VoiceStateUpdateEvent
 import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
@@ -27,8 +25,7 @@ import discord4j.core.event.domain.lifecycle.ReadyEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.event.domain.message.ReactionAddEvent
 import discord4j.rest.util.Permission
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache.Apache
+import discord4j.rest.util.Snowflake
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Hooks
@@ -48,17 +45,13 @@ val LOGGER = LoggerFactory.getLogger("Buta Instance")!!
 /**
  * App
  */
-val APP = AppBuilder()
+val APP = AppBuilder("Buta", 1.2F)
         .usingConfig(ConfigHandler.createConfig(ConfigHandler.ConfigType.YML, "buta", ButaConfig()))
         .configureConfig { cfg ->
             val obj = cfg.asObject<ButaConfig>()
-
-            httpClient = HttpClient(Apache)
-            name = "Buta"
-            version = 1.2F
             useCache = true
             logger = LoggerFactory.getLogger("Buta")
-            webhook = DiscordWebhook(obj.webhook!!, httpClient!!, WebhookUser("Buta", ""))
+            webhook = DiscordWebhook(obj.webhook!!, WebhookUser("Buta", ""))
         }
         .build()
 
@@ -98,7 +91,7 @@ fun main(arg: Array<String>) = runBlocking<Unit> {
         runBlocking { APP.getWebhook().sendMessage("Buta (v${APP.getVersion()}) is now online!") }
     }
 
-    Hooks.onErrorDropped { runBlocking { it.logDiscord(APP) } }
+    Hooks.onErrorDropped { it.logDiscord(APP) }
 
     args.initWith(arg)
 
