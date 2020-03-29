@@ -91,7 +91,9 @@ fun main(arg: Array<String>) = runBlocking<Unit> {
         runBlocking { APP.getWebhook().sendMessage("Buta (v${APP.getVersion()}) is now online!") }
     }
 
-    Hooks.onErrorDropped { it.logDiscord(APP) }
+    Hooks.onOperatorError { t, _ -> t.logDiscord(APP) }
+    Hooks.onErrorDropped { e -> e.logDiscord(APP) }
+    Hooks.onNextError { e, _ -> e.logDiscord(APP) }
 
     args.initWith(arg)
 
