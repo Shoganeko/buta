@@ -43,7 +43,7 @@ object Api {
      */
     fun refreshPresences(): Mono<Boolean> =
             Unirest.post("https://api.shog.dev/v2/buta/presences")
-                    .header("Authorization", "token ${tokenManager.getProperToken()}")
+                    .header("Authorization", "token ${tokenManager.getToken()}")
                     .asStringAsync()
                     .toMono()
                     .logRequest("POST", "/v2/buta/presences")
@@ -54,7 +54,7 @@ object Api {
      */
     fun getSwears(): Flux<String> =
             Unirest.get("https://api.shog.dev/v2/buta/swears")
-                    .header("Authorization", "token ${tokenManager.getProperToken()}")
+                    .header("Authorization", "token ${tokenManager.getToken()}")
                     .asJsonAsync()
                     .toMono()
                     .logRequest("GET", "/v2/buta/swears")
@@ -68,7 +68,7 @@ object Api {
      */
     fun getPresences(): Flux<StatusUpdate> =
             Unirest.get("https://api.shog.dev/v2/buta/presences")
-                    .header("Authorization", "token ${tokenManager.getProperToken()}")
+                    .header("Authorization", "token ${tokenManager.getToken()}")
                     .asJsonAsync()
                     .toMono()
                     .logRequest("GET", "/v2/buta/presences")
@@ -110,7 +110,7 @@ object Api {
      */
     fun getGuildObject(id: Long): Mono<Guild> =
             Unirest.get("$BASE_URL/v2/buta/$id/1")
-                    .header("Authorization", "token ${tokenManager.getProperToken()}")
+                    .header("Authorization", "token ${tokenManager.getToken()}")
                     .asJsonAsync()
                     .toMono()
                     .logRequest("GET", "/v2/buta/$id/1")
@@ -123,7 +123,7 @@ object Api {
      */
     fun getUserObject(id: Long): Mono<User> =
             Unirest.get("$BASE_URL/v2/buta/$id/2")
-                    .header("Authorization", "token ${tokenManager.getProperToken()}")
+                    .header("Authorization", "token ${tokenManager.getToken()}")
                     .asJsonAsync()
                     .toMono()
                     .logRequest("GET", "/v2/buta/$id/2")
@@ -136,7 +136,7 @@ object Api {
      */
     fun uploadUserObject(user: User): Mono<Void> =
             Unirest.put("$BASE_URL/v2/buta/${user.id}/2")
-                    .header("Authorization", "token ${tokenManager.getProperToken()}")
+                    .header("Authorization", "token ${tokenManager.getToken()}")
                     .header("Content-Type", "application/json")
                     .body(user)
                     .asJsonAsync()
@@ -149,7 +149,7 @@ object Api {
      */
     fun uploadGuildObject(guild: Guild): Mono<Void> =
             Unirest.put("$BASE_URL/v2/buta/${guild.id}/1")
-                    .header("Authorization", "token ${tokenManager.getProperToken()}")
+                    .header("Authorization", "token ${tokenManager.getToken()}")
                     .header("Content-Type", "application/json")
                     .body(guild)
                     .asJsonAsync()
@@ -162,7 +162,7 @@ object Api {
      */
     fun updateUserObject(user: User): Mono<Void> =
             Unirest.patch("$BASE_URL/v2/buta/${user.id}/2")
-                    .header("Authorization", "token ${tokenManager.getProperToken()}")
+                    .header("Authorization", "token ${tokenManager.getToken()}")
                     .header("Content-Type", "application/json")
                     .body(user)
                     .asJsonAsync()
@@ -175,7 +175,7 @@ object Api {
      */
     fun updateGuildObject(guild: Guild): Mono<Void> =
             Unirest.patch("$BASE_URL/v2/buta/${guild.id}/1")
-                    .header("Authorization", "token ${tokenManager.getProperToken()}")
+                    .header("Authorization", "token ${tokenManager.getToken()}")
                     .header("Content-Type", "application/json")
                     .body(guild)
                     .asJsonAsync()
@@ -188,7 +188,7 @@ object Api {
      */
     fun deleteUserObject(id: Long): Mono<Void> =
             Unirest.delete("$BASE_URL/v2/buta/$id/2")
-                    .header("Authorization", "token ${tokenManager.getProperToken()}")
+                    .header("Authorization", "token ${tokenManager.getToken()}")
                     .asJsonAsync()
                     .toMono()
                     .logRequest("DELETE", "/v2/buta/$id/2")
@@ -199,7 +199,7 @@ object Api {
      */
     fun deleteGuildObject(id: Long): Mono<Void> =
             Unirest.delete("$BASE_URL/v2/buta/$id/1")
-                    .header("Authorization", "token ${tokenManager.getProperToken()}")
+                    .header("Authorization", "token ${tokenManager.getToken()}")
                     .asJsonAsync()
                     .toMono()
                     .logRequest("DELETE", "/v2/buta/$id/1")
