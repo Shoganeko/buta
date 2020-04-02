@@ -2,19 +2,15 @@ package dev.shog.buta.events
 
 import dev.shog.buta.DEV
 import dev.shog.buta.commands.CommandHandler
-import dev.shog.buta.commands.UserThreadHandler
+import dev.shog.buta.commands.api.UserThreadHandler
 import dev.shog.buta.commands.api.factory.GuildFactory
 import dev.shog.buta.commands.api.factory.UserFactory
 import dev.shog.buta.commands.obj.Category
-import dev.shog.buta.commands.obj.Command
-import dev.shog.buta.commands.obj.ICommand
 import dev.shog.buta.events.obj.Event
 import dev.shog.buta.handle.SwearFilter
 import dev.shog.buta.util.orElse
 import dev.shog.buta.util.sendMessage
 import discord4j.core.event.domain.message.MessageCreateEvent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import reactor.kotlin.extra.bool.not
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono

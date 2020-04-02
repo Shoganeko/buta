@@ -1,4 +1,4 @@
-package dev.shog.buta.commands
+package dev.shog.buta.commands.api
 
 import dev.shog.buta.LOGGER
 import discord4j.core.`object`.entity.User

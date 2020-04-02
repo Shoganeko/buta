@@ -140,13 +140,19 @@ fun main(arg: Array<String>) {
                 CLIENT = gw
 
                 // a guild event
-                gw.on(GuildCreateEvent::class.java) { GuildJoinEvent.invoke(it).then() }.subscribe()
+                gw.on(GuildCreateEvent::class.java) {
+                    GuildJoinEvent.invoke(it).then()
+                }.subscribe()
 
                 // a guild leave event
-                gw.on(GuildDeleteEvent::class.java) { GuildLeaveEvent.invoke(it).then() }.subscribe()
+                gw.on(GuildDeleteEvent::class.java) {
+                    GuildLeaveEvent.invoke(it).then()
+                }.subscribe()
 
                 // a message event
-                gw.on(MessageCreateEvent::class.java) { MessageEvent.invoke(it).then() }.subscribe()
+                gw.on(MessageCreateEvent::class.java) {
+                    MessageEvent.invoke(it).then()
+                }.subscribe()
 
                 // for b!uno
                 gw.on(ReactionAddEvent::class.java) { ev ->

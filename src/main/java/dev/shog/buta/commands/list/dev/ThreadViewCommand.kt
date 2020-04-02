@@ -1,16 +1,14 @@
 package dev.shog.buta.commands.commands.dev
 
-import dev.shog.buta.commands.UserThreadHandler
+import dev.shog.buta.commands.api.UserThreadHandler
 import dev.shog.buta.commands.obj.Category
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.obj.CommandConfig
 import dev.shog.buta.commands.permission.PermissionFactory
-import dev.shog.buta.handle.StatisticsManager
 import dev.shog.buta.util.sendMessage
 import dev.shog.lib.util.getOrNull
 import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toMono
 
 class ThreadViewCommand : Command(CommandConfig(
         "viewthreads",
