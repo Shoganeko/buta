@@ -5,7 +5,6 @@ import dev.shog.buta.LOGGER
 import dev.shog.buta.commands.api.Api
 import dev.shog.buta.events.obj.Event
 import discord4j.core.GatewayDiscordClient
-import discord4j.core.`object`.presence.Activity
 import discord4j.core.`object`.presence.Presence
 import discord4j.core.event.domain.lifecycle.ReadyEvent
 import reactor.core.publisher.Mono

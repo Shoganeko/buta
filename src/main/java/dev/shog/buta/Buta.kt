@@ -2,7 +2,6 @@ package dev.shog.buta
 
 import dev.shog.buta.commands.CommandHandler
 import dev.shog.buta.commands.api.factory.GuildFactory
-import dev.shog.buta.commands.commands.*
 import dev.shog.buta.commands.commands.`fun`.*
 import dev.shog.buta.commands.commands.admin.*
 import dev.shog.buta.commands.commands.dev.PresenceCommand
@@ -12,7 +11,7 @@ import dev.shog.buta.commands.commands.gamble.BalanceCommand
 import dev.shog.buta.commands.commands.gamble.DailyRewardCommand
 import dev.shog.buta.commands.commands.info.*
 import dev.shog.buta.commands.commands.music.*
-import dev.shog.buta.commands.obj.ICommand
+import dev.shog.buta.commands.list.music.LeaveCommand
 import dev.shog.buta.events.GuildJoinEvent
 import dev.shog.buta.events.GuildLeaveEvent
 import dev.shog.buta.events.MessageEvent

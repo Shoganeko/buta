@@ -4,7 +4,6 @@ import dev.shog.buta.commands.api.Api
 import dev.shog.buta.commands.obj.Category
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.obj.CommandConfig
-import dev.shog.buta.commands.permission.Permable
 import dev.shog.buta.commands.permission.PermissionFactory
 import dev.shog.buta.events.PresenceHandler
 import dev.shog.buta.util.sendMessage

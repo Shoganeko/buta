@@ -1,13 +1,13 @@
-package dev.shog.buta.commands.commands.music
+package dev.shog.buta.commands.list.music
 
 import dev.shog.buta.APP
+import dev.shog.buta.commands.commands.music.audioCommand
 import dev.shog.buta.commands.obj.Category
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.obj.CommandConfig
 import dev.shog.buta.commands.permission.PermissionFactory
 import dev.shog.buta.handle.audio.AudioManager
 import dev.shog.buta.handle.audio.GuildMusicManager
-import dev.shog.buta.util.applyEmbed
 import dev.shog.buta.util.sendMessage
 import dev.shog.lib.util.logDiscord
 import discord4j.core.event.domain.message.MessageCreateEvent

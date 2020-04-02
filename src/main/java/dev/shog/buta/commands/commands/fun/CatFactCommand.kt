@@ -4,9 +4,6 @@ import dev.shog.buta.commands.obj.Category
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.obj.CommandConfig
 import dev.shog.buta.commands.permission.PermissionFactory
-import dev.shog.buta.handle.audio.AudioManager
-import dev.shog.buta.handle.audio.GuildMusicManager
-import dev.shog.buta.util.applyEmbed
 import dev.shog.buta.util.sendMessage
 import discord4j.core.event.domain.message.MessageCreateEvent
 import kong.unirest.Unirest

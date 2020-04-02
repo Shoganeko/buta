@@ -1,13 +1,8 @@
 package dev.shog.buta.commands.commands.music
 
-import dev.shog.buta.APP
 import dev.shog.buta.handle.audio.AudioManager
-import dev.shog.buta.handle.audio.GuildMusicManager
-import dev.shog.buta.util.sendMessage
 import dev.shog.buta.util.sendPlainText
-import dev.shog.lib.util.logDiscord
 import discord4j.core.event.domain.message.MessageCreateEvent
-import org.json.JSONObject
 import reactor.core.publisher.Mono
 
 /**

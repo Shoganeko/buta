@@ -1,5 +1,7 @@
 package dev.shog.buta.handle.reddit
 
+import dev.shog.buta.APP
+import dev.shog.lib.util.logDiscord
 import kong.unirest.Unirest
 import org.json.JSONObject
 
@@ -104,6 +106,7 @@ object RedditHandler {
 
             return true
         } catch (ex: Exception) {
+            ex.logDiscord(APP)
             return false
         }
     }
