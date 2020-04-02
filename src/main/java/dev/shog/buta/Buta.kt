@@ -61,7 +61,7 @@ val LOGGER = LoggerFactory.getLogger("Buta Instance")!!
 /**
  * App
  */
-val APP = AppBuilder("Buta", 1.2F)
+val APP = AppBuilder("Buta", 2.0F)
         .usingConfig(ConfigHandler.createConfig(ConfigHandler.ConfigType.YML, "buta", ButaConfig()))
         .configureConfig { cfg ->
             val obj = cfg.asObject<ButaConfig>()
