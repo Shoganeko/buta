@@ -1,5 +1,6 @@
 package dev.shog.buta.commands.commands.info
 
+import dev.shog.buta.commands.CommandHandler
 import dev.shog.buta.commands.obj.Category
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.obj.CommandConfig
@@ -22,7 +23,7 @@ class HelpCommand : Command(CommandConfig(
         if (args.size >= 1) {
             val command = args[0]
 
-            return Flux.fromIterable(arrayListOf<Command>()) // TODO get actual commands
+            return Flux.fromIterable(CommandHandler.COMMANDS)
                     .filter { en -> command.startsWith(en.cfg.name.toLowerCase(), true) }
                     .filterWhen { en -> en.cfg.permable.check(e) }
                     .collectList()
@@ -35,7 +36,7 @@ class HelpCommand : Command(CommandConfig(
 
         return Category.values().toFlux()
                 .flatMap { cat ->
-                    arrayListOf<Command>().toFlux() // TODO get actual commands
+                    CommandHandler.COMMANDS.toFlux()
                             .filter { cmd -> cmd.cfg.category == cat }
                             .filterWhen { cmd -> cmd.cfg.permable.hasPermission(e.message.author.get()) }
                             .map { cmd -> container.getMessage("command", cmd.cfg.name) }
@@ -44,16 +45,15 @@ class HelpCommand : Command(CommandConfig(
                             .map { list ->
                                 container.getMessage("cat-pair",
                                         cat.name.capitalize(),
-                                        list
-                                                .stream()
+                                        list.asSequence()
                                                 .map { str -> str.toLowerCase() }
-                                                .collect(Collectors.joining()) // TODO joinToString
+                                                .joinToString("")
                                 )
                             }
                             .map { msg -> msg.substring(0, msg.length - 2) }
                 }
                 .collectList()
-                .map { list -> list.stream().collect(Collectors.joining("\n\n")) } // TODO joinToString
+                .map { list -> list.joinToString("\n\n") }
                 .flatMap { help ->
                     e.message.channel.flatMap { ch ->
                         ch.createEmbed { spec ->

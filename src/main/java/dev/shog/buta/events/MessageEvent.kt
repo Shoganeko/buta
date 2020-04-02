@@ -1,6 +1,7 @@
 package dev.shog.buta.events
 
 import dev.shog.buta.DEV
+import dev.shog.buta.commands.CommandHandler
 import dev.shog.buta.commands.UserThreadHandler
 import dev.shog.buta.commands.api.factory.GuildFactory
 import dev.shog.buta.commands.api.factory.UserFactory
@@ -48,7 +49,7 @@ object MessageEvent : Event {
                             .map { data -> data.split(" ") }
                             .filter { split -> split.isNotEmpty() }
                             .flatMap { con ->
-                                Flux.fromIterable(arrayListOf<Command>()) // TODO
+                                Flux.fromIterable(CommandHandler.COMMANDS)
                                         .filter { en ->
                                             con[0].startsWith(en.container.name.toLowerCase(), true)
                                                     || en.container.aliases.contains(con[0])

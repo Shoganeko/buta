@@ -80,7 +80,7 @@ object MessageHandler {
             formatText(getMessage(link), args.toList().map { it.toString() })
 
     /**
-     * todo
+     * Get a JSONObject by it's link.
      */
     fun getObject(obj: String): JSONObject {
         val split = obj.split(".").toMutableList()
@@ -93,6 +93,9 @@ object MessageHandler {
         return pointer
     }
 
+    /**
+     * Get a JSONArray by it's link.
+     */
     fun getArray(ar: String): JSONArray {
         val split = ar.split(".").toMutableList()
         val msg = split.last()
