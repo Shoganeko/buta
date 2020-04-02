@@ -4,19 +4,26 @@ import dev.shog.buta.commands.api.factory.GuildFactory
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.permission.PermissionFactory
+import dev.shog.buta.handle.msg.sendMessageHandler
 import dev.shog.buta.util.form
 import dev.shog.buta.util.sendMessage
+import dev.shog.lib.transport.Duo
 import dev.shog.lib.transport.duo
 import dev.shog.lib.util.toEnabledDisabled
 import discord4j.core.`object`.entity.Guild
 import discord4j.core.`object`.entity.Role
-import discord4j.core.`object`.entity.TextChannel
-import discord4j.core.`object`.util.Permission
-import discord4j.core.`object`.util.Snowflake
+import discord4j.core.`object`.entity.channel.TextChannel
+import discord4j.rest.util.Permission
+import discord4j.rest.util.Snowflake
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
+import reactor.kotlin.core.publisher.toMono
 import java.time.Duration
 import java.util.stream.Collectors
+
+/**
+ * Initialize administrator commands
+ */
+fun initAdmin() = Unit
 
 /**
  * Prefix
@@ -55,6 +62,46 @@ val NSFW_TOGGLE = Command("nsfw", Categories.ADMINISTRATOR, isPmAvailable = fals
             }
             .then()
 }.build().add()
+
+/**
+ * Set swear filter
+ */
+val SWEAR_FILTER = Command("swearfilter", Categories.ADMINISTRATOR, isPmAvailable = false, permable = PermissionFactory.hasPermission(arrayListOf(Permission.ADMINISTRATOR))) { e, args, lang ->
+    when {
+        args.isEmpty() -> {
+            GuildFactory.getObject(e.guildId.get().asLong())
+                    .map { obj -> obj.swearFilter }
+                    .flatMap { sf -> e.sendMessage(lang.getString("default").form(sf.first?.toEnabledDisabled(), sf.second)) }
+                    .then()
+        }
+
+        args.getOrNull(0).equals("message", true) && args.size > 1 -> {
+            args.removeAt(0)
+            val message = args.stream().collect(Collectors.joining(" ")).trim()
+
+            GuildFactory.getObject(e.guildId.get().asLong())
+                    .doOnNext { obj -> obj.swearFilter = Duo(obj.swearFilter.first, message) }
+                    .flatMap { obj -> GuildFactory.updateObject(e.guildId.get().asLong(), obj) }
+                    .flatMap { e.sendMessage(lang.getString("message").form(message)) }
+                    .then()
+        }
+
+        args.getOrNull(0).equals("toggle", true) -> {
+            var setTo = false
+            GuildFactory.getObject(e.guildId.get().asLong())
+                    .doOnNext { obj -> setTo = (obj.swearFilter.first ?: false).not() }
+                    .doOnNext { obj -> obj.swearFilter = Duo(setTo, obj.swearFilter.second) }
+                    .flatMap { obj ->
+                        e.sendMessage(lang.getString("toggle").form(setTo.toEnabledDisabled()))
+                                .flatMap { GuildFactory.updateObject(e.guildId.get().asLong(), obj) }
+                    }
+                    .then()
+        }
+
+        else -> e.sendMessageHandler("error.invalid_arguments").then()
+    }
+}.build().add()
+
 
 /**
  * Purge messages

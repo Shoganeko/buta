@@ -5,18 +5,21 @@ import dev.shog.buta.commands.commands.*
 import dev.shog.buta.commands.obj.ICommand
 import dev.shog.buta.events.GuildJoinEvent
 import dev.shog.buta.events.GuildLeaveEvent
+import dev.shog.buta.events.MessageEvent
 import dev.shog.buta.events.PresenceHandler
 import dev.shog.buta.handle.ButaConfig
-import dev.shog.buta.handle.LangLoader
 import dev.shog.buta.handle.StatisticsManager
 import dev.shog.buta.handle.audio.AudioManager
 import dev.shog.lib.app.AppBuilder
-import dev.shog.lib.cfg.ConfigHandler
+import dev.shog.lib.app.cfg.ConfigHandler
 import dev.shog.lib.hook.DiscordWebhook
-import discord4j.core.DiscordClient
+import dev.shog.lib.hook.WebhookUser
+import dev.shog.lib.util.ArgsHandler
+import dev.shog.lib.util.logDiscord
 import discord4j.core.DiscordClientBuilder
-import discord4j.core.`object`.util.Permission
-import discord4j.core.`object`.util.Snowflake
+import discord4j.core.GatewayDiscordClient
+import discord4j.core.`object`.presence.Activity
+import discord4j.core.`object`.presence.Presence
 import discord4j.core.event.domain.VoiceStateUpdateEvent
 import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
@@ -24,14 +27,19 @@ import discord4j.core.event.domain.guild.MemberJoinEvent
 import discord4j.core.event.domain.lifecycle.ReadyEvent
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.event.domain.message.ReactionAddEvent
-import discord4j.core.shard.ShardingClientBuilder
+import discord4j.core.shard.ShardingStrategy
+import discord4j.rest.util.Permission
+import discord4j.rest.util.Snowflake
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Hooks
+import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.timerTask
 import kotlin.system.exitProcess
+
 
 /** Developers */
 val DEV = arrayOf(274712215024697345L)
@@ -42,32 +50,29 @@ val DEV = arrayOf(274712215024697345L)
 val LOGGER = LoggerFactory.getLogger("Buta Instance")!!
 
 /**
- * EN US language
- */
-val EN_US = LangLoader.loadLang("en_US")
-
-/**
  * App
  */
-val APP = AppBuilder()
+val APP = AppBuilder("Buta", 1.2F)
         .usingConfig(ConfigHandler.createConfig(ConfigHandler.ConfigType.YML, "buta", ButaConfig()))
-        .withCache()
-        .withName("buta")
-        .withVersion(1.1F)
-        .withWebhook { DiscordWebhook(this!!.asObject<ButaConfig>().webhook ?: "") }
+        .configureConfig { cfg ->
+            val obj = cfg.asObject<ButaConfig>()
+            useCache = true
+            logger = LoggerFactory.getLogger("Buta")
+            webhook = DiscordWebhook(obj.webhook!!, WebhookUser("Buta", ""))
+        }
         .build()
 
 /**
  * The main Discord Client.
  */
-var CLIENT: DiscordClient? = null
+var CLIENT: GatewayDiscordClient? = null
 
 /**
  * If Buta is running in production mode.
  */
 var PRODUCTION: Boolean = false
 
-fun main(args: Array<String>) = runBlocking<Unit> {
+fun main(arg: Array<String>) {
     val key = APP.getConfigObject<ButaConfig>().token
 
     if (key == null) {
@@ -75,107 +80,123 @@ fun main(args: Array<String>) = runBlocking<Unit> {
         exitProcess(-1)
     }
 
-    when {
-        args.contains("--prod") -> {
-            LOGGER.info("Starting Buta in Production mode")
+    val args = ArgsHandler()
 
-            PRODUCTION = true
-        }
+    args.multiHook("--prod", {
+        LOGGER.info("Starting Buta in Non-Production mode")
 
-        !args.contains("--prod") -> {
-            LOGGER.info("Starting Buta in Non-Production mode")
+        PRODUCTION = false
 
-            PRODUCTION = false
+        Hooks.onOperatorDebug() // this adds extra debug onto reactor stuff, super cool
+    }, {
+        LOGGER.info("Starting Buta in Production mode")
 
-            Hooks.onOperatorDebug() // this adds extra debug onto reactor stuff, super cool
-        }
+        PRODUCTION = true
+    })
+
+    args.nHook("--block-init-notif") {
+        runBlocking { APP.getWebhook().sendMessage("Buta (v${APP.getVersion()}) is now online!") }
     }
+
+    Hooks.onOperatorError { t, _ -> t.logDiscord(APP) }
+    Hooks.onErrorDropped { e -> e.logDiscord(APP) }
+    Hooks.onNextError { e, _ -> e.logDiscord(APP) }
+
+    args.initWith(arg)
 
     initCommands()
 
-    CLIENT = ShardingClientBuilder(key)
+    Runtime.getRuntime().addShutdownHook(Thread(StatisticsManager::save))
+
+    Timer().schedule(timerTask {
+        StatisticsManager.save()
+    }, 0, 1000 * 60 * 60) // Hourly
+
+    DiscordClientBuilder.create(key)
             .build()
-            .map(DiscordClientBuilder::build)
-            .blockFirst()
+            .gateway()
+            .setSharding(ShardingStrategy.recommended())
+            .setInitialStatus { Presence.online(Activity.watching("you")) }
+            .connect()
+            .doOnNext { gw ->
+                CLIENT = gw
 
+                // a guild event
+                gw.on(GuildCreateEvent::class.java) { GuildJoinEvent.invoke(it) }.subscribe()
 
-    CLIENT?.apply {
-        eventDispatcher.on(GuildCreateEvent::class.java)
-                .flatMap { GuildJoinEvent.invoke(it) }
-                .subscribe()
+                // a guild leave event
+                gw.on(GuildDeleteEvent::class.java) { GuildLeaveEvent.invoke(it) }.subscribe()
 
-        eventDispatcher.on(GuildDeleteEvent::class.java)
-                .flatMap { GuildLeaveEvent.invoke(it) }
-                .subscribe()
+                // a message event
+                gw.on(MessageCreateEvent::class.java) { MessageEvent.invoke(it) }.subscribe()
 
-        eventDispatcher.on(MessageCreateEvent::class.java)
-                .flatMap { dev.shog.buta.events.MessageEvent.invoke(it) }
-                .subscribe()
+                // for b!uno
+                gw.on(ReactionAddEvent::class.java) { ev ->
+                    if (Uno.wildWaiting.containsKey(ev.userId) && Uno.properColors.contains(ev.emoji)) {
+                        val time = Uno.wildWaiting[ev.userId]?.time ?: 0
 
-        eventDispatcher.on(ReactionAddEvent::class.java)
-                .filter { event -> Uno.wildWaiting.containsKey(event.userId) && Uno.properColors.contains(event.emoji) }
-                .filter { event ->
-                    val time = Uno.wildWaiting[event.userId]?.time ?: 0
+                        if (System.currentTimeMillis() - time < TimeUnit.SECONDS.toMillis(10))
+                            Uno.completedWildCard(ev)
+                    }
 
-                    // Make sure the request isn't 10 seconds old TODO purge if so
-                    System.currentTimeMillis() - time < TimeUnit.SECONDS.toMillis(10)
-                }
-                .flatMap { ev -> Uno.completedWildCard(ev) }
-                .subscribe()
+                    Mono.empty<Unit>()
+                }.subscribe()
 
-        eventDispatcher.on(VoiceStateUpdateEvent::class.java)
-                .filter { event -> event.current.userId == event.client.selfId.get() }
-                .filter { event -> !event.current.channelId.isPresent }
-                .map { event -> AudioManager.getGuildMusicManager(event.current.guildId) }
-                .doOnNext { guild -> guild.stop(true) }
-                .subscribe()
+                // stop voice when disconnected
+                gw.on(VoiceStateUpdateEvent::class.java) { ev ->
+                    ev.toMono()
+                            .filterWhen { event ->
+                                event.client.selfId
+                                        .map { id -> id == event.current.userId }
+                            }
+                            .filter { event -> !event.current.channelId.isPresent }
+                            .map { event -> AudioManager.getGuildMusicManager(event.current.guildId) }
+                            .doOnNext { guild -> guild.stop(true) }
+                            .then()
+                }.subscribe()
 
-        eventDispatcher.on(MemberJoinEvent::class.java)
-                .filterWhen { e ->
-                    e.client.self
-                            .flatMap { self -> self.asMember(e.guildId) }
-                            .flatMap { member -> member.basePermissions }
-                            .map { perms -> perms.contains(Permission.ADMINISTRATOR) }
-                }
-                .flatMap { e ->
-                    GuildFactory.getObject(e.guildId.asLong())
-                            .map { guild -> guild.joinRole }
-                            .filter { duo -> duo.first == true && duo.second != null && duo.second != -1L }
-                            .filterWhen { duo ->
+                // a member join event
+                gw.on(MemberJoinEvent::class.java) { event ->
+                    event.toMono().filterWhen { e ->
                                 e.client.self
                                         .flatMap { self -> self.asMember(e.guildId) }
-                                        .zipWith(e.guild.flatMap { guild -> guild.getRoleById(Snowflake.of(duo.second!!)) })
-                                        .flatMap { zip -> zip.t1.hasHigherRoles(mutableListOf(zip.t2)) }
+                                        .flatMap { member -> member.basePermissions }
+                                        .map { perms -> perms.contains(Permission.ADMINISTRATOR) }
                             }
-                            .flatMap { duo -> e.member.addRole(Snowflake.of(duo.second!!)) }
-                }
-                .subscribe()
+                            .flatMap { e ->
+                                GuildFactory.getObject(e.guildId.asLong())
+                                        .map { guild -> guild.joinRole }
+                                        .filter { duo -> duo.first == true && duo.second != null && duo.second != -1L }
+                                        .filterWhen { duo ->
+                                            e.client.self
+                                                    .flatMap { self -> self.asMember(e.guildId) }
+                                                    .zipWith(e.guild.flatMap { guild ->
+                                                        guild.getRoleById(Snowflake.of(duo.second!!))
+                                                    })
+                                                    .flatMap { zip -> zip.t1.hasHigherRoles(setOf(zip.t2.id)) }
+                                        }
+                                        .flatMap { duo -> e.member.addRole(Snowflake.of(duo.second!!)) }
+                            }
+                            .then()
+                }.subscribe()
 
-        eventDispatcher.on(ReadyEvent::class.java)
-                .flatMap { PresenceHandler.invoke(it) }
-                .subscribe()
-    }
-
-    Runtime.getRuntime().addShutdownHook(Thread(StatisticsManager::save))
-    Timer().schedule(timerTask { StatisticsManager.save() }, 0, 1000 * 60 * 60) // Hourly
-
-    CLIENT?.login()?.block()
+                // a ready event
+                gw.on(ReadyEvent::class.java) { event ->
+                    PresenceHandler.invoke(event)
+                }.subscribe()
+            }
+            .block()
 }
 
 /**
- * Each command adds itself to the command list. This just activates that.
+ * Initialize commands
  */
 private fun initCommands() {
-    PING
-    ABOUT
-    GUILD
-    HELP
-    MUSIC_PLAY
-    DOG_FACT
-    SET_PREFIX
-    NSFW_TOGGLE
-    PRESENCE
-    GAMBLE_BALANCE
-    PURGE
+    initInfo()
+    initAudio()
+    initFun()
+    initAdmin()
+    initDev()
+    initGambling()
     ICommand.COMMANDS.add(Uno)
 }

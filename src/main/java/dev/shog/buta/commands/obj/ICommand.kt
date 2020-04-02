@@ -12,6 +12,11 @@ import reactor.core.publisher.Mono
  * The command can be invoked by a user sending a message with the prefix then [data] in a channel where Buta can see it.
  *
  * If [isPmAvailable] is true, it can be accessible through pms.
+ *
+ * @param data The language data.
+ * @param isPmAvailable If the command can be used through PM.
+ * @param category The command's category.
+ * @param permable The permable for the command.
  */
 abstract class ICommand(
         val data: LangFillableContent,
@@ -22,12 +27,12 @@ abstract class ICommand(
     /**
      * When the command is invoked by a user.
      */
-    abstract fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<Void>
+    abstract fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<*>
 
     /**
      * When the command's help command is invoked by a user.
      */
-    fun invokeHelp(e: MessageCreateEvent): Mono<Void> =
+    fun invokeHelp(e: MessageCreateEvent): Mono<*> =
             e.message.guild
                     .map { g -> g.id.asLong() }
                     .flatMap { id -> GuildFactory.getObject(id) }

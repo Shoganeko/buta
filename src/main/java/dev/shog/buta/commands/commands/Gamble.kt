@@ -8,6 +8,11 @@ import dev.shog.buta.util.sendMessage
 import dev.shog.lib.util.fancyDate
 
 /**
+ * Initialize the commands.
+ */
+fun initGambling() = Unit
+
+/**
  * Gamble Balance
  */
 val GAMBLE_BALANCE = Command("balance", Categories.GAMBLING) { e, _, lang ->

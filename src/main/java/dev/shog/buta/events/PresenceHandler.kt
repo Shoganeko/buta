@@ -4,7 +4,7 @@ import dev.shog.buta.CLIENT
 import dev.shog.buta.LOGGER
 import dev.shog.buta.commands.api.Api
 import dev.shog.buta.events.obj.Event
-import discord4j.core.DiscordClient
+import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.presence.Activity
 import discord4j.core.`object`.presence.Presence
 import discord4j.core.event.domain.lifecycle.ReadyEvent
@@ -20,7 +20,7 @@ object PresenceHandler : Event {
     /**
      * The presences.
      */
-    val presences = arrayListOf(Presence.idle(Activity.playing("PepeLaugh")))
+    val presences = arrayListOf(Presence.doNotDisturb())
 
     /**
      * Gets presences and adds them to [presences].
@@ -35,18 +35,18 @@ object PresenceHandler : Event {
     /**
      * Gets a random presence from [presences] and updates [CLIENT].
      */
-    private fun updateTimer(client: DiscordClient) {
+    private fun updateTimer(client: GatewayDiscordClient) {
         Timer().schedule(timerTask { update(client).subscribe() }, 10000, TIMER_UPDATE_EVERY)
     }
 
     /**
      * Update Presence
      */
-    fun update(client: DiscordClient): Mono<Void> =
+    fun update(client: GatewayDiscordClient): Mono<Void> =
             presences
                     .random()
                     .toMono()
-                    .doOnNext { LOGGER.info("Updating presence to ${it.activity.get().name} ${it.status.value}") }
+                    .doOnNext { LOGGER.info("Updating presence to ${it.status()}") }
                     .flatMap { client.updatePresence(it) }
 
     override fun invoke(event: discord4j.core.event.domain.Event): Mono<Void> {

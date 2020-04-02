@@ -1,15 +1,25 @@
 package dev.shog.buta.commands.commands
 
+import com.mitchtalmadge.asciidata.graph.ASCIIGraph
+
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.obj.ICommand.Companion.COMMANDS
+import dev.shog.buta.handle.StockHandler
+import dev.shog.buta.handle.msg.sendMessageHandler
 import dev.shog.buta.util.*
-import discord4j.core.`object`.util.Image
+import discord4j.rest.util.Image
 import reactor.core.publisher.Flux
 import reactor.core.publisher.toFlux
+import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.stream.Collectors
+
+/**
+ * Initialize info commands
+ */
+fun initInfo() = Unit
 
 /**
  * Help
@@ -71,7 +81,7 @@ val HELP = Command("help", Categories.INFO) { e, args, lang ->
  * Ping
  */
 val PING = Command("ping", Categories.INFO) { e, _, lang ->
-    e.sendMessage(lang.getString(lang.keySet().random()).form(e.client.responseTime))
+    e.sendMessage(lang.getString(lang.keySet().random()).form("12"))
             .then()
 }.build().add()
 
@@ -85,6 +95,130 @@ val ABOUT = Command("about", Categories.INFO) { e, _, lang ->
 
 /** The guild date formatter. */
 private val FORMATTER = SimpleDateFormat("MM/dd/yyyy")
+
+/**
+ * Stock Viewer
+ */
+val STOCK_VIEW = Command("stockview", Categories.INFO, isPmAvailable = false) { e, args, lang ->
+    val format = DecimalFormat("0.00")
+
+    when (args.size) {
+        // symbol
+        1 -> {
+            val symbol = args[0].toUpperCase()
+
+            return@Command StockHandler.getStock(symbol, StockHandler.Time.WEEKLY, StockHandler.Type.CLOSE)
+                    .doOnNext { stock -> println(stock.data.toList()) }
+                    .flatMap { stock ->
+                        val avg = stock.data.sum() / stock.data.size.toDouble()
+
+                        val size = format.format(avg).length
+
+                        val plot = ASCIIGraph
+                                .fromSeries(stock.data.reversedArray())
+                                .withTickFormat(DecimalFormat("0.00"))
+                                .withNumRows(10)
+                                .withTickWidth(size)
+                                .plot()
+
+                        e.sendMessage(lang.getString("success-weekly").form(
+                                stock.symbol,
+                                "close",
+                                Collections.max(stock.data.toList()),
+                                Collections.min(stock.data.toList()),
+                                plot
+                        ))
+                    }
+        }
+
+        // symbol and type
+        2 -> {
+            val symbol = args[0]
+            val type = args[1]
+
+            val parsedType: StockHandler.Type = try {
+                StockHandler.Type.values()
+                        .single { ty -> ty.toString().equals(type, true) }
+            } catch (ex: Exception) {
+                return@Command e.sendMessage(lang.getString("invalid-type"))
+            }
+
+            return@Command StockHandler.getStock(symbol, StockHandler.Time.WEEKLY, parsedType)
+                    .doOnNext { stock -> println(stock.data.toList()) }
+                    .flatMap { stock ->
+                        val avg = stock.data.sum() / stock.data.size.toDouble()
+
+                        val size = format.format(avg).length
+
+                        val plot = ASCIIGraph
+                                .fromSeries(stock.data.reversedArray())
+                                .withTickFormat(DecimalFormat("0.00"))
+                                .withNumRows(10)
+                                .withTickWidth(size)
+                                .plot()
+
+                        e.sendMessage(lang.getString("success-weekly").form(
+                                stock.symbol,
+                                type.toLowerCase(),
+                                Collections.max(stock.data.toList()),
+                                Collections.min(stock.data.toList()),
+                                plot
+                        ))
+                    }
+        }
+
+        // symbol, type and time
+        3 -> {
+            val symbol = args[0]
+            val type = args[1]
+            val time = args[2]
+
+            val parsedType: StockHandler.Type = try {
+                StockHandler.Type.values()
+                        .single { ty -> ty.toString().equals(type, true) }
+            } catch (ex: Exception) {
+                return@Command e.sendMessage(lang.getString("invalid-type"))
+            }
+
+            val parsedTime: StockHandler.Time = try {
+                StockHandler.Time.values()
+                        .single { ty -> ty.toString().equals(time, true) }
+            } catch (ex: Exception) {
+                return@Command e.sendMessage(lang.getString("invalid-time"))
+            }
+
+            return@Command StockHandler.getStock(symbol, parsedTime, parsedType)
+                    .doOnNext { stock -> println(stock.data.toList()) }
+                    .flatMap { stock ->
+                        val avg = stock.data.sum() / stock.data.size.toDouble()
+
+                        val size = format.format(avg).length
+
+                        val plot = ASCIIGraph
+                                .fromSeries(stock.data.reversedArray())
+                                .withTickFormat(DecimalFormat("0.00"))
+                                .withNumRows(10)
+                                .withTickWidth(size)
+                                .plot()
+
+                        val langKey = when (parsedTime) {
+                            StockHandler.Time.WEEKLY -> "success-weekly"
+                            StockHandler.Time.DAILY -> "success-daily"
+                        }
+
+                        e.sendMessage(lang.getString(langKey).form(
+                                stock.symbol,
+                                type.toLowerCase(),
+                                Collections.max(stock.data.toList()),
+                                Collections.min(stock.data.toList()),
+                                plot
+                        ))
+                    }
+        }
+    }
+
+    return@Command e.sendMessageHandler("error.invalid_arguments")
+}.build().add()
 
 /**
  * About Guild
@@ -107,7 +241,7 @@ val GUILD = Command("guild", Categories.INFO, isPmAvailable = false) { e, args, 
                                             "title" to g.name.ar()
                                     ),
                                     hashMapOf(
-                                            "user-count" to FieldReplacement(null, g.memberCount.asInt.toString().ar()),
+                                            "user-count" to FieldReplacement(null, g.memberCount.toString().ar()),
                                             "date" to FieldReplacement(null, FORMATTER.format(Date.from(g.id.timestamp)).ar())
                                     )
                             )
@@ -143,6 +277,6 @@ val GUILD = Command("guild", Categories.INFO, isPmAvailable = false) { e, args, 
                     .then()
 
         else ->
-            e.sendMessage(getError("invalid_arguments")).then()
+            e.sendMessageHandler("error.invalid_arguments").then()
     }
 }.build().add()

@@ -1,14 +1,11 @@
 package dev.shog.buta.util
 
-import dev.shog.buta.APP
-import dev.shog.buta.EN_US
 import dev.shog.buta.LOGGER
 import dev.shog.lib.util.toSuccessfulFailed
 import discord4j.core.`object`.entity.Guild
-import discord4j.core.`object`.entity.TextChannel
-import discord4j.core.`object`.util.Permission
+import discord4j.core.`object`.entity.channel.TextChannel
+import discord4j.rest.util.Permission
 import kong.unirest.HttpResponse
-import org.slf4j.Logger
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.util.*
@@ -40,35 +37,24 @@ fun getChannelsWithPermission(guild: Guild): Flux<TextChannel> {
     return guild.channels
             .ofType(TextChannel::class.java)
             .filterWhen { ch ->
-                ch.getEffectivePermissions(ch.client.selfId.get())
-                        .map { chl ->
-                            chl.contains(Permission.SEND_MESSAGES)
-                        }
+                ch.client.selfId.flatMap { id ->
+                    ch.getEffectivePermissions(id)
+                            .map { chl ->
+                                chl.contains(Permission.SEND_MESSAGES)
+                                        && chl.contains(Permission.EMBED_LINKS)
+                            }
+                }
             }
 }
 
 /**
- * Gets the type of
+ * [this] ?: [t]
  */
-fun getType(any: Any): Mono<String> =
-        Flux.fromIterable(Types.values().toList())
-                .filter { o -> o.name.toLowerCase() == any::class.java.simpleName.toLowerCase() }
-                .collectList()
-                .flatMap { o ->
-                    if (o.size != 1)
-                        Mono.empty()
-                    else Mono.just(o[0].name.toLowerCase())
-                }
+fun <T : Any> T?.orElse(t: T): T =
+        this ?: t
 
 /**
- * The different types for the API update object method.
- */
-internal enum class Types {
-    DOUBLE, STRING, INT, LONG
-}
-
-/**
- * Log [message] to [LOGGER].
+ * Log [func] to [LOGGER].
  */
 fun <T> Mono<T>.info(func: (T) -> String): Mono<T> =
         doOnNext { LOGGER.info(func.invoke(it)) }
@@ -87,9 +73,3 @@ fun <T : HttpResponse<*>> Mono<T>.logRequest(method: String, url: String): Mono<
  */
 fun String.formArray(args: ArrayList<*>): String =
         formatTextArray(this, args)
-
-/**
- * Get error by [err].
- */
-fun getError(err: String): String =
-        EN_US.get().getJSONObject("error").getString(err)

@@ -3,7 +3,7 @@ package dev.shog.buta.handle.uno.obj
 import dev.shog.buta.handle.StatisticsManager
 import dev.shog.lib.util.defaultFormat
 import discord4j.core.`object`.entity.User
-import discord4j.core.`object`.util.Snowflake
+import discord4j.rest.util.Snowflake
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 

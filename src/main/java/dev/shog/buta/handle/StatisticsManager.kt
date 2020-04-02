@@ -8,6 +8,10 @@ import java.util.concurrent.ConcurrentHashMap
  */
 object StatisticsManager {
     private var statistics = ConcurrentHashMap<String, Any>()
+
+    /**
+     * Dumo [statistics] to a string.
+     */
     fun dump() = statistics.toString()
 
     init {

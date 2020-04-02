@@ -6,8 +6,17 @@ import dev.shog.buta.util.applyEmbed
 import dev.shog.buta.util.ar
 import dev.shog.buta.util.form
 import dev.shog.buta.util.sendMessage
+import dev.shog.buta.handle.msg.sendMessageHandler
+import dev.shog.buta.handle.reddit.PostType
+import dev.shog.buta.handle.reddit.RedditHandler
+import discord4j.core.`object`.entity.channel.TextChannel
 import kong.unirest.Unirest
-import reactor.core.publisher.toMono
+import reactor.kotlin.core.publisher.toMono
+
+/**
+ * Initialize fun commands.
+ */
+fun initFun() = Unit
 
 /**
  * Dog Fact
@@ -36,6 +45,50 @@ val CAT_FACT = Command("catfact", Categories.FUN) { e, _, lang ->
 }.build().add()
 
 /**
+ * Reddit
+ */
+val REDDIT = Command("reddit", Categories.FUN) { e, args, lang ->
+    if (args.isEmpty()) {
+        return@Command e.sendMessageHandler("error.invalid_arguments").then()
+    } else {
+        val post = RedditHandler.getPost(args[0], PostType.HOT)
+
+        if (post == null)
+            return@Command e.sendMessage(lang.getString("invalid-subreddit")).then()
+        else {
+            val nsfw = e.message.channel
+                    .ofType(TextChannel::class.java)
+                    .map { ch -> ch.isNsfw }
+                    .map { nsfw -> !nsfw && post.data.getBoolean("over_18") }
+
+            return@Command nsfw.flatMap { invalid ->
+                if (invalid) {
+                    e.sendMessage(lang.getString("no-nsfw")).then()
+                } else {
+                    e.message.channel
+                            .flatMap { ch ->
+                                ch.createEmbed { spec ->
+                                    lang.getJSONObject("reddit-post").applyEmbed(
+                                            spec, e.message.author.get(),
+                                            hashMapOf(
+                                                    "url" to post.data.getString("permalink").ar(),
+                                                    "title" to post.data.getString("title").ar(),
+                                                    "desc" to arrayListOf(
+                                                            post.data.getLong("ups").toString(),
+                                                            post.data.getLong("num_comments").toString()
+                                                    ),
+                                                    "image" to post.data.getString("url").ar()
+                                            ), hashMapOf()
+                                    )
+                                }
+                            }
+                }
+            }
+        }
+    }
+}.build().add()
+
+/**
  * Cat gallery
  */
 val CAT_GALLERY = Command("catgallery", Categories.FUN) { e, _, lang ->
@@ -48,7 +101,7 @@ val CAT_GALLERY = Command("catgallery", Categories.FUN) { e, _, lang ->
                 e.message.channel
                         .flatMap { ch ->
                             ch.createEmbed { spec ->
-                                lang.getJSONObject("embed").applyEmbed(spec, e.message.author.get(), hashMapOf("thumb" to url.ar()))
+                                lang.getJSONObject("embed").applyEmbed(spec, e.message.author.get(), hashMapOf("image" to url.ar()))
                             }
                         }
             }
@@ -68,7 +121,7 @@ val DOG_GALLERY = Command("doggallery", Categories.FUN) { e, _, lang ->
                 e.message.channel
                         .flatMap { ch ->
                             ch.createEmbed { spec ->
-                                lang.getJSONObject("embed").applyEmbed(spec, e.message.author.get(), hashMapOf("thumb" to url.ar()))
+                                lang.getJSONObject("embed").applyEmbed(spec, e.message.author.get(), hashMapOf("image" to url.ar()))
                             }
                         }
             }

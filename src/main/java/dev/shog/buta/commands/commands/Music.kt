@@ -4,6 +4,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import dev.shog.buta.APP
 import dev.shog.buta.commands.obj.Categories
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.handle.audio.AudioManager
@@ -11,11 +12,17 @@ import dev.shog.buta.handle.audio.GuildMusicManager
 import dev.shog.buta.handle.obj.getField
 import dev.shog.buta.util.*
 import dev.shog.lib.util.fancyDate
+import dev.shog.lib.util.logDiscord
 import discord4j.core.event.domain.message.MessageCreateEvent
 import org.json.JSONObject
 import reactor.core.publisher.Mono
-import reactor.core.publisher.toMono
+import reactor.kotlin.core.publisher.toMono
 import java.util.stream.Collectors
+
+/**
+ * Initialize audio commands.
+ */
+fun initAudio() = Unit
 
 /**
  * An audio command. This allows different actions to be executed depending on the situation.
@@ -198,6 +205,7 @@ private fun disconnect(e: MessageCreateEvent, guild: GuildMusicManager, lang: JS
                     try {
                         guild.connection?.disconnect() // Message is handled in VoiceUpdate event
                     } catch (ex: Exception) {
+                        ex.logDiscord(APP)
                     }
                 }.then()
 
