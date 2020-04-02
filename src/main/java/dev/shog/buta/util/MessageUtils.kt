@@ -1,7 +1,7 @@
 package dev.shog.buta.util
 
 
-import dev.shog.buta.handle.msg.MessageHandler
+import dev.shog.buta.commands.obj.msg.MessageHandler
 import dev.shog.buta.handle.obj.getField
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.User
@@ -35,9 +35,17 @@ fun EmbedCreateSpec.update(user: User, color: Color = Color(96, 185, 233)): Embe
 /**
  * Send a simple text message in the channel where [MessageCreateEvent] was created.
  */
-fun MessageCreateEvent.sendMessage(msg: String): Mono<Message> =
-        message.channel
-                .flatMap { ch -> ch.createMessage(msg) }
+fun MessageCreateEvent.sendPlainText(msg: String): Mono<Message> =
+        message.channel.flatMap { ch -> ch.createMessage(msg) }
+
+/**
+ * Send a text message link in the channel where [MessageCreateEvent] was created.
+ */
+fun MessageCreateEvent.sendMessage(container: MessageHandler.MessageContainer, link: String, vararg args: Any?): Mono<Message> =
+        sendPlainText(container.getMessage(link, *args))
+
+fun MessageCreateEvent.sendMessage(link: String, vararg args: Any?): Mono<Message> =
+        sendPlainText(MessageHandler.getMessage(link, *args))
 
 data class FieldReplacement(val title: ArrayList<String>?, val desc: ArrayList<String>?)
 
@@ -72,7 +80,7 @@ fun JSONObject.applyEmbed(
             val replace = replaceable[t] // Get the included arguments
 
             val str = if (replace != null)
-                getString(t).formArray(replace) // Form the array with the included arguments if included
+                MessageHandler.formatText(getString(t), replace) // Form the array with the included arguments if included
             else getString(t) // If there's no arguments
 
             u.invoke(spec, str) // Invoke the setX() function
@@ -95,8 +103,8 @@ fun JSONObject.applyEmbed(
                     val desc = field.desc ?: arrayListOf() // Replacement for the field description
 
                     spec.addField(
-                            fieldObj.title.formArray(title), // Form the title
-                            fieldObj.desc.formArray(desc), // Form the desc
+                            MessageHandler.formatText(fieldObj.title, title), // Form the title
+                            MessageHandler.formatText(fieldObj.desc, desc), // Form the desc
                             fieldObj.inline // gua gua gua
                     )
                 } else spec.addField(fieldObj.title, fieldObj.desc, fieldObj.inline) // If there's no replacement

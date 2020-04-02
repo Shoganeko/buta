@@ -44,13 +44,13 @@ object PermissionFactory {
     /**
      * The user has permission in pms, but has to have [guild] permissions in guild.
      */
-    fun hasPermission(guild: ArrayList<Permission>): Permable =
+    fun hasPermission(vararg guild: Permission): Permable =
             object : Permable() {
                 override fun hasPermission(user: User): Mono<Boolean> = Mono.just(true)
 
                 override fun hasPermission(member: Member): Mono<Boolean> =
                         member.basePermissions
                                 .flatMap { p -> Mono.just(p.toList()) }
-                                .map { p -> p.containsAll(guild) }
+                                .map { p -> p.containsAll(guild.toList()) }
             }
 }

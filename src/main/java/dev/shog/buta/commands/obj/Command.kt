@@ -1,34 +1,42 @@
 package dev.shog.buta.commands.obj
 
-
-import dev.shog.buta.commands.permission.Permable
-import dev.shog.buta.commands.permission.PermissionFactory
-import dev.shog.buta.handle.msg.MessageHandler
+import dev.shog.buta.commands.api.factory.GuildFactory
+import dev.shog.buta.commands.obj.msg.MessageHandler
+import dev.shog.buta.util.update
 import discord4j.core.event.domain.message.MessageCreateEvent
-import org.json.JSONObject
 import reactor.core.publisher.Mono
 
 /**
  * A command.
  *
- * @param name The name of the command.
- * @param category The command's category.
- * @param isPmAvailable If the command can be used through PM.
- * @param permable The command's permable.
- * @param invoke What should happen when the command is invoked.
+ * @param cfg The config
  */
-data class Command(
-        val name: String,
-        val category: Categories,
-        val isPmAvailable: Boolean = true,
-        val permable: Permable = PermissionFactory.hasPermission(),
-        val invoke: (MessageCreateEvent, MutableList<String>, JSONObject) -> Mono<*>
-) {
-    /**
-     * Build an [Command]
-     */
-    fun build() = object : ICommand(LangFillableContent.getFromCommandName(name), isPmAvailable, category, permable) {
-        override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<*> =
-                invoke.invoke(e, args, MessageHandler.data.getJSONObject(name).getJSONObject("response"))
-    }
+abstract class Command(val cfg: CommandConfig) : ICommand {
+    val container = MessageHandler.MessageContainer(cfg.name)
+
+    override fun help(e: MessageCreateEvent): Mono<*> =
+            e.message.guild
+                    .map { g -> g.id.asLong() }
+                    .flatMap { id -> GuildFactory.getObject(id) }
+                    .zipWith(e.message.channel)
+                    .flatMap { zip ->
+                        val ch = zip.t2
+                        val g = zip.t1
+
+                        ch.createEmbed { embed ->
+                            embed.update(e.message.author.get())
+
+                            embed.setTitle(cfg.name)
+                            embed.setDescription(cfg.desc)
+
+                            MessageHandler.data
+                                    .getJSONObject(cfg.name)
+                                    .getJSONObject("help")
+                                    .toMap()
+                                    .forEach { pair ->
+                                        embed.addField("${g.prefix}${pair.key}", pair.value.toString(), false)
+                                    }
+                        }
+                    }
+                    .then()
 }

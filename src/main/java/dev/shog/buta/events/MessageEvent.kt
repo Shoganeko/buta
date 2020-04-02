@@ -4,7 +4,8 @@ import dev.shog.buta.DEV
 import dev.shog.buta.commands.UserThreadHandler
 import dev.shog.buta.commands.api.factory.GuildFactory
 import dev.shog.buta.commands.api.factory.UserFactory
-import dev.shog.buta.commands.obj.Categories
+import dev.shog.buta.commands.obj.Category
+import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.obj.ICommand
 import dev.shog.buta.events.obj.Event
 import dev.shog.buta.handle.SwearFilter
@@ -22,12 +23,12 @@ import reactor.kotlin.core.publisher.toMono
  * A message event.
  * It's also a coroutine scope, allowing for a thread for each new message.
  */
-object MessageEvent : Event, CoroutineScope by CoroutineScope(Dispatchers.Unconfined) {
-    override fun invoke(event: discord4j.core.event.domain.Event): Mono<Void> {
+object MessageEvent : Event {
+    override fun invoke(event: discord4j.core.event.domain.Event): Mono<*> {
         require(event is MessageCreateEvent)
 
         if (!event.message.author.isPresent || !event.guildId.isPresent)
-            return Mono.empty()
+            return Mono.empty<Void>()
 
         val obj = event.message.author.get().id.asLong()
 
@@ -47,27 +48,27 @@ object MessageEvent : Event, CoroutineScope by CoroutineScope(Dispatchers.Unconf
                             .map { data -> data.split(" ") }
                             .filter { split -> split.isNotEmpty() }
                             .flatMap { con ->
-                                Flux.fromIterable(ICommand.COMMANDS)
+                                Flux.fromIterable(arrayListOf<Command>()) // TODO
                                         .filter { en ->
-                                            con[0].startsWith(en.data.commandName.toLowerCase(), true)
-                                                    || en.data.alias.contains(con[0])
+                                            con[0].startsWith(en.container.name.toLowerCase(), true)
+                                                    || en.container.aliases.contains(con[0])
                                         }
-                                        .filterWhen { en -> en.permable.check(event) }
+                                        .filterWhen { en -> en.cfg.permable.check(event) }
                                         .singleOrEmpty()
-                                        .filter { entry -> UserThreadHandler.can(event.message.author.get(), entry.data.commandName) }
+                                        .filter { entry ->
+                                            UserThreadHandler.can(event.message.author.get(), entry.cfg.name)
+                                        }
                                         .flatMap { entry ->
                                             val author = event.message.author.get()
 
-                                            if (entry.category == Categories.DEVELOPER && !DEV.contains(author.id.asLong()))
+                                            if (entry.cfg.category == Category.DEVELOPER && !DEV.contains(author.id.asLong()))
                                                 event
                                                         .sendMessage("You must be a developer")
-                                                        .then()
                                             else con.toMutableList()
                                                     .toMono()
                                                     .doOnNext { l -> l.removeAt(0) }
                                                     .flatMap { msg -> entry.invoke(event, msg) }
-                                                    .doFinally { UserThreadHandler.finish(author, entry.data.commandName) }
-                                                    .then()
+                                                    .doFinally { UserThreadHandler.finish(author, entry.container.name) }
                                         }
                             }
                 }

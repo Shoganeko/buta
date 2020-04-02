@@ -33,7 +33,7 @@ object Api {
     private val tokenManager by lazy {
         val cfg = APP.getConfigObject<ButaConfig>()
 
-        TokenManager(cfg.creds?.first ?: "", cfg.creds?.second ?: "", APP)
+        TokenManager(cfg.creds?.first ?: "", cfg.creds?.second ?: "")
     }
 
     /**

@@ -33,7 +33,7 @@ dependencies {
     compile "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.3.0"
     compile 'com.konghq:unirest-java:3.1.02'
     compile 'com.sedmelluq:lavaplayer:1.3.32'
-    compile 'com.github.Shoganeko:lib:6e6f131202'
+    compile 'com.github.Shoganeko:lib:8f181aad1e'
     compile 'com.mitchtalmadge:ascii-data:1.4.0'
 }
 compileKotlin {

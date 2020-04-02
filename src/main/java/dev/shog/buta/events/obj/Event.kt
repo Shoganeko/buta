@@ -10,5 +10,5 @@ interface Event {
     /**
      * When that event is invoked.
      */
-    fun invoke(event: Event): Mono<Void>
+    fun invoke(event: Event): Mono<*>
 }

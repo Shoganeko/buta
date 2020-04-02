@@ -83,7 +83,6 @@ object StockHandler {
         return Unirest.get(builtUrl)
                 .asJsonAsync()
                 .toMono()
-                .doOnNext { js -> println(js.body) }
                 .filter { js -> !js.body.`object`.has("Error Message") }
                 .map { js ->
                     val obj = js.body.`object`

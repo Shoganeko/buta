@@ -2,7 +2,7 @@ package dev.shog.buta.handle
 
 import dev.shog.buta.commands.api.Api
 import dev.shog.buta.commands.api.obj.Guild
-import dev.shog.buta.handle.msg.MessageHandler
+import dev.shog.buta.commands.obj.msg.MessageHandler
 import discord4j.core.`object`.entity.channel.TextChannel
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.rest.util.Permission
@@ -33,7 +33,7 @@ object SwearFilter {
                                 messageEvent.message.channel
                                         .flatMap { ch ->
                                             PlaceholderFiller.fillText(guild.swearFilter.second
-                                                    ?: MessageHandler.getMessage("default.swear-filter"), messageEvent)
+                                                            ?: MessageHandler.getMessage("default.swear-filter"), messageEvent)
                                                     .flatMap { msg -> ch.createMessage(msg) }
                                         }
                                         .filterWhen {

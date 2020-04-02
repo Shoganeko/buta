@@ -17,20 +17,6 @@ fun <T> T.ar(): ArrayList<String> =
         arrayListOf(this.toString())
 
 /**
- * Format [str] with [args]
- */
-fun formatTextArray(str: String, args: Collection<*>): String {
-    var newString = str
-
-    args.forEachIndexed { i, arg ->
-        if (newString.contains("{$i}"))
-            newString = newString.replace("{$i}", arg.toString())
-    }
-
-    return newString
-}
-
-/**
  * Gets [TextChannel] from a [guild] that self has permissions to.
  */
 fun getChannelsWithPermission(guild: Guild): Flux<TextChannel> {
@@ -59,17 +45,5 @@ fun <T : Any> T?.orElse(t: T): T =
 fun <T> Mono<T>.info(func: (T) -> String): Mono<T> =
         doOnNext { LOGGER.info(func.invoke(it)) }
 
-/**
- * Format using [formatTextArray].
- */
-fun String.form(vararg args: Any?): String =
-        formatTextArray(this, args.toList())
-
 fun <T : HttpResponse<*>> Mono<T>.logRequest(method: String, url: String): Mono<T> =
         info { resp -> "${resp.isSuccess.toSuccessfulFailed().capitalize()} -> $method $url : ${resp.status} : ${resp.body}\n" }
-
-/**
- * Format using [formatTextArray].
- */
-fun String.formArray(args: ArrayList<*>): String =
-        formatTextArray(this, args)

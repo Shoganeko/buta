@@ -1,7 +1,17 @@
 package dev.shog.buta
 
+import dev.shog.buta.commands.CommandHandler
 import dev.shog.buta.commands.api.factory.GuildFactory
 import dev.shog.buta.commands.commands.*
+import dev.shog.buta.commands.commands.`fun`.*
+import dev.shog.buta.commands.commands.admin.*
+import dev.shog.buta.commands.commands.dev.PresenceCommand
+import dev.shog.buta.commands.commands.dev.StatDumpCommand
+import dev.shog.buta.commands.commands.dev.ThreadViewCommand
+import dev.shog.buta.commands.commands.gamble.BalanceCommand
+import dev.shog.buta.commands.commands.gamble.DailyRewardCommand
+import dev.shog.buta.commands.commands.info.*
+import dev.shog.buta.commands.commands.music.*
 import dev.shog.buta.commands.obj.ICommand
 import dev.shog.buta.events.GuildJoinEvent
 import dev.shog.buta.events.GuildLeaveEvent
@@ -42,7 +52,7 @@ import kotlin.system.exitProcess
 
 
 /** Developers */
-val DEV = arrayOf(274712215024697345L)
+val DEV = arrayOf(274712215024697345L, 173495550467899402L)
 
 /**
  * The main LOGGER
@@ -87,7 +97,7 @@ fun main(arg: Array<String>) {
 
         PRODUCTION = false
 
-        Hooks.onOperatorDebug() // this adds extra debug onto reactor stuff, super cool
+        Hooks.onOperatorDebug()
     }, {
         LOGGER.info("Starting Buta in Production mode")
 
@@ -95,7 +105,9 @@ fun main(arg: Array<String>) {
     })
 
     args.nHook("--block-init-notif") {
-        runBlocking { APP.getWebhook().sendMessage("Buta (v${APP.getVersion()}) is now online!") }
+        runBlocking {
+            APP.getWebhook().sendMessage("Buta (v${APP.getVersion()}) is now online!")
+        }
     }
 
     Hooks.onOperatorError { t, _ -> t.logDiscord(APP) }
@@ -106,7 +118,13 @@ fun main(arg: Array<String>) {
 
     initCommands()
 
-    Runtime.getRuntime().addShutdownHook(Thread(StatisticsManager::save))
+    Runtime.getRuntime().addShutdownHook(Thread {
+        StatisticsManager.save()
+
+        runBlocking {
+            APP.getWebhook().sendMessage("Buta (v${APP.getVersion()}) is now offline! :(")
+        }
+    })
 
     Timer().schedule(timerTask {
         StatisticsManager.save()
@@ -122,13 +140,13 @@ fun main(arg: Array<String>) {
                 CLIENT = gw
 
                 // a guild event
-                gw.on(GuildCreateEvent::class.java) { GuildJoinEvent.invoke(it) }.subscribe()
+                gw.on(GuildCreateEvent::class.java) { GuildJoinEvent.invoke(it).then() }.subscribe()
 
                 // a guild leave event
-                gw.on(GuildDeleteEvent::class.java) { GuildLeaveEvent.invoke(it) }.subscribe()
+                gw.on(GuildDeleteEvent::class.java) { GuildLeaveEvent.invoke(it).then() }.subscribe()
 
                 // a message event
-                gw.on(MessageCreateEvent::class.java) { MessageEvent.invoke(it) }.subscribe()
+                gw.on(MessageCreateEvent::class.java) { MessageEvent.invoke(it).then() }.subscribe()
 
                 // for b!uno
                 gw.on(ReactionAddEvent::class.java) { ev ->
@@ -192,11 +210,5 @@ fun main(arg: Array<String>) {
  * Initialize commands
  */
 private fun initCommands() {
-    initInfo()
-    initAudio()
-    initFun()
-    initAdmin()
-    initDev()
-    initGambling()
-    ICommand.COMMANDS.add(Uno)
+    CommandHandler.add(LeaveCommand(), PauseCommand(), PlayCommand(), QueueCommand(), SkipCommand(), VolumeCommand(), StockViewCommand(), PingCommand(), HelpCommand(), GuildCommand(), AboutCommand(), BalanceCommand(), DailyRewardCommand(), Uno, RedditCommand(), WordReverseCommand(), RedditCommand(), RandomWordCommand(), DogGalleryCommand(), DogFactCommand(), CatGalleryCommand(), CatFactCommand(), PresenceCommand(), StatDumpCommand(), ThreadViewCommand(), JoinRoleCommand(), NsfwToggleCommand(), PurgeCommand(), SetPrefixCommand(), SwearFilterCommand())
 }

@@ -12,8 +12,8 @@ embed:
     request: "Requested by {0}"
 
 error:
-    internal_error: There was an issue doing that!
-    invalid_arguments: Invalid arguments!
+    internal-error: There was an issue doing that!
+    invalid-arguments: Invalid arguments!
 
 catfact:
     name: CatFact
@@ -129,6 +129,8 @@ ping:
     desc: Pong!
     help:
         - ping: Pong!
+    alias:
+        - pp
     response:
         one: "Ping! {0}ms"
         two: "{0}ms"
@@ -142,6 +144,8 @@ nsfw:
     desc: Toggle NSFW status in a channel.
     help:
         - nsfw: Toggle on or off NSFW status.
+    alias:
+        - setnsfw
     response:
         default: "NSFW status has been `{0}`."
 play:
@@ -251,6 +255,8 @@ purge:
     help:
         - purge: "Remove the last 100 messages."
         - purge {amount}: "Remove up to 500 of the last messages."
+    alias:
+        - massdelete
     response:
         default: "Removed the last `{0}` messages. "
 about:
@@ -258,6 +264,8 @@ about:
     desc: Get information about Buta.
     help:
         - about: About Buta
+    alias:
+        - a
     response:
         default: "Support Discord: https://shog.dev/discord\n\nIf there's an issue, please feel inclined to report it at https://github.com/shoganeko/buta"
 help:
@@ -265,6 +273,8 @@ help:
     desc: Get help about the various commands of Buta.
     help:
         - help {command}: Get help about a specific command.
+    alias:
+        - h
     response:
         command: "`{0}`, "
         cat-pair: "**{0}**: \n{1}"
@@ -279,6 +289,8 @@ joinrole:
         - joinrole: "View the Join Role status."
         - joinrole role {role name}: "Set a Join Role using the role's name."
         - joinrole set {true/false}: "Turn Join Role on or off."
+    alias:
+        - joinr
     response:
         on-set: "Join role is currently `{0}` and set to `{1}`.\nMake sure the bot has permission to add this role to others. This will **NOT** work without the permission `Adminstrator`, and won't if the bot doesn't have correct hierarchy. (Bot needs role over role to set)"
         un-set: "Join role is currently `{0}` and unset."
@@ -299,6 +311,8 @@ dailyreward:
 statdump:
     name: StatDump
     desc: Dump statistics.
+    alias:
+        - statd
     help:
         - statdump: Dump statistics.
         - statdump save: Save statistics to disk.
@@ -308,6 +322,8 @@ statdump:
 viewthreads:
     name: ViewThreads
     desc: View your current threads.
+    alias:
+        - viewth
     help:
         - viewthreads: View your current threads.
         - viewthreads clear: Clear your current threads.
@@ -336,6 +352,8 @@ guild:
     help:
         - guild: "Get information about your guild."
         - guild global: "Get information about all the guilds within Buta."
+    alias:
+        - g
     response:
         local-guild:
             image: "{0}"
@@ -376,6 +394,8 @@ prefix:
 uno:
     name: Uno
     desc: Play uno with Buta.
+    alias:
+        - AM_PLAYING_UNO
     help:
         - uno: "Play Uno"
         - uno end: "End the Uno game"
