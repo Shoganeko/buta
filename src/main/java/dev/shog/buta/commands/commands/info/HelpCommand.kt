@@ -1,5 +1,6 @@
 package dev.shog.buta.commands.commands.info
 
+import dev.shog.buta.DEV
 import dev.shog.buta.commands.CommandHandler
 import dev.shog.buta.commands.obj.Category
 import dev.shog.buta.commands.obj.Command
@@ -11,7 +12,6 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toFlux
-import java.util.stream.Collectors
 
 class HelpCommand : Command(CommandConfig(
         "help",
@@ -35,10 +35,15 @@ class HelpCommand : Command(CommandConfig(
         }
 
         return Category.values().toFlux()
+                .filter { cat ->
+                    if (cat == Category.DEVELOPER)
+                        DEV.contains(e.message.author.get().id.asLong())
+                    else true
+                }
                 .flatMap { cat ->
                     CommandHandler.COMMANDS.toFlux()
                             .filter { cmd -> cmd.cfg.category == cat }
-                            .filterWhen { cmd -> cmd.cfg.permable.hasPermission(e.message.author.get()) }
+                            .filterWhen { cmd -> cmd.cfg.permable.check(e) }
                             .map { cmd -> container.getMessage("command", cmd.cfg.name) }
                             .collectList()
                             .filter { list -> list.isNotEmpty() }

@@ -22,7 +22,7 @@ object MessageHandler {
          * A message with [link] or [args].
          */
         fun getMessage(link: String, vararg args: Any?): String =
-                MessageHandler.getMessage("$key.response.$link", args)
+                MessageHandler.getMessage("$key.response.$link", *args)
 
         /**
          * A message with [link] or [args].

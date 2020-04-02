@@ -55,6 +55,8 @@ catgallery:
         - catgal
         - cg
     response:
+        response: ""
+    embeds:
         embed:
             desc: "Retrieved from thecatapi.com"
             image: "{0}"
@@ -67,6 +69,8 @@ doggallery:
         - doggal
         - dg
     response:
+        response: ""
+    embeds:
         embed:
             desc: "Retrieved from thedogapi.com"
             image: "{0}"
@@ -80,6 +84,7 @@ reddit:
     response:
         no-nsfw: "The post is NSFW, and the channel isn't!"
         invalid-subreddit: "This subreddit doesn't exist!"
+    embeds:
         reddit-post:
             title: "{0}"
             url: "http://reddit.com{0}"
@@ -161,6 +166,7 @@ play:
         not-in-buta-channel: "You aren't in the same voice channel as Buta!"
         no-matches: "There was no matches for `{0}`."
         issue-loading: "There was an issue with that track."
+    embeds:
         queued-song:
             title: "Queued: __{0}__"
             url: "{0}"
@@ -192,6 +198,7 @@ volume:
         no-args: "Please include a volume!"
         not-in-channel: "You cannot adjust the volume when you're not in a channel!"
         not-in-buta-channel: "You aren't in the same voice channel as Buta!"
+    embeds:
         invalid-volume:
             desc: "Please use a volume between 0 and 100!"
         set-volume:
@@ -216,10 +223,11 @@ pause:
     alias:
         - pa
     response:
-        pause-embed:
-            desc: "Music has been {0}."
         not-in-channel: "You cannot pause the music when you're not in a channel!"
         not-in-buta-channel: "You aren't in the same voice channel as Buta!"
+    embeds:
+        pause-embed:
+            desc: "Music has been {0}."
 queue:
     name: Queue
     desc: Play music in a channel.
@@ -232,10 +240,11 @@ queue:
             title: "{0}"
             desc: "`{0}` [{1}]"
             inline: "true"
-        queue:
-            desc: "Currently Playing: `{0}`"
         not-in-channel: "You cannot view the queue when you're not in a channel!"
         not-in-buta-channel: "You aren't in the same voice channel as Buta!"
+    embeds:
+        queue:
+            desc: "Currently Playing: `{0}`"
 skip:
     name: Skip
     desc: Play music in a channel.
@@ -279,6 +288,7 @@ help:
         command: "`{0}`, "
         cat-pair: "**{0}**: \n{1}"
         inv-cmd: "Invalid command!"
+    embeds:
         help-embed:
             title: "Help"
             desc: "Support Discord: https://shog.dev/discord\nThis only shows commands **you** have permission to!\n\n{0}"
@@ -354,7 +364,7 @@ guild:
         - guild global: "Get information about all the guilds within Buta."
     alias:
         - g
-    response:
+    embeds:
         local-guild:
             image: "{0}"
             title: "Guild - {0}"
@@ -367,9 +377,11 @@ guild:
                     title: "Creation Date"
                     desc: "{0}"
                     inline: "false"
-        global-guild:
-            desc: "Buta currently has a total of {0} guilds and {1} users."
-            image: "{0}"
+            global-guild:
+                desc: "Buta currently has a total of {0} guilds and {1} users."
+                image: "{0}"
+    response:
+        default: ""
 balance:
     name: Balance
     desc: Get your balance.
@@ -424,63 +436,63 @@ uno:
             game-start-time: "You started this game at {0}."
         other:
             cards: "**{0}**: {1}\n"
-        embeds:
-            init-game:
-                desc: "You have started a game of Uno!\nSelect a playable card below, and play it with `{0}uno play **number**`.\nOnce you're about to play your last card, make sure to type `{0}uno call`."
-                field:
-                    first-played-card:
-                        title: "First Played Card"
-                        desc: "{0}"
-                        inline: "true"
-                    user-cards:
-                        title: "Your Cards"
-                        desc: "{0}"
-                        inline: "false"
-            game-info:
-                desc: "You started this game at {0}."
-                field:
-                    buta-cards:
-                        title: "Buta"
-                        desc: "{0} cards"
-                        inline: "true"
-                    last-played-card:
-                        title: "Last Played Card"
-                        desc: "{0}"
-                        inline: "true"
-                    user-cards:
-                        title: "Your Cards"
-                        desc: "{0}"
-                        inline: "false"
-            play-cards:
-                desc: "{0}"
-                field:
-                    buta-cards:
-                        title: "Buta"
-                        desc: "{0} cards"
-                        inline: "true"
-                    last-played-card:
-                        title: "Last Played Card"
-                        desc: "{0}"
-                        inline: "true"
-                    user-cards:
-                        title: "Your Cards"
-                        desc: "{0}"
-                        inline: "false"
-            draw-card:
-                field:
-                    buta-cards:
-                        title: "Buta"
-                        desc: "{0} cards"
-                        inline: "true"
-                    last-played-card:
-                        title: "Last Played Card"
-                        desc: "{0}"
-                        inline: "true"
-                    drawn-card:
-                        title: "Drawn Card"
-                        desc: "{0}"
-                        inline: "true"
-                    user-cards:
-                        title: "Your Cards"
-                        desc: "{0}"
-                        inline: "false"
+    embeds:
+        init-game:
+            desc: "You have started a game of Uno!\nSelect a playable card below, and play it with `{0}uno play **number**`.\nOnce you're about to play your last card, make sure to type `{0}uno call`."
+            field:
+                first-played-card:
+                    title: "First Played Card"
+                    desc: "{0}"
+                    inline: "true"
+                user-cards:
+                    title: "Your Cards"
+                    desc: "{0}"
+                    inline: "false"
+        game-info:
+            desc: "You started this game at {0}."
+            field:
+                buta-cards:
+                    title: "Buta"
+                    desc: "{0} cards"
+                    inline: "true"
+                last-played-card:
+                    title: "Last Played Card"
+                    desc: "{0}"
+                    inline: "true"
+                user-cards:
+                    title: "Your Cards"
+                    desc: "{0}"
+                    inline: "false"
+        play-cards:
+            desc: "{0}"
+            field:
+                buta-cards:
+                    title: "Buta"
+                    desc: "{0} cards"
+                    inline: "true"
+                last-played-card:
+                    title: "Last Played Card"
+                    desc: "{0}"
+                    inline: "true"
+                user-cards:
+                    title: "Your Cards"
+                    desc: "{0}"
+                    inline: "false"
+        draw-card:
+            field:
+                buta-cards:
+                    title: "Buta"
+                    desc: "{0} cards"
+                    inline: "true"
+                last-played-card:
+                    title: "Last Played Card"
+                    desc: "{0}"
+                    inline: "true"
+                drawn-card:
+                    title: "Drawn Card"
+                    desc: "{0}"
+                    inline: "true"
+                user-cards:
+                    title: "Your Cards"
+                    desc: "{0}"
+                    inline: "false"

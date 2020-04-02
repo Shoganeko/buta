@@ -50,7 +50,6 @@ object PermissionFactory {
 
                 override fun hasPermission(member: Member): Mono<Boolean> =
                         member.basePermissions
-                                .flatMap { p -> Mono.just(p.toList()) }
                                 .map { p -> p.containsAll(guild.toList()) }
             }
 }
