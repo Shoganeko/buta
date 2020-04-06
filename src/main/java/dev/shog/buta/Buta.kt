@@ -204,9 +204,7 @@ fun main(arg: Array<String>) {
                 }.subscribe()
 
                 // a ready event
-                gw.on(ReadyEvent::class.java) { event ->
-                    PresenceHandler.invoke(event)
-                }.subscribe()
+                gw.on(ReadyEvent::class.java, PresenceHandler::invoke).subscribe()
             }
             .block()
 }
@@ -215,5 +213,35 @@ fun main(arg: Array<String>) {
  * Initialize commands
  */
 private fun initCommands() {
-    CommandHandler.add(LeaveCommand(), PauseCommand(), PlayCommand(), QueueCommand(), SkipCommand(), VolumeCommand(), StockViewCommand(), PingCommand(), HelpCommand(), GuildCommand(), AboutCommand(), BalanceCommand(), DailyRewardCommand(), Uno, RedditCommand(), WordReverseCommand(), RedditCommand(), RandomWordCommand(), DogGalleryCommand(), DogFactCommand(), CatGalleryCommand(), CatFactCommand(), PresenceCommand(), StatDumpCommand(), ThreadViewCommand(), JoinRoleCommand(), NsfwToggleCommand(), PurgeCommand(), SetPrefixCommand(), SwearFilterCommand())
+    CommandHandler.add(LeaveCommand(),
+            PauseCommand(),
+            PlayCommand(),
+            QueueCommand(),
+            SkipCommand(),
+            VolumeCommand(),
+            StockViewCommand(),
+            PingCommand(),
+            HelpCommand(),
+            GuildCommand(),
+            AboutCommand(),
+            BalanceCommand(),
+            DailyRewardCommand(),
+            Uno,
+            RedditCommand(),
+            WordReverseCommand(),
+            RedditCommand(),
+            RandomWordCommand(),
+            DogGalleryCommand(),
+            DogFactCommand(),
+            CatGalleryCommand(),
+            CatFactCommand(),
+            PresenceCommand(),
+            StatDumpCommand(),
+            ThreadViewCommand(),
+            JoinRoleCommand(),
+            NsfwToggleCommand(),
+            PurgeCommand(),
+            SetPrefixCommand(),
+            SwearFilterCommand()
+    )
 }

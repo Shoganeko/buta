@@ -13,8 +13,8 @@ import discord4j.rest.util.Permission
 import reactor.core.publisher.Mono
 
 class SwearFilterCommand : Command(CommandConfig(
-        name = "purge",
-        desc = "Mass delete commands.",
+        name = "swearfilter",
+        desc = "Manage the swearfilter.",
         category = Category.ADMINISTRATOR,
         permable = PermissionFactory.hasPermission(Permission.ADMINISTRATOR)
 )) {

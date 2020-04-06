@@ -11,12 +11,11 @@ import org.json.JSONObject
 import reactor.core.publisher.Mono
 import java.awt.Color
 import java.time.Instant
-import kotlin.random.Random
 
 /**
  * Updates [EmbedCreateSpec] with default values.
  */
-fun EmbedCreateSpec.updateDefault(color: Color = Color(Random.nextInt(), Random.nextInt(), Random.nextInt())): EmbedCreateSpec {
+fun EmbedCreateSpec.updateDefault(color: Color = getRandomColor()): EmbedCreateSpec {
     setColor(color)
     setTimestamp(Instant.now())
 
@@ -26,7 +25,7 @@ fun EmbedCreateSpec.updateDefault(color: Color = Color(Random.nextInt(), Random.
 /**
  * Updates [EmbedCreateSpec] with proper footer, and avatar url, and applies [updateDefault].
  */
-fun EmbedCreateSpec.update(user: User, color: Color = Color(96, 185, 233)): EmbedCreateSpec {
+fun EmbedCreateSpec.update(user: User, color: Color = getRandomColor()): EmbedCreateSpec {
     setFooter(MessageHandler.getMessage("embed.request", user.username), user.avatarUrl)
 
     return updateDefault(color)
@@ -44,9 +43,15 @@ fun MessageCreateEvent.sendPlainText(msg: String): Mono<Message> =
 fun MessageCreateEvent.sendMessage(container: MessageHandler.MessageContainer, link: String, vararg args: Any?): Mono<Message> =
         sendPlainText(container.getMessage(link, *args))
 
+/**
+ * Send link message in a channel where [MessageCreateEvent] was created.
+ */
 fun MessageCreateEvent.sendMessage(link: String, vararg args: Any?): Mono<Message> =
         sendPlainText(MessageHandler.getMessage(link, *args))
 
+/**
+ * A field replacement.
+ */
 data class FieldReplacement(val title: ArrayList<String>?, val desc: ArrayList<String>?)
 
 /**

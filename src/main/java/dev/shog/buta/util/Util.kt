@@ -1,6 +1,8 @@
 package dev.shog.buta.util
 
+import dev.shog.buta.APP
 import dev.shog.buta.LOGGER
+import dev.shog.lib.util.logDiscord
 import dev.shog.lib.util.toSuccessfulFailed
 import discord4j.core.`object`.entity.Guild
 import discord4j.core.`object`.entity.channel.TextChannel
@@ -8,7 +10,11 @@ import discord4j.rest.util.Permission
 import kong.unirest.HttpResponse
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.util.*
+import java.awt.Color
+import kotlin.random.Random
+
+fun getRandomColor(): Color =
+        Color(Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
 
 /**
  * Get an array of [T]
@@ -46,4 +52,9 @@ fun <T> Mono<T>.info(func: (T) -> String): Mono<T> =
         doOnNext { LOGGER.info(func.invoke(it)) }
 
 fun <T : HttpResponse<*>> Mono<T>.logRequest(method: String, url: String): Mono<T> =
-        info { resp -> "${resp.isSuccess.toSuccessfulFailed().capitalize()} -> $method $url : ${resp.status} : ${resp.body}\n" }
+        info { resp ->
+            ("Web Request (${resp.isSuccess.toSuccessfulFailed().capitalize()}): $method $url -> ${resp.status}" +
+                    "\n\n${resp.body}").logDiscord(APP)
+
+            "${resp.isSuccess.toSuccessfulFailed().capitalize()} -> $method $url : ${resp.status} : ${resp.body}"
+        }

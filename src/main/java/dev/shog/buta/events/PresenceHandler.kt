@@ -51,8 +51,8 @@ object PresenceHandler : Event {
     override fun invoke(event: discord4j.core.event.domain.Event): Mono<Void> {
         require(event is ReadyEvent)
 
-        updateTimer(event.client)
         return updatePresences()
+                .doOnNext { updateTimer(event.client) }
     }
 
     /**

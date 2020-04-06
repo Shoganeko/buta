@@ -396,6 +396,8 @@ balance:
 prefix:
     name: Prefix
     desc: Get and set your Guild's prefix.
+    alias:
+        - setprefix
     help:
         - prefix: "Get your guild's current prefix."
         - prefix {new prefix}: "Set your guild's prefix."

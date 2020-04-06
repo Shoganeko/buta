@@ -11,8 +11,8 @@ import discord4j.rest.util.Permission
 import reactor.core.publisher.Mono
 
 class SetPrefixCommand : Command(CommandConfig(
-        name = "purge",
-        desc = "Mass delete commands.",
+        name = "prefix",
+        desc = "Manage the prefix.",
         category = Category.ADMINISTRATOR,
         permable = PermissionFactory.hasPermission(Permission.ADMINISTRATOR)
 )) {
