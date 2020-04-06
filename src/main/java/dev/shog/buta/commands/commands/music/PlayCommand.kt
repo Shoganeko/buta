@@ -19,8 +19,8 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
 
 class PlayCommand : Command(CommandConfig(
-        "volume",
-        "Change the volume on the music.",
+        "play",
+        "Play a song.",
         Category.MUSIC,
         PermissionFactory.hasPermission()
 )) {

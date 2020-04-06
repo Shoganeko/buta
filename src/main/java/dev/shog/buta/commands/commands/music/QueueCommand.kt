@@ -16,8 +16,8 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
 
 class QueueCommand : Command(CommandConfig(
-        "pause",
-        "Pause music.",
+        "queue",
+        "View the queue.",
         Category.MUSIC,
         PermissionFactory.hasPermission()
 )) {
