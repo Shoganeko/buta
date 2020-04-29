@@ -30,7 +30,7 @@ class GuildMusicManager(manager: AudioPlayerManager) {
         disconnectTimer.schedule(timerTask {
             shouldDisconnect()
                     .filter { it }
-                    .map { connection?.disconnect() }
+                    .map { stop(true) }
                     .subscribe()
         }, checkInterval, checkInterval)
     }
