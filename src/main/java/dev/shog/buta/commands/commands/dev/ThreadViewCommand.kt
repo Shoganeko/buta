@@ -17,7 +17,7 @@ class ThreadViewCommand : Command(CommandConfig(
         PermissionFactory.hasPermission()
 )) {
     override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<*> {
-        if (args[0].equals("clear", true)) {
+        if (args.size == 1 && args[0].equals("clear", true)) {
             return e.sendMessage(container, "cleared")
                     .doOnNext { UserThreadHandler.users.remove(e.message.author.get()) }
         }

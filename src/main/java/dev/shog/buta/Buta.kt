@@ -11,7 +11,7 @@ import dev.shog.buta.commands.commands.gamble.BalanceCommand
 import dev.shog.buta.commands.commands.gamble.DailyRewardCommand
 import dev.shog.buta.commands.commands.info.*
 import dev.shog.buta.commands.commands.music.*
-import dev.shog.buta.commands.list.music.LeaveCommand
+import dev.shog.buta.commands.commands.music.LeaveCommand
 import dev.shog.buta.events.GuildJoinEvent
 import dev.shog.buta.events.GuildLeaveEvent
 import dev.shog.buta.events.MessageEvent
@@ -22,7 +22,6 @@ import dev.shog.buta.handle.audio.AudioManager
 import dev.shog.lib.app.AppBuilder
 import dev.shog.lib.app.cfg.ConfigHandler
 import dev.shog.lib.hook.DiscordWebhook
-import dev.shog.lib.hook.WebhookUser
 import dev.shog.lib.util.ArgsHandler
 import dev.shog.lib.util.logDiscord
 import discord4j.core.DiscordClientBuilder
@@ -67,7 +66,7 @@ val APP = AppBuilder("Buta", 2.0F)
             val obj = cfg.asObject<ButaConfig>()
             useCache = true
             logger = LoggerFactory.getLogger("Buta")
-            webhook = DiscordWebhook(obj.webhook!!, WebhookUser("Buta", ""))
+            webhook = DiscordWebhook(obj.webhook!!)
         }
         .build()
 
@@ -134,7 +133,7 @@ fun main(arg: Array<String>) {
             .gateway()
             .setSharding(ShardingStrategy.recommended())
             .setInitialStatus { Presence.online(Activity.watching("you")) }
-            .connect()
+            .login()
             .doOnNext { gw ->
                 CLIENT = gw
 

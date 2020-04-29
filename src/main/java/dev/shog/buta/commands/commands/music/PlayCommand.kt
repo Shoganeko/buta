@@ -10,10 +10,7 @@ import dev.shog.buta.commands.obj.CommandConfig
 import dev.shog.buta.commands.permission.PermissionFactory
 import dev.shog.buta.handle.audio.AudioManager
 import dev.shog.buta.handle.audio.GuildMusicManager
-import dev.shog.buta.util.FieldReplacement
-import dev.shog.buta.util.applyEmbed
-import dev.shog.buta.util.ar
-import dev.shog.buta.util.sendMessage
+import dev.shog.buta.util.*
 import dev.shog.lib.util.fancyDate
 import discord4j.core.event.domain.message.MessageCreateEvent
 import reactor.core.publisher.Mono
@@ -95,7 +92,7 @@ class PlayCommand : Command(CommandConfig(
                                         )
                                 )
                             }
-                            .flatMap { e.sendMessage(container, audioTrack.info.uri) }
+                            .flatMap { e.sendPlainText(audioTrack.info.uri) }
                 }
                 .subscribe()
     }

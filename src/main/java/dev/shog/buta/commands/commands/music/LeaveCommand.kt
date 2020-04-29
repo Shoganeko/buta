@@ -1,4 +1,4 @@
-package dev.shog.buta.commands.list.music
+package dev.shog.buta.commands.commands.music
 
 import dev.shog.buta.APP
 import dev.shog.buta.commands.commands.music.audioCommand

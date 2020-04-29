@@ -102,7 +102,8 @@ object Api {
         val prod = cfg.api?.second ?: ""
         val dev = cfg.api?.first ?: ""
 
-        return PRODUCTION.eitherOr(prod, dev)
+//        return PRODUCTION.eitherOr(prod, dev)
+        return "http://localhost:8080"
     }
 
     /**

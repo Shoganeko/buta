@@ -17,7 +17,7 @@ class RandomWordCommand : Command(CommandConfig(
         PermissionFactory.hasPermission()
 )) {
     override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<*> {
-        return Unirest.get("https://random-word-api.herokuapp.com/word?key=LN5TCZP1")
+        return Unirest.get("https://random-word-api.herokuapp.com/word")
                 .asJsonAsync()
                 .toMono()
                 .map { js -> js.body.array }

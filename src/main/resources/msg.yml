@@ -137,13 +137,7 @@ ping:
     alias:
         - pp
     response:
-        one: "Ping! {0}ms"
-        two: "{0}ms"
-        three: "dang da ping do be at {0}ms"
-        four: "WHY DO THE PING BE AT {0}MS"
-        five: "who let the ping be at {0}ms"
-        six: "ping ping ping ping ping ping ping ping ping {0}ms"
-        seven: "WHO LET DA BING BE AT {0}ms"
+        default: "{0}ms"
 nsfw:
     name: NSFW
     desc: Toggle NSFW status in a channel.
@@ -236,15 +230,15 @@ queue:
     alias:
         - q
     response:
-        song:
-            title: "{0}"
-            desc: "`{0}` [{1}]"
-            inline: "true"
         not-in-channel: "You cannot view the queue when you're not in a channel!"
         not-in-buta-channel: "You aren't in the same voice channel as Buta!"
     embeds:
         queue:
             desc: "Currently Playing: `{0}`"
+        song:
+            title: "{0}"
+            desc: "`{0}` [{1}]"
+            inline: "true"
 skip:
     name: Skip
     desc: Play music in a channel.

@@ -16,7 +16,7 @@ class PingCommand : Command(CommandConfig(
         PermissionFactory.hasPermission()
 )) {
     override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<*> =
-            e.sendMessage(container, "ping",
+            e.sendMessage(container, "default",
                     e.client.gatewayClientGroup.find(e.shardInfo.index).map(GatewayClient::getResponseTime)
             )
 }

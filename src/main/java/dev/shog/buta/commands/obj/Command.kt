@@ -4,6 +4,7 @@ import dev.shog.buta.commands.api.factory.GuildFactory
 import dev.shog.buta.commands.obj.msg.MessageHandler
 import dev.shog.buta.util.update
 import discord4j.core.event.domain.message.MessageCreateEvent
+import org.json.JSONObject
 import reactor.core.publisher.Mono
 
 /**
@@ -29,13 +30,15 @@ abstract class Command(val cfg: CommandConfig) : ICommand {
                             embed.setTitle(cfg.name)
                             embed.setDescription(cfg.desc)
 
-                            MessageHandler.data
+                            val obj = MessageHandler.data
                                     .getJSONObject(cfg.name)
                                     .getJSONObject("help")
-                                    .toMap()
-                                    .forEach { pair ->
-                                        embed.addField("${g.prefix}${pair.key}", pair.value.toString(), false)
-                                    }
+
+                            obj.keys().forEach { key ->
+                                val value = obj.getString(key)
+
+                                embed.addField("${g.prefix}${key}", value, false)
+                            }
                         }
                     }
                     .then()
