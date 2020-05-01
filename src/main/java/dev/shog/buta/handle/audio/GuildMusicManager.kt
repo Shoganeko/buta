@@ -28,10 +28,12 @@ class GuildMusicManager(manager: AudioPlayerManager) {
 
     init {
         disconnectTimer.schedule(timerTask {
-            shouldDisconnect()
-                    .filter { it }
-                    .map { stop(true) }
-                    .subscribe()
+            try {
+                shouldDisconnect()
+                        .filter { it }
+                        .map { stop(true) }
+                        .subscribe()
+            } catch (ex: Exception) { }
         }, checkInterval, checkInterval)
     }
 
