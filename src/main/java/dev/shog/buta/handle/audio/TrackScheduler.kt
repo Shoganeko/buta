@@ -9,8 +9,8 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 /**
  * This class schedules tracks for the audio player. It contains the queue of tracks.
  */
-class TrackScheduler(private val player: AudioPlayer) : AudioEventAdapter() {
-    private val queue: ArrayList<AudioTrack> = arrayListOf()
+class TrackScheduler(private val parent: GuildMusicManager) : AudioEventAdapter() {
+    private val queue: MutableList<AudioTrack> = mutableListOf()
 
     /**
      * Add the next track to queue or play right away if nothing is in the queue.
@@ -18,7 +18,9 @@ class TrackScheduler(private val player: AudioPlayer) : AudioEventAdapter() {
      * @param track The track to play or add to queue.
      */
     fun queue(track: AudioTrack) {
-        if (!player.startTrack(track, true)) {
+        parent.rescheduleTimer() // account for the activity
+
+        if (!parent.player.startTrack(track, true)) {
             queue.add(track)
         }
     }
@@ -26,8 +28,7 @@ class TrackScheduler(private val player: AudioPlayer) : AudioEventAdapter() {
     /**
      * Get tracks
      */
-    fun getTracks(): List<AudioTrack> =
-            queue.toList()
+    fun getTracks(): List<AudioTrack> = queue
 
     /**
      * Clear tracks
@@ -46,7 +47,7 @@ class TrackScheduler(private val player: AudioPlayer) : AudioEventAdapter() {
         val newTrack = queue.first()
         queue.removeAt(0)
 
-        player.startTrack(newTrack, false)
+        parent.player.startTrack(newTrack, false)
         return newTrack
     }
 

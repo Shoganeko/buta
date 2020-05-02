@@ -33,7 +33,7 @@ object Api {
     private val tokenManager by lazy {
         val cfg = APP.getConfigObject<ButaConfig>()
 
-        TokenManager(cfg.creds?.first ?: "", cfg.creds?.second ?: "")
+        TokenManager(cfg.creds?.first ?: "", cfg.creds?.second ?: "", baseUrl = "https://api.shog.dev")
     }
 
     /**
@@ -102,8 +102,7 @@ object Api {
         val prod = cfg.api?.second ?: ""
         val dev = cfg.api?.first ?: ""
 
-//        return PRODUCTION.eitherOr(prod, dev)
-        return "http://localhost:8080"
+        return PRODUCTION.eitherOr(prod, dev)
     }
 
     /**

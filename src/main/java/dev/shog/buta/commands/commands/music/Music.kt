@@ -46,12 +46,14 @@ fun audioCommand(
                                             .flatMap { sameChannel -> if (!sameChannel) notInRightVoice else inVoice }
                                 else voiceChannel
                                         .flatMap { vc ->
-                                            if (shouldJoinWhenNotEntered)
+                                            if (shouldJoinWhenNotEntered) {
+                                                guild.voiceChannel = vc
+
                                                 vc
                                                         .join { spec -> spec.setProvider(guild.provider) }
                                                         .doOnNext { join -> guild.connection = join }
                                                         .flatMap { inVoice }
-                                            else notEntered
+                                            } else notEntered
                                         }
                             }
                 } else notInVoice

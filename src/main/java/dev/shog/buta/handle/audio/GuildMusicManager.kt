@@ -8,6 +8,7 @@ import dev.shog.buta.commands.obj.msg.MessageHandler
 import discord4j.core.`object`.entity.channel.MessageChannel
 import discord4j.core.`object`.entity.channel.VoiceChannel
 import discord4j.voice.VoiceConnection
+import discord4j.voice.VoiceGatewayEvent
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import java.util.*
@@ -19,37 +20,19 @@ import kotlin.concurrent.timerTask
  * This manages a guild's music operations.
  */
 class GuildMusicManager(manager: AudioPlayerManager) {
-    private val disconnectTimer = Timer()
-
-    /**
-     * The interval in-between inactivity checks.
-     */
+    private var disconnectTimer = Timer()
     private val checkInterval = TimeUnit.MINUTES.toMillis(20)
 
-    init {
-        disconnectTimer.schedule(timerTask {
-            try {
-                shouldDisconnect()
-                        .filter { it }
-                        .map { stop(true) }
-                        .subscribe()
-            } catch (ex: Exception) { }
-        }, checkInterval, checkInterval)
-    }
+    /**
+     * If a disconnect timer has been set.
+     */
+    private var hasQueuedTimer = true
 
     /**
-     * If the bot should disconnect.
+     * The bot should disconnect if there's
      */
-    private fun shouldDisconnect(): Mono<Boolean> {
-        if (voiceChannel != null) {
-            val empty = voiceChannel!!.voiceStates.count().map { count -> count == 1L }
-            val emptyQueue = scheduler.getTracks().isEmpty()
-
-            return empty.map { it || emptyQueue }
-        }
-
-        return true.toMono()
-    }
+    private fun shouldDisconnect(): Boolean =
+            scheduler.getTracks().isEmpty() && player.playingTrack == null
 
     /**
      * The actual player.
@@ -59,7 +42,7 @@ class GuildMusicManager(manager: AudioPlayerManager) {
     /**
      * The track scheduler. This allows for a queue of songs.
      */
-    val scheduler: TrackScheduler = TrackScheduler(player)
+    val scheduler: TrackScheduler = TrackScheduler(this)
 
     /**
      * This provides audio to Discord.
@@ -88,15 +71,53 @@ class GuildMusicManager(manager: AudioPlayerManager) {
         scheduler.clearTracks()
         player.stopTrack()
 
+        disconnectTimer.cancel()
+        disconnectTimer = Timer()
+        hasQueuedTimer = false
+
         if (sendMessage)
-            requestChannel?.createMessage(MessageHandler.getMessage("music.stop-playing"))?.subscribe()
+            requestChannel
+                    ?.createMessage(MessageHandler.getMessage("music.stop-playing"))
+                    ?.subscribe()
+
         try {
-            connection?.disconnect()
+            connection?.disconnect()?.subscribe()
         } catch (ex: Exception) { // I don't know why there's an error, but a try block fixes it :)
+            ex.printStackTrace()
         }
+    }
+
+    /**
+     * Cancel [disconnectTimer] and do [scheduleTimer]. This will reset the timer and account for activity.
+     */
+    fun rescheduleTimer() {
+        disconnectTimer.cancel()
+        disconnectTimer = Timer()
+        scheduleTimer()
+    }
+
+    /**
+     * Schedule the timer.
+     */
+    private fun scheduleTimer(): Mono<Unit> {
+        hasQueuedTimer = true
+
+        disconnectTimer.schedule(timerTask {
+            hasQueuedTimer = false
+
+            try {
+                if (shouldDisconnect()) {
+                    stop(true)
+                } else scheduleTimer()
+            } catch (ex: Exception) {
+            }
+        }, checkInterval)
+
+        return Unit.toMono()
     }
 
     init {
         player.addListener(scheduler)
+        scheduleTimer()
     }
 }

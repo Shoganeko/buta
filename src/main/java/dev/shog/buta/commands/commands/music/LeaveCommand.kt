@@ -11,7 +11,9 @@ import dev.shog.buta.handle.audio.GuildMusicManager
 import dev.shog.buta.util.sendMessage
 import dev.shog.lib.util.logDiscord
 import discord4j.core.event.domain.message.MessageCreateEvent
+import discord4j.rest.util.Snowflake
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 class LeaveCommand : Command(CommandConfig(
         "leave",
@@ -33,13 +35,5 @@ class LeaveCommand : Command(CommandConfig(
      * Disconnect from [guild] using [e]
      */
     private fun disconnect(e: MessageCreateEvent, guild: GuildMusicManager): Mono<*> =
-            e.message.channel
-                    .doOnNext { ch -> guild.requestChannel = ch }
-                    .doOnNext {
-                        try {
-                            guild.connection?.disconnect() // Message is handled in VoiceUpdate event
-                        } catch (ex: Exception) {
-                            ex.logDiscord(APP)
-                        }
-                    }
+            guild.stop(true).toMono()
 }

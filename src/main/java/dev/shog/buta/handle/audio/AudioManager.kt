@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 object AudioManager {
     val playerManager = DefaultAudioPlayerManager()
-    private val musicManagers = ConcurrentHashMap<Snowflake, GuildMusicManager>()
+    val musicManagers = ConcurrentHashMap<Snowflake, GuildMusicManager>()
 
     init {
         AudioSourceManagers.registerRemoteSources(playerManager)

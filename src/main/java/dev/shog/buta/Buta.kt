@@ -168,23 +168,22 @@ fun main(arg: Array<String>) {
                 gw.on(VoiceStateUpdateEvent::class.java) { ev ->
                     ev.toMono()
                             .filterWhen { event ->
-                                event.client.selfId
-                                        .map { id -> id == event.current.userId }
+                                event.client.selfId.map { id -> id == event.current.userId }
                             }
                             .filter { event -> !event.current.channelId.isPresent }
                             .map { event -> AudioManager.getGuildMusicManager(event.current.guildId) }
-                            .doOnNext { guild -> guild.stop(true) }
+                            .doOnNext { guild -> guild.stop(false) }
                             .then()
                 }.subscribe()
 
                 // a member join event
                 gw.on(MemberJoinEvent::class.java) { event ->
                     event.toMono().filterWhen { e ->
-                                e.client.self
-                                        .flatMap { self -> self.asMember(e.guildId) }
-                                        .flatMap { member -> member.basePermissions }
-                                        .map { perms -> perms.contains(Permission.ADMINISTRATOR) }
-                            }
+                        e.client.self
+                                .flatMap { self -> self.asMember(e.guildId) }
+                                .flatMap { member -> member.basePermissions }
+                                .map { perms -> perms.contains(Permission.ADMINISTRATOR) }
+                    }
                             .flatMap { e ->
                                 GuildFactory.getObject(e.guildId.asLong())
                                         .map { guild -> guild.joinRole }
