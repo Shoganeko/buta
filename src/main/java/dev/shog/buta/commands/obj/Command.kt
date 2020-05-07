@@ -18,11 +18,10 @@ abstract class Command(val cfg: CommandConfig) : ICommand {
     override fun help(e: MessageCreateEvent): Mono<*> =
             e.message.guild
                     .map { g -> g.id.asLong() }
-                    .flatMap { id -> GuildFactory.getObject(id) }
                     .zipWith(e.message.channel)
                     .flatMap { zip ->
                         val ch = zip.t2
-                        val g = zip.t1
+                        val g = GuildFactory.getOrCreate(zip.t1)
 
                         ch.createEmbed { embed ->
                             embed.update(e.message.author.get())

@@ -14,40 +14,35 @@ import reactor.core.publisher.Mono
 
 class SwearFilterCommand : Command(CommandConfig(
         name = "swearfilter",
-        desc = "Manage the swearfilter.",
+        desc = "Manage the swear filter.",
         category = Category.ADMINISTRATOR,
         permable = PermissionFactory.hasPermission(Permission.ADMINISTRATOR)
 )) {
     override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<*> {
         return when {
             args.isEmpty() -> {
-                GuildFactory.getObject(e.guildId.get().asLong())
-                        .map { obj -> obj.swearFilter }
-                        .flatMap { sf -> e.sendMessage(container, "default", sf.first?.toEnabledDisabled(), sf.second) }
+                val guild = GuildFactory.getOrCreate(e.guildId.get().asLong())
+
+                e.sendMessage(container, "default", guild.swearFilterOn.toEnabledDisabled(), guild.swearFilterMsg)
             }
 
             args.getOrNull(0).equals("message", true) && args.size > 1 -> {
                 args.removeAt(0)
                 val message = args.joinToString(" ")
 
-                GuildFactory.getObject(e.guildId.get().asLong())
-                        .doOnNext { obj -> obj.swearFilter = Duo(obj.swearFilter.first, message) }
-                        .flatMap { obj -> GuildFactory.updateObject(e.guildId.get().asLong(), obj) }
-                        .flatMap { e.sendMessage(container, "message", message) }
-                        .then()
+                GuildFactory.getOrCreate(e.guildId.get().asLong()).swearFilterMsg = message
+
+                e.sendMessage(container, "message", message)
             }
 
             args.getOrNull(0).equals("toggle", true) -> {
-                var setTo = false
 
-                GuildFactory.getObject(e.guildId.get().asLong())
-                        .doOnNext { obj -> setTo = (obj.swearFilter.first ?: false).not() }
-                        .doOnNext { obj -> obj.swearFilter = Duo(setTo, obj.swearFilter.second) }
-                        .flatMap { obj ->
-                            e.sendMessage(container, "toggle", setTo.toEnabledDisabled())
-                                    .flatMap { GuildFactory.updateObject(e.guildId.get().asLong(), obj) }
-                        }
-                        .then()
+                val guild = GuildFactory.getOrCreate(e.guildId.get().asLong())
+
+                val setTo = !guild.swearFilterOn
+                guild.swearFilterOn = setTo
+
+                e.sendMessage(container, "toggle", setTo.toEnabledDisabled())
             }
 
             else -> e.sendMessage("error.invalid-arguments").then()

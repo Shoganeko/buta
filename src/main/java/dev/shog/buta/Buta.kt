@@ -90,6 +90,13 @@ fun main(arg: Array<String>) {
 
     val args = ArgsHandler()
 
+    // This uses a local AWS URL
+    args.hook("--local-prod") {
+        LOGGER.info("Starting Buta in Production mode")
+
+        PRODUCTION = true
+    }
+
     args.multiHook("--prod", {
         LOGGER.info("Starting Buta in Non-Production mode")
 
@@ -185,18 +192,18 @@ fun main(arg: Array<String>) {
                                 .map { perms -> perms.contains(Permission.ADMINISTRATOR) }
                     }
                             .flatMap { e ->
-                                GuildFactory.getObject(e.guildId.asLong())
+                                GuildFactory.getOrCreate(e.guildId.asLong()).toMono()
                                         .map { guild -> guild.joinRole }
-                                        .filter { duo -> duo.first == true && duo.second != null && duo.second != -1L }
-                                        .filterWhen { duo ->
+                                        .filter { role -> role != -1L }
+                                        .filterWhen { role ->
                                             e.client.self
                                                     .flatMap { self -> self.asMember(e.guildId) }
                                                     .zipWith(e.guild.flatMap { guild ->
-                                                        guild.getRoleById(Snowflake.of(duo.second!!))
+                                                        guild.getRoleById(Snowflake.of(role))
                                                     })
                                                     .flatMap { zip -> zip.t1.hasHigherRoles(setOf(zip.t2.id)) }
                                         }
-                                        .flatMap { duo -> e.member.addRole(Snowflake.of(duo.second!!)) }
+                                        .flatMap { role -> e.member.addRole(Snowflake.of(role)) }
                             }
                             .then()
                 }.subscribe()
@@ -219,6 +226,7 @@ private fun initCommands() {
             VolumeCommand(),
             StockViewCommand(),
             PingCommand(),
+            ScoreCommand(),
             HelpCommand(),
             GuildCommand(),
             AboutCommand(),

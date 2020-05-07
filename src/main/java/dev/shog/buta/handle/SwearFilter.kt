@@ -1,11 +1,13 @@
 package dev.shog.buta.handle
 
-import dev.shog.buta.commands.api.Api
 import dev.shog.buta.commands.api.obj.Guild
 import dev.shog.buta.commands.obj.msg.MessageHandler
+import dev.shog.buta.util.nullIfBlank
 import discord4j.core.`object`.entity.channel.TextChannel
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.rest.util.Permission
+import kong.unirest.Unirest
+import org.json.JSONArray
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
@@ -14,7 +16,12 @@ import reactor.kotlin.core.publisher.toMono
  * Swear filter stuff.
  */
 object SwearFilter {
-    private val SWEARS: Flux<String> = Api.getSwears().cache()
+    private val SWEARS: Flux<String> =
+            Unirest.get("https://raw.githubusercontent.com/Shoganeko/badwords/master/array.js")
+                    .asStringAsync()
+                    .toMono()
+                    .map { resp -> JSONArray(resp.body.toString()) }
+                    .flatMapIterable { js -> js.toList().map { it.toString() } }
 
     /**
      * If a message contains a swear.
@@ -24,7 +31,7 @@ object SwearFilter {
      * @param messageEvent The event where [message] was sent.
      */
     fun hasSwears(guild: Guild, message: String, messageEvent: MessageCreateEvent): Mono<Boolean> =
-            if (guild.swearFilter.first == true) {
+            if (guild.swearFilterOn) {
                 SWEARS
                         .filter { swear -> message.contains(swear) }
                         .collectList()
@@ -32,8 +39,8 @@ object SwearFilter {
                             if (list.isNotEmpty() || isAss(message)) {
                                 messageEvent.message.channel
                                         .flatMap { ch ->
-                                            PlaceholderFiller.fillText(guild.swearFilter.second
-                                                            ?: MessageHandler.getMessage("default.swear-filter"), messageEvent)
+                                            PlaceholderFiller.fillText(guild.swearFilterMsg.nullIfBlank()
+                                                    ?: MessageHandler.getMessage("default.swear-filter"), messageEvent)
                                                     .flatMap { msg -> ch.createMessage(msg) }
                                         }
                                         .filterWhen {

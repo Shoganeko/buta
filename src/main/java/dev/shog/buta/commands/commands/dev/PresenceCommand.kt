@@ -1,6 +1,5 @@
 package dev.shog.buta.commands.commands.dev
 
-import dev.shog.buta.commands.api.Api
 import dev.shog.buta.commands.obj.Category
 import dev.shog.buta.commands.obj.Command
 import dev.shog.buta.commands.obj.CommandConfig
@@ -23,15 +22,9 @@ class PresenceCommand : Command(CommandConfig(
 )) {
     override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<*> {
         return when {
-            args.size == 1 && args[0].equals("server", true) -> {
-                e.sendMessage(container, "server-side")
-                        .flatMap { Api.refreshPresences() }
-                        .then()
-            }
-
             args.size == 1 && args[0].equals("local", true) -> {
                 e.sendMessage(container, "client-side")
-                        .flatMap { PresenceHandler.updatePresences() }
+                        .doOnNext { PresenceHandler.updatePresences() }
                         .then()
             }
 

@@ -197,6 +197,45 @@ volume:
             desc: "Please use a volume between 0 and 100!"
         set-volume:
             desc: "Volume has been set to `{0}`."
+score:
+    name: Score
+    desc: The score command.
+    help:
+        - score: View your scores.
+        - score {label} +/-x: Adjust your first score.
+        - score {label} +/-x: Adjust your second score.
+        - score {label} +/-x: Adjust your third score.
+        - score label 1 {label}: Change your first score's label.
+        - score label 2 {label}: Change your second score's label.
+        - score label 3 {label}: Change your third score's label.
+    alias:
+        - s
+    embeds:
+        view-scores:
+            title: "{0}'s scores."
+            field:
+                one:
+                    title: "{0}"
+                    desc: "{0}"
+                    inline: "true"
+                two:
+                    title: "{0}"
+                    desc: "{0}"
+                    inline: "true"
+                three:
+                    title: "{0}"
+                    desc: "{0}"
+                    inline: "true"
+    response:
+        score-entry: "\n`{0}`: {1}{2}"
+        invalid-label: "That label doesn't exist!"
+        update-score: "`{0}` is now `{1}`!"
+        score-header: "Your current score board: \n{0}"
+        invalid-number: "The score should be 1, 2 or 3."
+        update-label: "Score number `{0}` label's now `{1}`!"
+        invalid-modify: "The modifier should be in the format of -x or +x."
+        too-long: "The label is too long! (Must be under 32)"
+        already-exists: "That label already exists!"
 leave:
     name: Leave
     desc: Leave the voice channel and clear the queue.
@@ -291,15 +330,15 @@ joinrole:
     desc: Have a role that is given to everyone on join.
     help:
         - joinrole: "View the Join Role status."
-        - joinrole role {role name}: "Set a Join Role using the role's name."
-        - joinrole set {true/false}: "Turn Join Role on or off."
+        - joinrole role {role name}: "Set a Join Role using the role's name. By doing this, you are also enabling join role."
+        - joinrole disable: "Turn Join Role off."
     alias:
         - joinr
     response:
-        on-set: "Join role is currently `{0}` and set to `{1}`.\nMake sure the bot has permission to add this role to others. This will **NOT** work without the permission `Adminstrator`, and won't if the bot doesn't have correct hierarchy. (Bot needs role over role to set)"
-        un-set: "Join role is currently `{0}` and unset."
+        on-set: "Join role is currently enable and set to `{0}`.\nMake sure the bot has permission to add this role to others. This will **NOT** work without the permission `Adminstrator`, and won't if the bot doesn't have correct hierarchy. (Bot needs role over role to set)"
+        un-set: "Join role is currently disabled."
         set: "Join role has been set to `{0}`."
-        toggle: "Join role has been `{0}`."
+        disabled: "Join role has been disabled."
         invalid-role: "That role couldn't be found!"
         invalid-args: "Invalid arguments!"
 dailyreward:

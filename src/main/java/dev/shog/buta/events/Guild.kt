@@ -10,6 +10,7 @@ import dev.shog.buta.util.info
 import discord4j.core.event.domain.guild.GuildCreateEvent
 import discord4j.core.event.domain.guild.GuildDeleteEvent
 import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.toMono
 
 /**
  * A guild join event.
@@ -18,7 +19,7 @@ object GuildJoinEvent : Event {
     override fun invoke(event: discord4j.core.event.domain.Event): Mono<*> {
         require(event is GuildCreateEvent)
 
-        return GuildFactory.getObject(event.guild.id.asLong())
+        return Mono.justOrEmpty(GuildFactory.getObject(event.guild.id.asLong()))
                 .hasElement()
                 .filter { !it }
                 .flatMap {
@@ -27,7 +28,7 @@ object GuildJoinEvent : Event {
                             .flatMap { ch -> ch.createMessage(MessageHandler.getMessage("join-message")) }
                             .flatMap { ch -> ch.guild }
                             .info { g -> "Join message has been sent to ${g.name}." }
-                            .flatMap { GuildFactory.createObject(event.guild.id.asLong()) }
+                            .doOnNext { GuildFactory.createObject(event.guild.id.asLong()) }
                 }
                 .then()
     }
@@ -40,6 +41,6 @@ object GuildLeaveEvent : Event {
     override fun invoke(event: discord4j.core.event.domain.Event): Mono<*> {
         require(event is GuildDeleteEvent)
 
-        return GuildFactory.deleteObject(event.guildId.asLong())
+        return GuildFactory.deleteObject(event.guildId.asLong()).toMono()
     }
 }

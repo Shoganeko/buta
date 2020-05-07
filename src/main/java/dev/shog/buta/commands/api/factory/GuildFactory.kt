@@ -1,43 +1,95 @@
 package dev.shog.buta.commands.api.factory
 
-import dev.shog.buta.commands.api.Api
-import dev.shog.buta.commands.api.obj.ButaObject
 import dev.shog.buta.commands.api.obj.Guild
-import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toMono
+import dev.shog.buta.commands.api.obj.User
+import dev.shog.buta.handle.PostgreSql
+import dev.shog.lib.util.eitherOr
 
+/**
+ * Manage [User]'s.
+ */
 object GuildFactory : ButaFactory<Guild>() {
-    override fun updateObject(id: Long, obj: ButaObject): Mono<Void> {
-        assert(id == obj.id && obj is Guild)
+    /**
+     * Create a [User] with their [id].
+     */
+    override fun createObject(id: Long): Guild {
+        val guild = Guild(id, "b!", "", "", -1L, "{user}, you can't swear!", false, "[]")
 
-        cache[id] = obj as Guild
-
-        return Api.updateGuildObject(obj)
-    }
-
-    override fun createObject(id: Long): Mono<Void> {
-        if (cache.contains(id))
-            return Mono.error(Exception("Trying to create an object that already exists!"))
-
-        val guild = Guild().apply { this.id = id }
+        PostgreSql.createConnection()
+                .prepareStatement("INSERT INTO buta.guilds (id, prefix, join_message, leave_message, join_role, swear_filter_msg, disabled_categories, swear_filter_on) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+                .apply {
+                    setLong(1, id)
+                    setString(2, guild.prefix)
+                    setString(3, guild.joinMessage)
+                    setString(4, guild.leaveMessage)
+                    setLong(5, guild.joinRole)
+                    setString(6, guild.swearFilterMsg)
+                    setString(7, guild.disabledCategories)
+                    setInt(8, guild.swearFilterOn.eitherOr(1, 0))
+                }
+                .executeUpdate()
 
         cache[id] = guild
 
-        return Api.uploadGuildObject(guild)
+        return guild
     }
 
-    override fun deleteObject(id: Long): Mono<Void> {
+    /**
+     * Delete an object with an [id].
+     */
+    override fun deleteObject(id: Long) {
+        PostgreSql.createConnection()
+                .prepareStatement("DELETE FROM buta.guilds WHERE id = ?")
+                .apply { setLong(1, id) }
+                .executeUpdate()
+
         cache.remove(id)
-
-        return Api.deleteGuildObject(id)
     }
 
-    override fun getObject(id: Long): Mono<Guild> {
-        val ch = cache[id]
+    /**
+     * Get a [User] by their [id].
+     */
+    override fun getObject(id: Long): Guild? {
+        if (cache.containsKey(id))
+            return cache[id]!!
 
-        return if (ch != null && ch as? Guild != null)
-            ch.toMono()
-        else Api.getGuildObject(id)
-                .doOnNext { guild -> cache[id] = guild }
+        val rs = PostgreSql.createConnection()
+                .prepareStatement("SELECT * FROM buta.guilds WHERE id = ?")
+                .apply { setLong(1, id) }
+                .executeQuery()
+
+        while (rs.next()) {
+            val guild = Guild(
+                    rs.getLong("id"),
+                    rs.getString("prefix"),
+                    rs.getString("join_message"),
+                    rs.getString("leave_message"),
+                    rs.getLong("join_role"),
+                    rs.getString("swear_filter_msg"),
+                    rs.getInt("swear_filter_on") == 1,
+                    rs.getString("disabled_categories")
+            )
+
+            cache[rs.getLong("id")] = guild
+
+            return guild
+        }
+
+        return null
+    }
+
+    /**
+     * Update [obj] using [key].
+     */
+    override fun updateObject(obj: Guild, key: Pair<String, Any>) {
+        cache[obj.id] = obj
+
+        PostgreSql.createConnection()
+                .prepareStatement("UPDATE buta.guilds SET ${key.first} = ? WHERE id = ?")
+                .apply {
+                    setObject(1, key.second)
+                    setLong(2, obj.id)
+                }
+                .executeUpdate()
     }
 }

@@ -29,9 +29,8 @@ object MessageEvent : Event {
 
         val obj = event.message.author.get().id.asLong()
 
-        return UserFactory.objectExists(obj)
-                .doOnNext { if (!it) UserFactory.createObject(obj).subscribe() }
-                .flatMap { GuildFactory.getObject(event.guildId.get().asLong()) }
+        return UserFactory.getOrCreate(obj).toMono()
+                .map { GuildFactory.getOrCreate(event.guildId.get().asLong()) }
                 .flatMap { g ->
                     val content = event.message.content
                             .orElse("")

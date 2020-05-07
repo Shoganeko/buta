@@ -38,17 +38,17 @@ class JoinRoleCommand : Command(CommandConfig(
 
     override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<*> {
         if (args.isEmpty()) {
-            val guild = GuildFactory.getObject(e.guildId.get().asLong())
+            val guild = GuildFactory.getOrCreate(e.guildId.get().asLong())
 
-            return guild
+            return guild.toMono()
                     .map { g -> g.joinRole }
-                    .flatMap { role -> Mono.zip(getRole(role.second, e.guild), role.toMono()) }
-                    .flatMap { zip ->
-                        val en = zip.t2.first?.toEnabledDisabled() ?: "disabled"
+                    .flatMap { role ->
+                        val name = getRole(role, e.guild)
+                        val en = guild.isJoinRoleEnabled().toEnabledDisabled()
 
-                        if (zip.t2.second == null)
-                            e.sendMessage(container, "un-set", en, zip.t1)
-                        else e.sendMessage(container, "on-set", en, zip.t1)
+                        if (!guild.isJoinMessageEnabled())
+                            e.sendMessage(container, "un-set", en, name)
+                        else e.sendMessage(container, "on-set", en, name)
                     }
                     .then()
         }
@@ -68,25 +68,17 @@ class JoinRoleCommand : Command(CommandConfig(
                             if (roleId == -1L) {
                                 e.sendMessage(container, "invalid-role")
                             } else e.sendMessage(container, "set", built.toLowerCase())
-                                    .flatMap {
-                                        GuildFactory.getObject(e.guildId.get().asLong())
-                                                .map { guild -> guild.apply { joinRole = joinRole.first!! duo roleId } }
-                                                .flatMap { guild -> GuildFactory.updateObject(guild.id, guild) }
+                                    .doOnNext {
+                                        GuildFactory.getOrCreate(e.guildId.get().asLong())
+                                                .joinRole = roleId
                                     }
                         }
                         .then()
             }
 
-            "set" -> {
-                if (args.size != 2)
-                    return e.sendMessage(container, "invalid-args")
-
-                val boolean = args[1].toBoolean()
-
-                e.sendMessage(container, "toggle", boolean.toEnabledDisabled())
-                        .flatMap { GuildFactory.getObject(e.guildId.get().asLong()) }
-                        .map { guild -> guild.apply { joinRole = boolean duo (joinRole.second ?: -1) } }
-                        .flatMap { guild -> GuildFactory.updateObject(guild.id, guild) }
+            "disable" -> {
+                e.sendMessage(container, "disable")
+                        .doOnNext { GuildFactory.getObject(e.guildId.get().asLong())?.joinRole = -1L }
                         .then()
             }
 

@@ -17,24 +17,21 @@ class DailyRewardCommand : Command(CommandConfig(
         PermissionFactory.hasPermission()
 )) {
     override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<*> {
-        return UserFactory.getObject(e.message.author.get().id.asLong())
-                .flatMap { user ->
-                    when {
-                        System.currentTimeMillis() - user.lastDailyReward >= TIME_UNTIL_DAILY_REWARD ->
-                            e.sendMessage(container, "successful", DAILY_REWARD_AMOUNT)
-                                    .doOnNext {
-                                        UserFactory.updateObject(user.id, user.apply {
-                                            lastDailyReward = System.currentTimeMillis()
-                                            bal += DAILY_REWARD_AMOUNT
-                                        })
-                                    }
+        val user = UserFactory.getOrCreate(e.message.author.get().id.asLong())
 
-                        else -> e.sendMessage(
-                                container,
-                                "unsuccessful",
-                                (TIME_UNTIL_DAILY_REWARD - (System.currentTimeMillis() - user.lastDailyReward)).fancyDate()
-                        )
-                    }
-                }
+        return when {
+            System.currentTimeMillis() - user.lastDailyReward >= TIME_UNTIL_DAILY_REWARD ->
+                e.sendMessage(container, "successful", DAILY_REWARD_AMOUNT)
+                        .doOnNext {
+                            user.bal += DAILY_REWARD_AMOUNT
+                            user.lastDailyReward += System.currentTimeMillis()
+                        }
+
+            else -> e.sendMessage(
+                    container,
+                    "unsuccessful",
+                    (TIME_UNTIL_DAILY_REWARD - (System.currentTimeMillis() - user.lastDailyReward)).fancyDate()
+            )
+        }
     }
 }

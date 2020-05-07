@@ -25,15 +25,11 @@ class SetPrefixCommand : Command(CommandConfig(
 
             e.message.guild
                     .map { g -> g.id.asLong() }
-                    .flatMap { id -> GuildFactory.getObject(id) }
-                    .doOnNext { g -> g.prefix = newPrefix }
-                    .flatMap { g -> GuildFactory.updateObject(g.id, g) }
+                    .doOnNext { id -> GuildFactory.getOrCreate(id).prefix = newPrefix }
                     .then(e.sendMessage(container, "set", newPrefix))
         } else e.message.guild
                 .map { g -> g.id.asLong() }
-                .flatMap(GuildFactory::getObject)
-                .map { g -> g.prefix }
-                .flatMap { p -> e.sendMessage(container, "prefix", p) }
+                .flatMap { id -> e.sendMessage(container, "prefix", GuildFactory.getOrCreate(id).prefix) }
     }
 
 }

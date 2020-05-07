@@ -22,15 +22,11 @@ class BalanceCommand : Command(CommandConfig(
                     if (mentions.isNotEmpty()) {
                         val id = mentions[0].id.asLong()
 
-                        UserFactory.getObject(id)
-                                .map { user -> user.bal }
-                                .flatMap { bal -> e.sendMessage(container, "other", mentions[0].username, bal) }
+                        e.sendMessage(container, "other", mentions[0].username, UserFactory.getOrCreate(id).bal)
                     } else {
                         val id = e.message.author.get().id.asLong()
 
-                        UserFactory.getObject(id)
-                                .map { user -> user.bal }
-                                .flatMap { bal -> e.sendMessage(container, "self", bal) }
+                        e.sendMessage(container, "self", UserFactory.getOrCreate(id).bal)
                     }
                 }
                 .then()

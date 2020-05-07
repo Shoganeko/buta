@@ -243,10 +243,8 @@ object Uno : Command(CommandConfig("uno", "Play Uno", Category.FUN, PermissionFa
         val uno = game.second
 
         return e.message.channel
-                .zipWith(GuildFactory.getObject(e.guildId.get().asLong()))
-                .flatMap { zip ->
-                    val ch = zip.t1
-                    val g = zip.t2
+                .flatMap { ch ->
+                    val g = GuildFactory.getOrCreate(e.guildId.get().asLong())
 
                     ch.createEmbed { embed ->
                         if (game.first) {

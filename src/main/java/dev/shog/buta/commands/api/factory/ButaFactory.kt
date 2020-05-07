@@ -8,17 +8,41 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * Creates and manages [User]s.
  */
-abstract class ButaFactory<T> {
-    val cache = ConcurrentHashMap<Long, ButaObject>()
+abstract class ButaFactory<T : ButaObject> {
+    /**
+     * A user's ID to their [ButaObject] instance.
+     */
+    val cache = ConcurrentHashMap<Long, T>()
 
-    abstract fun updateObject(id: Long, obj: ButaObject): Mono<Void>
+    /**
+     * Update a user by using their [obj] to set [key]. This is using [obj] since it needs to reset the cache.
+     */
+    abstract fun updateObject(obj: T, key: Pair<String, Any>)
 
-    abstract fun createObject(id: Long): Mono<Void>
+    /**
+     * Create a [ButaObject] with the ID [id].
+     */
+    abstract fun createObject(id: Long): T
 
-    abstract fun deleteObject(id: Long): Mono<Void>
+    /**
+     * Delete a [ButaObject] with the ID [id].
+     */
+    abstract fun deleteObject(id: Long)
 
-    fun objectExists(id: Long): Mono<Boolean> =
-            getObject(id).hasElement()
+    /**
+     * See if a [ButaObject] exists.
+     */
+    fun objectExists(id: Long): Boolean =
+            getObject(id) != null
 
-    abstract fun getObject(id: Long): Mono<T>
+    /**
+     * [getObject] or [createObject] if it doesn't exist.
+     */
+    fun getOrCreate(id: Long): T =
+            getObject(id) ?: createObject(id)
+
+    /**
+     * Get object with [id].
+     */
+    abstract fun getObject(id: Long): T?
 }

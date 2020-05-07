@@ -13,6 +13,9 @@ import reactor.core.publisher.Mono
 import java.awt.Color
 import kotlin.random.Random
 
+fun String.nullIfBlank(): String? =
+        if (isBlank()) null else this
+
 fun getRandomColor(): Color =
         Color(Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
 
