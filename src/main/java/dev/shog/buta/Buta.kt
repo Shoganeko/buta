@@ -1,17 +1,17 @@
 package dev.shog.buta
 
 import dev.shog.buta.commands.CommandHandler
-import dev.shog.buta.commands.api.factory.GuildFactory
+import dev.shog.buta.api.factory.GuildFactory
 import dev.shog.buta.commands.commands.`fun`.*
 import dev.shog.buta.commands.commands.admin.*
-import dev.shog.buta.commands.commands.dev.PresenceCommand
-import dev.shog.buta.commands.commands.dev.StatDumpCommand
-import dev.shog.buta.commands.commands.dev.ThreadViewCommand
-import dev.shog.buta.commands.commands.gamble.BalanceCommand
-import dev.shog.buta.commands.commands.gamble.DailyRewardCommand
+import dev.shog.buta.commands.commands.dev.PRESENCE_COMMAND
+import dev.shog.buta.commands.commands.dev.STAT_DUMP_COMMAND
+import dev.shog.buta.commands.commands.dev.THREAD_VIEW_COMMAND
+import dev.shog.buta.commands.commands.gamble.BALANCE_COMMAND
+import dev.shog.buta.commands.commands.gamble.DAILY_REWARD_AMOUNT
+import dev.shog.buta.commands.commands.gamble.DAILY_REWARD_COMMAND
 import dev.shog.buta.commands.commands.info.*
 import dev.shog.buta.commands.commands.music.*
-import dev.shog.buta.commands.commands.music.LeaveCommand
 import dev.shog.buta.events.GuildJoinEvent
 import dev.shog.buta.events.GuildLeaveEvent
 import dev.shog.buta.events.MessageEvent
@@ -24,6 +24,7 @@ import dev.shog.lib.app.cfg.ConfigHandler
 import dev.shog.lib.hook.DiscordWebhook
 import dev.shog.lib.util.ArgsHandler
 import dev.shog.lib.util.logDiscord
+import discord4j.common.util.Snowflake
 import discord4j.core.DiscordClientBuilder
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.presence.Activity
@@ -37,8 +38,8 @@ import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.event.domain.message.ReactionAddEvent
 import discord4j.core.shard.ShardingStrategy
 import discord4j.rest.util.Permission
-import discord4j.rest.util.Snowflake
 import kotlinx.coroutines.runBlocking
+import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Hooks
 import reactor.core.publisher.Mono
@@ -89,13 +90,6 @@ fun main(arg: Array<String>) {
     }
 
     val args = ArgsHandler()
-
-    // This uses a local AWS URL
-    args.hook("--local-prod") {
-        LOGGER.info("Starting Buta in Production mode")
-
-        PRODUCTION = true
-    }
 
     args.multiHook("--prod", {
         LOGGER.info("Starting Buta in Non-Production mode")
@@ -161,21 +155,20 @@ fun main(arg: Array<String>) {
 
                 // for b!uno
                 gw.on(ReactionAddEvent::class.java) { ev ->
-                    if (Uno.wildWaiting.containsKey(ev.userId) && Uno.properColors.contains(ev.emoji)) {
-                        val time = Uno.wildWaiting[ev.userId]?.time ?: 0
+                    if (wildWaiting.containsKey(ev.userId) && properColors.contains(ev.emoji)) {
+                        val time = wildWaiting[ev.userId]?.time ?: 0
 
                         if (System.currentTimeMillis() - time < TimeUnit.SECONDS.toMillis(10))
-                            Uno.completedWildCard(ev)
-                    }
-
-                    Mono.empty<Unit>()
+                            completedWildCard(ev).then()
+                        else Mono.empty<Unit>().then()
+                    } else Mono.empty<Unit>().then()
                 }.subscribe()
 
                 // stop voice when disconnected
                 gw.on(VoiceStateUpdateEvent::class.java) { ev ->
                     ev.toMono()
-                            .filterWhen { event ->
-                                event.client.selfId.map { id -> id == event.current.userId }
+                            .filter { event ->
+                                event.client.selfId == event.current.userId
                             }
                             .filter { event -> !event.current.channelId.isPresent }
                             .map { event -> AudioManager.getGuildMusicManager(event.current.guildId) }
@@ -218,36 +211,36 @@ fun main(arg: Array<String>) {
  * Initialize commands
  */
 private fun initCommands() {
-    CommandHandler.add(LeaveCommand(),
-            PauseCommand(),
-            PlayCommand(),
-            QueueCommand(),
-            SkipCommand(),
-            VolumeCommand(),
-            StockViewCommand(),
-            PingCommand(),
-            ScoreCommand(),
-            HelpCommand(),
-            GuildCommand(),
-            AboutCommand(),
-            BalanceCommand(),
-            DailyRewardCommand(),
-            Uno,
-            RedditCommand(),
-            WordReverseCommand(),
-            RedditCommand(),
-            RandomWordCommand(),
-            DogGalleryCommand(),
-            DogFactCommand(),
-            CatGalleryCommand(),
-            CatFactCommand(),
-            PresenceCommand(),
-            StatDumpCommand(),
-            ThreadViewCommand(),
-            JoinRoleCommand(),
-            NsfwToggleCommand(),
-            PurgeCommand(),
-            SetPrefixCommand(),
-            SwearFilterCommand()
+    CommandHandler.add(LEAVE_COMMAND,
+            PAUSE_COMMAND,
+            PLAY_COMMAND,
+            QUEUE_COMMAND,
+            SKIP_COMMAND,
+            VOLUME_COMMAND,
+            STOCK_VIEW_COMMAND,
+            PING_COMMAND,
+            SCORE_COMMAND,
+            HELP_COMMAND,
+            GUILD_COMMAND,
+            ABOUT_COMMAND,
+            BALANCE_COMMAND,
+            DAILY_REWARD_COMMAND,
+            UNO_COMMAND,
+            REDDIT_COMMAND,
+            WORD_REVERSE_COMMAND,
+            REDDIT_COMMAND,
+            RANDOM_WORD_COMMAND,
+            DOG_GALLERY_COMMAND,
+            DOG_FACT_COMMAND,
+            CAT_GALLERY_COMMAND,
+            CAT_FACT_COMMAND,
+            PRESENCE_COMMAND,
+            STAT_DUMP_COMMAND,
+            THREAD_VIEW_COMMAND,
+            JOIN_ROLE_COMMAND,
+            NSFW_TOGGLE_COMMAND,
+            PURGE_COMMAND,
+            SET_PREFIX_COMMAND,
+            SWEAR_FILTER_COMMAND
     )
 }

@@ -1,7 +1,7 @@
-package dev.shog.buta.commands.api.factory
+package dev.shog.buta.api.factory
 
-import dev.shog.buta.commands.api.obj.Guild
-import dev.shog.buta.commands.api.obj.User
+import dev.shog.buta.api.obj.Guild
+import dev.shog.buta.api.obj.User
 import dev.shog.buta.handle.PostgreSql
 import dev.shog.lib.util.eitherOr
 

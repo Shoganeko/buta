@@ -1,10 +1,9 @@
-package dev.shog.buta.commands.obj
+package dev.shog.buta.api.obj
 
-import dev.shog.buta.commands.api.factory.GuildFactory
-import dev.shog.buta.commands.obj.msg.MessageHandler
+import dev.shog.buta.api.factory.GuildFactory
+import dev.shog.buta.api.obj.msg.MessageHandler
 import dev.shog.buta.util.update
 import discord4j.core.event.domain.message.MessageCreateEvent
-import org.json.JSONObject
 import reactor.core.publisher.Mono
 
 /**
@@ -12,8 +11,11 @@ import reactor.core.publisher.Mono
  *
  * @param cfg The config
  */
-abstract class Command(val cfg: CommandConfig) : ICommand {
+class Command(val cfg: CommandConfig, val cmd: CommandContext.() -> Mono<*>) : ICommand {
     val container = MessageHandler.MessageContainer(cfg.name)
+
+    override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<*> =
+            cmd.invoke(CommandContext(container, e, args))
 
     override fun help(e: MessageCreateEvent): Mono<*> =
             e.message.guild
@@ -27,7 +29,7 @@ abstract class Command(val cfg: CommandConfig) : ICommand {
                             embed.update(e.message.author.get())
 
                             embed.setTitle(cfg.name)
-                            embed.setDescription(cfg.desc)
+                            embed.setDescription(container.desc)
 
                             val obj = MessageHandler.data
                                     .getJSONObject(cfg.name)

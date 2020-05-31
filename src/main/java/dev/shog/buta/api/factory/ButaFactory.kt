@@ -1,8 +1,7 @@
-package dev.shog.buta.commands.api.factory
+package dev.shog.buta.api.factory
 
-import dev.shog.buta.commands.api.obj.ButaObject
-import dev.shog.buta.commands.api.obj.User
-import reactor.core.publisher.Mono
+import dev.shog.buta.api.obj.ButaObject
+import dev.shog.buta.api.obj.User
 import java.util.concurrent.ConcurrentHashMap
 
 /**

@@ -1,6 +1,6 @@
 package dev.shog.buta.commands
 
-import dev.shog.buta.commands.obj.Command
+import dev.shog.buta.api.obj.Command
 
 /**
  * A command handler.

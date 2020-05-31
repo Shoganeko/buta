@@ -1,7 +1,7 @@
-package dev.shog.buta.commands.api.factory
+package dev.shog.buta.api.factory
 
-import dev.shog.buta.commands.api.obj.User
-import dev.shog.buta.commands.commands.info.ScoreCommand
+import dev.shog.buta.api.obj.User
+import dev.shog.buta.commands.commands.info.DEFAULT_SCORE
 import dev.shog.buta.handle.PostgreSql
 
 /**
@@ -12,7 +12,7 @@ object UserFactory : ButaFactory<User>() {
      * Create a [User] with their [id].
      */
     override fun createObject(id: Long): User {
-        val user = User(id, 0, -1, 0, ScoreCommand.DEFAULT.toString())
+        val user = User(id, 0, -1, 0, DEFAULT_SCORE.toString())
 
         PostgreSql.createConnection()
                 .prepareStatement("INSERT INTO buta.users (id, bal, last_daily_reward, xp, score_data) VALUES (?, ?, ?, ? ,?)")

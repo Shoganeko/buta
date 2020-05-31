@@ -1,21 +1,24 @@
 package dev.shog.buta.util
 
 
-import dev.shog.buta.commands.obj.msg.MessageHandler
+import dev.shog.buta.api.obj.CommandContext
+import dev.shog.buta.api.obj.msg.MessageHandler
 import dev.shog.buta.handle.obj.getField
 import discord4j.core.`object`.entity.Message
 import discord4j.core.`object`.entity.User
 import discord4j.core.event.domain.message.MessageCreateEvent
 import discord4j.core.spec.EmbedCreateSpec
+import discord4j.rest.util.Color
 import org.json.JSONObject
 import reactor.core.publisher.Mono
-import java.awt.Color
 import java.time.Instant
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 
 /**
  * Updates [EmbedCreateSpec] with default values.
  */
-fun EmbedCreateSpec.updateDefault(color: Color = getRandomColor()): EmbedCreateSpec {
+fun EmbedCreateSpec.updateDefault(color: Color): EmbedCreateSpec {
     setColor(color)
     setTimestamp(Instant.now())
 
@@ -36,6 +39,24 @@ fun EmbedCreateSpec.update(user: User, color: Color = getRandomColor()): EmbedCr
  */
 fun MessageCreateEvent.sendPlainText(msg: String): Mono<Message> =
         message.channel.flatMap { ch -> ch.createMessage(msg) }
+
+/**
+ * Send [link] with [args]
+ */
+fun CommandContext.sendGlobalMessage(link: String, vararg args: Any): Mono<Message> =
+        sendPlainMessage(MessageHandler.getMessage(link, *args))
+
+/**
+ * Send [link] with [args].
+ */
+fun CommandContext.sendMessage(link: String, vararg args: Any?): Mono<Message> =
+        sendPlainMessage(container.getMessage(link, *args))
+
+/**
+ * Send [message] to [CommandContext.event].
+ */
+fun CommandContext.sendPlainMessage(message: String): Mono<Message> =
+        event.message.channel.flatMap { ch -> ch.createMessage(message) }
 
 /**
  * Send a text message link in the channel where [MessageCreateEvent] was created.

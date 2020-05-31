@@ -249,6 +249,9 @@ class ButaAi(private val unoGame: UnoGame) {
             }
         }
 
-        return biggestCard ?: throw Exception("There was an issue calculating the largest card.")
+        return biggestCard
+                ?: arrayListOf(Pair(CardColor.YELLOW, yellow), Pair(CardColor.GREEN, green), Pair(CardColor.BLUE, blue), Pair(CardColor.RED, red))
+                        .single { it.second > 0 }
+                        .first
     }
 }

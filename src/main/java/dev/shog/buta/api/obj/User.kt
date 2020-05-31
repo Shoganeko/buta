@@ -1,6 +1,6 @@
-package dev.shog.buta.commands.api.obj
+package dev.shog.buta.api.obj
 
-import dev.shog.buta.commands.api.factory.UserFactory
+import dev.shog.buta.api.factory.UserFactory
 
 /**
  * A user object.

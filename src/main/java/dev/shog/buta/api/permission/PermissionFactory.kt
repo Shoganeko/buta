@@ -1,4 +1,4 @@
-package dev.shog.buta.commands.permission
+package dev.shog.buta.api.permission
 
 import discord4j.core.`object`.entity.Member
 import discord4j.core.`object`.entity.User

@@ -1,7 +1,7 @@
 package dev.shog.buta.handle
 
-import dev.shog.buta.commands.api.obj.Guild
-import dev.shog.buta.commands.obj.msg.MessageHandler
+import dev.shog.buta.api.obj.Guild
+import dev.shog.buta.api.obj.msg.MessageHandler
 import dev.shog.buta.util.nullIfBlank
 import discord4j.core.`object`.entity.channel.TextChannel
 import discord4j.core.event.domain.message.MessageCreateEvent

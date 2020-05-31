@@ -17,9 +17,10 @@ error:
 
 catfact:
     name: CatFact
+    category: fun
     desc: Get a cat fact.
     help:
-        - catfact: Get a cat fact.
+        catfact: Get a cat fact.
     alias:
         - cf
         - cfact
@@ -27,9 +28,10 @@ catfact:
         fact: "{0}"
 swearfilter:
     name: SwearFilter
+    category: administrator
     desc: Manage the swear filter.
     help:
-        - swearfilter: Get the current status of the swear filter.
+        swearfilter: Get the current status of the swear filter.
     alias:
         - swf
     response:
@@ -39,8 +41,9 @@ swearfilter:
 dogfact:
     name: DogFact
     desc: Get a dog fact.
+    category: fun
     help:
-        - dogfact: Get a dog fact.
+        dogfact: Get a dog fact.
     alias:
         - df
         - dfact
@@ -49,8 +52,9 @@ dogfact:
 catgallery:
     name: CatGallery
     desc: Get a random picture of a cat.
+    category: fun
     help:
-        - catgallery: Get a random picture of a cat.
+        catgallery: Get a random picture of a cat.
     alias:
         - catgal
         - cg
@@ -63,8 +67,9 @@ catgallery:
 doggallery:
     name: DogGallery
     desc: Get a random picture of a dog.
+    category: fun
     help:
-        - doggallery: Get a random picture of a dog
+        doggallery: Get a random picture of a dog
     alias:
         - doggal
         - dg
@@ -77,8 +82,9 @@ doggallery:
 reddit:
     name: Reddit
     desc: Get a hot post from a Subreddit
+    category: info
     help:
-        - reddit {subreddit}: Get a hot post from a subreddit.
+        reddit {subreddit}: Get a hot post from a subreddit.
     alias:
         - rd
     response:
@@ -93,24 +99,26 @@ reddit:
 randomword:
     name: RandomWord
     desc: Get a random word.
+    category: fun
     alias:
         - rword
         - randword
         - randw
         - rw
     help:
-        - randomword: Get a random word.
+        randomword: Get a random word.
     response:
         word: "The random word is: `{0}`"
 stockview:
     name: StockView
     desc: View stocks.
+    category: info
     alias:
         - stv
     help:
-        - stockview {symbol}: View stocks.
-        - stockview {symbol} {high/low/volume/close}: View specific data about a stock.
-        - stockview {symbol} {high/low/volume/close} {weekly/daily}: View specific data from a specific timestamp about stock.
+        stockview {symbol}: View stocks.
+        stockview {symbol} {high/low/volume/close}: View specific data about a stock.
+        stockview {symbol} {high/low/volume/close} {weekly/daily}: View specific data from a specific timestamp about stock.
     response:
         success-weekly: "```Name: {0}\nType: {1}\nWeek High: {2}\nWeek Low: {3}\n\n{4}```"
         success-daily: "```Name: {0}\nType: {1}\nDay High: {2}\nDay Low: {3}\n\n{4}```"
@@ -119,21 +127,23 @@ stockview:
 wordreverse:
     name: WordReverse
     desc: Reverse a word.
+    category: info
     alias:
         - wr
         - wordr
         - revword
         - word
     help:
-        - wordreverse {word to reverse}: Reverse a word.
+        wordreverse {word to reverse}: Reverse a word.
     response:
         include-word: "Please include a word to reverse!"
         success: "{0}"
 ping:
     name: Ping
     desc: Pong!
+    category: info
     help:
-        - ping: Pong!
+        ping: Pong!
     alias:
         - pp
     response:
@@ -141,8 +151,9 @@ ping:
 nsfw:
     name: NSFW
     desc: Toggle NSFW status in a channel.
+    category: administrator
     help:
-        - nsfw: Toggle on or off NSFW status.
+        nsfw: Toggle on or off NSFW status.
     alias:
         - setnsfw
     response:
@@ -150,8 +161,9 @@ nsfw:
 play:
     name: Play
     desc: Play music in a channel.
+    category: music
     help:
-        - play {song name}: Play a song name.
+        play {song name}: Play a song name.
     alias:
         - p
     response:
@@ -184,8 +196,9 @@ play:
 volume:
     name: Volume
     desc: Adjust the music player's volume.
+    category: music
     help:
-        - volume {volume 0 to 100}: Adjust the music player's volume.
+        volume {volume 0 to 100}: Adjust the music player's volume.
     alias:
         - v
     response:
@@ -200,14 +213,13 @@ volume:
 score:
     name: Score
     desc: The score command.
+    category: info
     help:
-        - score: View your scores.
-        - score {label} +/-x: Adjust your first score.
-        - score {label} +/-x: Adjust your second score.
-        - score {label} +/-x: Adjust your third score.
-        - score label 1 {label}: Change your first score's label.
-        - score label 2 {label}: Change your second score's label.
-        - score label 3 {label}: Change your third score's label.
+        score: View your scores.
+        score {label} +/-x: Adjust a score.
+        score label 1 {label}: Change your first score's label.
+        score label 2 {label}: Change your second score's label.
+        score label 3 {label}: Change your third score's label.
     alias:
         - s
     embeds:
@@ -239,20 +251,22 @@ score:
 leave:
     name: Leave
     desc: Leave the voice channel and clear the queue.
+    category: music
     alias:
         - disconnect
         - l
         - HEDISCONNECTED
     help:
-        - leave: Leave the voice channel and clear the queue.
+        leave: Leave the voice channel and clear the queue.
     response:
         not-in-channel: "You cannot do this while not in a channel!"
         not-in-buta-channel: "You aren't in the same voice channel as Buta!"
 pause:
     name: Pause
     desc: Pause or resume the music.
+    category: music
     help:
-        - pause: "Pause or resume the music"
+        pause: "Pause or resume the music"
     alias:
         - pa
     response:
@@ -264,8 +278,9 @@ pause:
 queue:
     name: Queue
     desc: Play music in a channel.
+    category: music
     help:
-        - play {song name}: Play a song name.
+        play {song name}: Play a song name.
     alias:
         - q
     response:
@@ -281,8 +296,9 @@ queue:
 skip:
     name: Skip
     desc: Play music in a channel.
+    category: music
     help:
-        - play {song name}: Play a song name.
+        play {song name}: Play a song name.
     alias:
         - s
     response:
@@ -294,9 +310,10 @@ skip:
 purge:
     name: Purge
     desc: Remove a specified amount of messages before your message.
+    category: administrator
     help:
-        - purge: "Remove the last 100 messages."
-        - purge {amount}: "Remove up to 500 of the last messages."
+        purge: "Remove the last 100 messages."
+        purge {amount}: "Remove up to 500 of the last messages."
     alias:
         - massdelete
     response:
@@ -304,8 +321,9 @@ purge:
 about:
     name: About
     desc: Get information about Buta.
+    category: info
     help:
-        - about: About Buta
+        about: About Buta
     alias:
         - a
     response:
@@ -313,8 +331,9 @@ about:
 help:
     name: Help
     desc: Get help about the various commands of Buta.
+    category: info
     help:
-        - help {command}: Get help about a specific command.
+        help {command}: Get help about a specific command.
     alias:
         - h
     response:
@@ -328,10 +347,11 @@ help:
 joinrole:
     name: JoinRole
     desc: Have a role that is given to everyone on join.
+    category: administrator
     help:
-        - joinrole: "View the Join Role status."
-        - joinrole role {role name}: "Set a Join Role using the role's name. By doing this, you are also enabling join role."
-        - joinrole disable: "Turn Join Role off."
+        joinrole: "View the Join Role status."
+        joinrole role {role name}: "Set a Join Role using the role's name. By doing this, you are also enabling join role."
+        joinrole disable: "Turn Join Role off."
     alias:
         - joinr
     response:
@@ -344,32 +364,35 @@ joinrole:
 dailyreward:
     name: DailyReward
     desc: Get a daily reward every 24 hours!
+    category: gambling
     alias:
         - daily
     help:
-        - dailyreward: Get a daily reward, or see how much time you have left.
+        dailyreward: Get a daily reward, or see how much time you have left.
     response:
         successful: "You have received your daily reward of `{0}`!"
         unsuccessful: "You need to wait `{0}` until you can get your daily reward!"
 statdump:
     name: StatDump
     desc: Dump statistics.
+    category: developer
     alias:
         - statd
     help:
-        - statdump: Dump statistics.
-        - statdump save: Save statistics to disk.
+        statdump: Dump statistics.
+        statdump save: Save statistics to disk.
     response:
         dump: "Statistics Dump: ```{0}```"
         saved: "Statistics have been saved to disk!"
 viewthreads:
     name: ViewThreads
     desc: View your current threads.
+    category: developer
     alias:
         - viewth
     help:
-        - viewthreads: View your current threads.
-        - viewthreads clear: Clear your current threads.
+        viewthreads: View your current threads.
+        viewthreads clear: Clear your current threads.
     response:
         cleared: "Threads have been cleared"
         response: "{0}"
@@ -377,13 +400,14 @@ viewthreads:
 presence:
     name: Presence
     desc: Update the presence
+    category: developer
     alias:
         - pres
     help:
-        - presence: Update the presence.
-        - presence local: Locally update the presences.
-        - presence server: Externally update the presences.
-        - presence dump: Dump all locally stored presences.
+        presence: Update the presence.
+        presence local: Locally update the presences.
+        presence server: Externally update the presences.
+        presence dump: Dump all locally stored presences.
     response:
         update: "Presence has been updated!"
         server-side: "Presences have been updated externally."
@@ -392,9 +416,10 @@ presence:
 guild:
     name: Guild
     desc: Get information about your guild.
+    category: info
     help:
-        - guild: "Get information about your guild."
-        - guild global: "Get information about all the guilds within Buta."
+        guild: "Get information about your guild."
+        guild global: "Get information about all the guilds within Buta."
     alias:
         - g
     embeds:
@@ -418,22 +443,24 @@ guild:
 balance:
     name: Balance
     desc: Get your balance.
+    category: gambling
     alias:
         - bal
     help:
-        - balance: "Get your balance."
-        - balance {@user}: "Get another user's balance."
+        balance: "Get your balance."
+        balance {@user}: "Get another user's balance."
     response:
         self: "Your balance is `{0}`."
         other: "`{0}`'s balance is `{1}`."
 prefix:
     name: Prefix
     desc: Get and set your Guild's prefix.
+    category: administrator
     alias:
         - setprefix
     help:
-        - prefix: "Get your guild's current prefix."
-        - prefix {new prefix}: "Set your guild's prefix."
+        prefix: "Get your guild's current prefix."
+        prefix {new prefix}: "Set your guild's prefix."
     response:
         prefix: "Your guild's prefix is currently `{0}`."
         set: "You have set your guild's prefix to `{0}`."
@@ -441,14 +468,15 @@ prefix:
 uno:
     name: Uno
     desc: Play uno with Buta.
+    category: fun
     alias:
         - AM_PLAYING_UNO
     help:
-        - uno: "Play Uno"
-        - uno end: "End the Uno game"
-        - uno draw: "Draw a card"
-        - uno call: "Call Uno, only if you've got one card left"
-        - uno play {card id}: "Play an Uno card"
+        uno: "Play Uno"
+        uno end: "End the Uno game"
+        uno draw: "Draw a card"
+        uno call: "Call Uno, only if you've got one card left"
+        uno play {card id}: "Play an Uno card"
     response:
         error:
             not-seen-cards: "You haven't seen your cards get, use `{p}uno` first!"
@@ -461,7 +489,7 @@ uno:
             called-uno: "You have called uno!"
             manual-game-end: "Ended game!"
             select-wild-card-color: "What color for the wild card?"
-            user-won-game: "You have won!"
+            user-won-game: "\n:white_small_square: You have won!"
             buta-won-game: "\n:white_small_square: Buta has won the game!"
             user-play-card: "\n:white_small_square: You played a {0}."
             user-skip-buta-turn: "\n:white_small_square: You skipped Buta's turn!"

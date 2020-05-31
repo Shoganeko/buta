@@ -1,4 +1,4 @@
-package dev.shog.buta.commands.obj.msg
+package dev.shog.buta.api.obj.msg
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -48,7 +48,12 @@ object MessageHandler {
         /**
          * The help from the YML file.
          */
-        val help = getArray("$key.help")
+        val help = getObject("$key.help")
+
+        /**
+         * The category.
+         */
+        val category = MessageHandler.getMessage("$key.category")
     }
 
     /**

@@ -1,8 +1,8 @@
 package dev.shog.buta.events
 
 
-import dev.shog.buta.commands.api.factory.GuildFactory
-import dev.shog.buta.commands.obj.msg.MessageHandler
+import dev.shog.buta.api.factory.GuildFactory
+import dev.shog.buta.api.obj.msg.MessageHandler
 import dev.shog.buta.events.obj.Event
 
 import dev.shog.buta.util.getChannelsWithPermission

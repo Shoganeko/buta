@@ -2,10 +2,10 @@ package dev.shog.buta.events
 
 import dev.shog.buta.DEV
 import dev.shog.buta.commands.CommandHandler
-import dev.shog.buta.commands.api.UserThreadHandler
-import dev.shog.buta.commands.api.factory.GuildFactory
-import dev.shog.buta.commands.api.factory.UserFactory
-import dev.shog.buta.commands.obj.Category
+import dev.shog.buta.api.UserThreadHandler
+import dev.shog.buta.api.factory.GuildFactory
+import dev.shog.buta.api.factory.UserFactory
+import dev.shog.buta.api.obj.Category
 import dev.shog.buta.events.obj.Event
 import dev.shog.buta.handle.SwearFilter
 import dev.shog.buta.util.orElse
@@ -56,8 +56,9 @@ object MessageEvent : Event {
                                         }
                                         .flatMap { entry ->
                                             val author = event.message.author.get()
-
-                                            if (entry.cfg.category == Category.DEVELOPER && !DEV.contains(author.id.asLong()))
+                                            if (
+                                                    Category.valueOf(entry.container.category.toUpperCase()) == Category.DEVELOPER &&
+                                                    !DEV.contains(author.id.asLong()))
                                                 event
                                                         .sendMessage("You must be a developer")
                                             else con.toMutableList()
@@ -65,6 +66,7 @@ object MessageEvent : Event {
                                                     .doOnNext { l -> l.removeAt(0) }
                                                     .flatMap { msg -> entry.invoke(event, msg) }
                                                     .doFinally { UserThreadHandler.finish(author, entry.container.name) }
+
                                         }
                             }
                 }

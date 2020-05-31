@@ -6,18 +6,18 @@ import dev.shog.lib.util.logDiscord
 import dev.shog.lib.util.toSuccessfulFailed
 import discord4j.core.`object`.entity.Guild
 import discord4j.core.`object`.entity.channel.TextChannel
+import discord4j.rest.util.Color
 import discord4j.rest.util.Permission
 import kong.unirest.HttpResponse
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.awt.Color
 import kotlin.random.Random
 
 fun String.nullIfBlank(): String? =
         if (isBlank()) null else this
 
 fun getRandomColor(): Color =
-        Color(Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
+        Color.of(Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
 
 /**
  * Get an array of [T]
@@ -32,13 +32,8 @@ fun getChannelsWithPermission(guild: Guild): Flux<TextChannel> {
     return guild.channels
             .ofType(TextChannel::class.java)
             .filterWhen { ch ->
-                ch.client.selfId.flatMap { id ->
-                    ch.getEffectivePermissions(id)
-                            .map { chl ->
-                                chl.contains(Permission.SEND_MESSAGES)
-                                        && chl.contains(Permission.EMBED_LINKS)
-                            }
-                }
+                ch.getEffectivePermissions(ch.client.selfId)
+                        .map { chl -> chl.contains(Permission.SEND_MESSAGES) && chl.contains(Permission.EMBED_LINKS) }
             }
 }
 

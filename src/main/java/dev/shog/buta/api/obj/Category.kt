@@ -1,4 +1,4 @@
-package dev.shog.buta.commands.obj
+package dev.shog.buta.api.obj
 
 /**
  * Command Categories

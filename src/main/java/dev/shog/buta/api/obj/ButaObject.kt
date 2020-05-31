@@ -1,4 +1,4 @@
-package dev.shog.buta.commands.api.obj
+package dev.shog.buta.api.obj
 
 import java.io.Serializable
 
