@@ -14,7 +14,7 @@ object UserFactory : ButaFactory<User>() {
     override fun createObject(id: Long): User {
         val user = User(id, 0, -1, 0, DEFAULT_SCORE.toString())
 
-        PostgreSql.createConnection()
+        PostgreSql.getConnection()
                 .prepareStatement("INSERT INTO buta.users (id, bal, last_daily_reward, xp, score_data) VALUES (?, ?, ?, ? ,?)")
                 .apply {
                     setLong(1, id)
@@ -34,7 +34,7 @@ object UserFactory : ButaFactory<User>() {
      * Delete an object with an [id].
      */
     override fun deleteObject(id: Long) {
-        PostgreSql.createConnection()
+        PostgreSql.getConnection()
                 .prepareStatement("DELETE FROM buta.users WHERE id = ?")
                 .apply { setLong(1, id) }
                 .executeUpdate()
@@ -49,7 +49,7 @@ object UserFactory : ButaFactory<User>() {
         if (cache.containsKey(id))
             return cache[id]!!
 
-        val rs = PostgreSql.createConnection()
+        val rs = PostgreSql.getConnection()
                 .prepareStatement("SELECT * FROM buta.users WHERE id = ?")
                 .apply { setLong(1, id) }
                 .executeQuery()
@@ -77,7 +77,7 @@ object UserFactory : ButaFactory<User>() {
     override fun updateObject(obj: User, key: Pair<String, Any>) {
         cache[obj.id] = obj
 
-        PostgreSql.createConnection()
+        PostgreSql.getConnection()
                 .prepareStatement("UPDATE buta.users SET ${key.first} = ? WHERE id = ?")
                 .apply {
                     setObject(1, key.second)

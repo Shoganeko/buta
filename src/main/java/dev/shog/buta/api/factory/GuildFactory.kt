@@ -15,7 +15,7 @@ object GuildFactory : ButaFactory<Guild>() {
     override fun createObject(id: Long): Guild {
         val guild = Guild(id, "b!", "", "", -1L, "{user}, you can't swear!", false, "[]")
 
-        PostgreSql.createConnection()
+        PostgreSql.getConnection()
                 .prepareStatement("INSERT INTO buta.guilds (id, prefix, join_message, leave_message, join_role, swear_filter_msg, disabled_categories, swear_filter_on) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
                 .apply {
                     setLong(1, id)
@@ -38,7 +38,7 @@ object GuildFactory : ButaFactory<Guild>() {
      * Delete an object with an [id].
      */
     override fun deleteObject(id: Long) {
-        PostgreSql.createConnection()
+        PostgreSql.getConnection()
                 .prepareStatement("DELETE FROM buta.guilds WHERE id = ?")
                 .apply { setLong(1, id) }
                 .executeUpdate()
@@ -53,7 +53,7 @@ object GuildFactory : ButaFactory<Guild>() {
         if (cache.containsKey(id))
             return cache[id]!!
 
-        val rs = PostgreSql.createConnection()
+        val rs = PostgreSql.getConnection()
                 .prepareStatement("SELECT * FROM buta.guilds WHERE id = ?")
                 .apply { setLong(1, id) }
                 .executeQuery()
@@ -84,7 +84,7 @@ object GuildFactory : ButaFactory<Guild>() {
     override fun updateObject(obj: Guild, key: Pair<String, Any>) {
         cache[obj.id] = obj
 
-        PostgreSql.createConnection()
+        PostgreSql.getConnection()
                 .prepareStatement("UPDATE buta.guilds SET ${key.first} = ? WHERE id = ?")
                 .apply {
                     setObject(1, key.second)

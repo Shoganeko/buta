@@ -31,7 +31,7 @@ object PresenceHandler : Event {
             presences.clear()
         }
 
-        val rs = PostgreSql.createConnection()
+        val rs = PostgreSql.getConnection()
                 .prepareStatement("SELECT * FROM buta.presences")
                 .executeQuery()
 

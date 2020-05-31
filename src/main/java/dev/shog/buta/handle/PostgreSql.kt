@@ -8,6 +8,8 @@ import java.sql.DriverManager
  * The SQL manager.
  */
 object PostgreSql {
+    private val connection: Connection
+
     private val URL: String
     private val USERNAME: String
     private val PASSWORD: String
@@ -18,13 +20,14 @@ object PostgreSql {
         URL = cfg.sqlUrl!!
         USERNAME = cfg.sqlCredentials?.first!!
         PASSWORD = cfg.sqlCredentials.second!!
+
+        Class.forName("org.postgresql.Driver")
+        connection = DriverManager.getConnection(URL, USERNAME, PASSWORD)
     }
 
     /**
      * Create a connection to AWS.
      */
-    fun createConnection(): Connection {
-        Class.forName("org.postgresql.Driver")
-        return DriverManager.getConnection(URL, USERNAME, PASSWORD)
-    }
+    fun getConnection(): Connection =
+            connection
 }
