@@ -8,7 +8,8 @@ plugins {
 mainClassName = 'dev.shog.buta.ButaKt'
 
 group 'dev.shog'
-version '2.0'
+version '2.1.0'
+ext.ktor_version = '1.2.4'
 
 sourceCompatibility = 1.8
 
@@ -38,8 +39,12 @@ dependencies {
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.3.0"
     implementation 'com.konghq:unirest-java:3.1.02'
     implementation 'com.sedmelluq:lavaplayer:1.3.49'
-    implementation 'com.github.shoganeko:lib:71032e96ca'
+    implementation 'com.github.Shoganeko:lib:df14326110'
     implementation 'com.mitchtalmadge:ascii-data:1.4.0'
+    implementation "io.ktor:ktor-locations:$ktor_version"
+    implementation "io.ktor:ktor-server-netty:$ktor_version"
+    implementation "io.ktor:ktor-serialization:$ktor_version"
+    implementation "io.ktor:ktor-jackson:$ktor_version"
 }
 compileKotlin {
     kotlinOptions {

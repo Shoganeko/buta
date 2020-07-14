@@ -15,7 +15,7 @@ object StatisticsManager {
     fun dump() = statistics.toString()
 
     init {
-        statistics = APP.getCache().getObject<ConcurrentHashMap<String, Any>>("stats")?.getValue()
+        statistics = APP.cache.getObject<ConcurrentHashMap<String, Any>>("stats")?.getValue()
                 ?: ConcurrentHashMap()
     }
 
@@ -23,7 +23,7 @@ object StatisticsManager {
      * Save stats to disk
      */
     fun save() {
-        APP.getCache().createObject("stats", statistics)
+        APP.cache.createObject("stats", statistics)
     }
 
     /**

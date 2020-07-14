@@ -1,5 +1,6 @@
 package dev.shog.buta
 
+import dev.shog.buta.api.MOJOR_SERVER
 import dev.shog.buta.commands.CommandHandler
 import dev.shog.buta.api.factory.GuildFactory
 import dev.shog.buta.commands.commands.`fun`.*
@@ -8,7 +9,6 @@ import dev.shog.buta.commands.commands.dev.PRESENCE_COMMAND
 import dev.shog.buta.commands.commands.dev.STAT_DUMP_COMMAND
 import dev.shog.buta.commands.commands.dev.THREAD_VIEW_COMMAND
 import dev.shog.buta.commands.commands.gamble.BALANCE_COMMAND
-import dev.shog.buta.commands.commands.gamble.DAILY_REWARD_AMOUNT
 import dev.shog.buta.commands.commands.gamble.DAILY_REWARD_COMMAND
 import dev.shog.buta.commands.commands.info.*
 import dev.shog.buta.commands.commands.music.*
@@ -19,9 +19,11 @@ import dev.shog.buta.events.PresenceHandler
 import dev.shog.buta.handle.ButaConfig
 import dev.shog.buta.handle.StatisticsManager
 import dev.shog.buta.handle.audio.AudioManager
-import dev.shog.lib.app.AppBuilder
+import dev.shog.lib.app.Application
 import dev.shog.lib.app.cfg.ConfigHandler
-import dev.shog.lib.hook.DiscordWebhook
+import dev.shog.lib.app.cfg.ConfigType
+import dev.shog.lib.discord.DiscordWebhook
+import dev.shog.lib.discord.WebhookUser
 import dev.shog.lib.util.ArgsHandler
 import dev.shog.lib.util.logDiscord
 import discord4j.common.util.Snowflake
@@ -39,7 +41,6 @@ import discord4j.core.event.domain.message.ReactionAddEvent
 import discord4j.core.shard.ShardingStrategy
 import discord4j.rest.util.Permission
 import kotlinx.coroutines.runBlocking
-import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import reactor.core.publisher.Hooks
 import reactor.core.publisher.Mono
@@ -61,15 +62,11 @@ val LOGGER = LoggerFactory.getLogger("Buta Instance")!!
 /**
  * App
  */
-val APP = AppBuilder("Buta", 2.0F)
-        .usingConfig(ConfigHandler.createConfig(ConfigHandler.ConfigType.YML, "buta", ButaConfig()))
-        .configureConfig { cfg ->
-            val obj = cfg.asObject<ButaConfig>()
-            useCache = true
-            logger = LoggerFactory.getLogger("Buta")
-            webhook = DiscordWebhook(obj.webhook!!)
-        }
-        .build()
+val APP = Application(
+        "Buta",
+        "2.1.0",
+        ConfigHandler.useConfig(ConfigType.YML, "buta", ButaConfig())
+) { _, _, cfg -> DiscordWebhook(cfg.asObject<ButaConfig>().webhook!!, WebhookUser("Buta", "https://shog.dev/favicon.png")) }
 
 /**
  * The main Discord Client.
@@ -82,6 +79,8 @@ var CLIENT: GatewayDiscordClient? = null
 var PRODUCTION: Boolean = false
 
 fun main(arg: Array<String>) {
+    MOJOR_SERVER.start(false)
+
     val key = APP.getConfigObject<ButaConfig>().token
 
     if (key == null) {
@@ -103,12 +102,6 @@ fun main(arg: Array<String>) {
         PRODUCTION = true
     })
 
-    args.nHook("--block-init-notif") {
-        runBlocking {
-            APP.getWebhook().sendMessage("Buta (v${APP.getVersion()}) is now online!")
-        }
-    }
-
     Hooks.onOperatorError { t, _ -> t.logDiscord(APP) }
     Hooks.onErrorDropped { e -> e.logDiscord(APP) }
     Hooks.onNextError { e, _ -> e.logDiscord(APP) }
@@ -117,13 +110,7 @@ fun main(arg: Array<String>) {
 
     initCommands()
 
-    Runtime.getRuntime().addShutdownHook(Thread {
-        StatisticsManager.save()
-
-        runBlocking {
-            APP.getWebhook().sendMessage("Buta (v${APP.getVersion()}) is now offline! :(")
-        }
-    })
+    Runtime.getRuntime().addShutdownHook(Thread { StatisticsManager.save() })
 
     Timer().schedule(timerTask {
         StatisticsManager.save()
