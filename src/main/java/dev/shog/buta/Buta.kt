@@ -1,5 +1,7 @@
 package dev.shog.buta
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.LoggerContext
 import dev.shog.buta.api.MOJOR_SERVER
 import dev.shog.buta.commands.CommandHandler
 import dev.shog.buta.api.factory.GuildFactory
@@ -79,6 +81,11 @@ var CLIENT: GatewayDiscordClient? = null
 var PRODUCTION: Boolean = false
 
 fun main(arg: Array<String>) {
+    // mute mongodb
+    val loggerContext = LoggerFactory.getILoggerFactory() as LoggerContext
+    val rootLogger = loggerContext.getLogger("org.mongodb.driver")
+    rootLogger.level = Level.OFF
+
     MOJOR_SERVER.start(false)
 
     val key = APP.getConfigObject<ButaConfig>().token
@@ -213,9 +220,7 @@ private fun initCommands() {
             BALANCE_COMMAND,
             DAILY_REWARD_COMMAND,
             UNO_COMMAND,
-            REDDIT_COMMAND,
             WORD_REVERSE_COMMAND,
-            REDDIT_COMMAND,
             RANDOM_WORD_COMMAND,
             DOG_GALLERY_COMMAND,
             DOG_FACT_COMMAND,
@@ -224,10 +229,7 @@ private fun initCommands() {
             PRESENCE_COMMAND,
             STAT_DUMP_COMMAND,
             THREAD_VIEW_COMMAND,
-            JOIN_ROLE_COMMAND,
             NSFW_TOGGLE_COMMAND,
-            PURGE_COMMAND,
-            SET_PREFIX_COMMAND,
-            SWEAR_FILTER_COMMAND
+            PURGE_COMMAND
     )
 }

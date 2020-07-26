@@ -45,6 +45,7 @@ dependencies {
     implementation "io.ktor:ktor-server-netty:$ktor_version"
     implementation "io.ktor:ktor-serialization:$ktor_version"
     implementation "io.ktor:ktor-jackson:$ktor_version"
+    implementation 'org.mongodb:mongodb-driver-sync:4.1.0-beta2'
 }
 compileKotlin {
     kotlinOptions {

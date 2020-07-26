@@ -1,8 +1,11 @@
 package dev.shog.buta.api.factory
 
+import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Updates
 import dev.shog.buta.api.obj.User
 import dev.shog.buta.commands.commands.info.DEFAULT_SCORE
-import dev.shog.buta.handle.PostgreSql
+import dev.shog.buta.handle.Mongo
+import org.bson.Document
 
 /**
  * Manage [User]'s.
@@ -14,16 +17,16 @@ object UserFactory : ButaFactory<User>() {
     override fun createObject(id: Long): User {
         val user = User(id, 0, -1, 0, DEFAULT_SCORE.toString())
 
-        PostgreSql.getConnection()
-                .prepareStatement("INSERT INTO buta.users (id, bal, last_daily_reward, xp, score_data) VALUES (?, ?, ?, ? ,?)")
-                .apply {
-                    setLong(1, id)
-                    setLong(2, user.bal)
-                    setLong(3, user.lastDailyReward)
-                    setLong(4, user.xp)
-                    setString(5, user.scoreData)
-                }
-                .executeUpdate()
+        Mongo.getClient()
+                .getDatabase("buta")
+                .getCollection("users")
+                .insertOne(Document(mapOf(
+                        "id" to id,
+                        "bal" to user.bal,
+                        "last_daily_reward" to user.lastDailyReward,
+                        "xp" to user.xp,
+                        "score_data" to user.scoreData
+                )))
 
         cache[id] = user
 
@@ -34,10 +37,10 @@ object UserFactory : ButaFactory<User>() {
      * Delete an object with an [id].
      */
     override fun deleteObject(id: Long) {
-        PostgreSql.getConnection()
-                .prepareStatement("DELETE FROM buta.users WHERE id = ?")
-                .apply { setLong(1, id) }
-                .executeUpdate()
+        Mongo.getClient()
+                .getDatabase("buta")
+                .getCollection("users")
+                .deleteOne(Filters.eq("id", id))
 
         cache.remove(id)
     }
@@ -49,26 +52,20 @@ object UserFactory : ButaFactory<User>() {
         if (cache.containsKey(id))
             return cache[id]!!
 
-        val rs = PostgreSql.getConnection()
-                .prepareStatement("SELECT * FROM buta.users WHERE id = ?")
-                .apply { setLong(1, id) }
-                .executeQuery()
-
-        while (rs.next()) {
-            val user = User(
-                    rs.getLong("id"),
-                    rs.getLong("bal"),
-                    rs.getLong("last_daily_reward"),
-                    rs.getLong("xp"),
-                    rs.getString("score_data")
-            )
-
-            cache[rs.getLong("id")] = user
-
-            return user
-        }
-
-        return null
+        return Mongo.getClient()
+                .getDatabase("buta")
+                .getCollection("users")
+                .find(Filters.eq("id", id))
+                .map { doc ->
+                    User(
+                            doc.getLong("id"),
+                            doc.getLong("bal"),
+                            doc.getLong("last_daily_reward"),
+                            doc.getLong("xp"),
+                            doc.getString("score_data")
+                    )
+                }
+                .firstOrNull()
     }
 
     /**
@@ -77,13 +74,9 @@ object UserFactory : ButaFactory<User>() {
     override fun updateObject(obj: User, key: Pair<String, Any>) {
         cache[obj.id] = obj
 
-        PostgreSql.getConnection()
-                .prepareStatement("UPDATE buta.users SET ${key.first} = ? WHERE id = ?")
-                .apply {
-                    setObject(1, key.second)
-
-                    setLong(2, obj.id)
-                }
-                .executeUpdate()
+        Mongo.getClient()
+                .getDatabase("buta")
+                .getCollection("users")
+                .updateOne(Filters.eq("id", obj.id), Updates.set(key.first, key.second))
     }
 }

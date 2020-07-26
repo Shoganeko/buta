@@ -32,11 +32,9 @@ object SwearFilter {
      */
     fun hasSwears(guild: Guild, message: String, messageEvent: MessageCreateEvent): Mono<Boolean> =
             if (guild.swearFilterOn) {
-                SWEARS
-                        .filter { swear -> message.contains(swear) }
-                        .collectList()
-                        .flatMap { list ->
-                            if (list.isNotEmpty() || isAss(message)) {
+                SWEARS.any { swear -> message.contains(swear) }
+                        .flatMap { contains ->
+                            if (contains || isAss(message)) {
                                 messageEvent.message.channel
                                         .flatMap { ch ->
                                             PlaceholderFiller.fillText(guild.swearFilterMsg.nullIfBlank()

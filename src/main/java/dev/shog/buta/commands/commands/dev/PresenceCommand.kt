@@ -18,7 +18,7 @@ val PRESENCE_COMMAND = Command(CommandConfig("presence")) {
     return@Command when {
         args.size == 1 && args[0].equals("local", true) -> {
             sendMessage("client-side")
-                    .doOnNext { PresenceHandler.updatePresences() }
+//                    .doOnNext { PresenceHandler.updatePresences() }
                     .then()
         }
 

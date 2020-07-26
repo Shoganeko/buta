@@ -3,10 +3,10 @@ package dev.shog.buta.events
 import dev.shog.buta.CLIENT
 import dev.shog.buta.LOGGER
 import dev.shog.buta.events.obj.Event
-import dev.shog.buta.handle.PostgreSql
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.presence.Activity
 import discord4j.core.`object`.presence.Presence
+import discord4j.core.`object`.presence.Status
 import discord4j.core.event.domain.lifecycle.ReadyEvent
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
@@ -21,43 +21,7 @@ object PresenceHandler : Event {
     /**
      * The presences.
      */
-    val presences = arrayListOf(Presence.doNotDisturb())
-
-    /**
-     * Gets presences and adds them to [presences].
-     */
-    fun updatePresences() {
-        synchronized(presences) {
-            presences.clear()
-        }
-
-        val rs = PostgreSql.getConnection()
-                .prepareStatement("SELECT * FROM buta.presences")
-                .executeQuery()
-
-        while (rs.next()) {
-            val status = rs.getString("statusText")
-
-            val activity = when (rs.getInt("activityType")) {
-                1 -> Activity.playing(status)
-                2 -> Activity.watching(status)
-                3 -> Activity.listening(status)
-
-                else -> Activity.playing(status)
-            }
-
-            synchronized(presences) {
-                presences.add(when (rs.getInt("statusType")) {
-                    1 -> Presence.online(activity)
-                    2 -> Presence.invisible()
-                    3 -> Presence.idle(activity)
-                    4 -> Presence.doNotDisturb(activity)
-
-                    else -> Presence.invisible()
-                })
-            }
-        }
-    }
+    val presences = arrayListOf(Presence.doNotDisturb(Activity.playing("wit cho mama")))
 
     /**
      * Gets a random presence from [presences] and updates [CLIENT].
@@ -71,7 +35,7 @@ object PresenceHandler : Event {
     /**
      * Update Presence
      */
-    fun update(client: GatewayDiscordClient): Mono<Void> =
+    fun update(client: GatewayDiscordClient): Mono<*> =
             presences
                     .random()
                     .toMono()
@@ -81,10 +45,9 @@ object PresenceHandler : Event {
     override fun invoke(event: discord4j.core.event.domain.Event): Mono<Void> {
         require(event is ReadyEvent)
 
-        updatePresences()
         updateTimer(event.client)
 
-        return update(event.client)
+        return update(event.client).then()
     }
 
     /**

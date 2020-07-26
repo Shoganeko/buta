@@ -1,9 +1,11 @@
 package dev.shog.buta.api.factory
 
+import com.mongodb.client.model.Filters
+import com.mongodb.client.model.Updates
 import dev.shog.buta.api.obj.Guild
 import dev.shog.buta.api.obj.User
-import dev.shog.buta.handle.PostgreSql
-import dev.shog.lib.util.eitherOr
+import dev.shog.buta.handle.Mongo
+import org.bson.Document
 
 /**
  * Manage [User]'s.
@@ -13,21 +15,21 @@ object GuildFactory : ButaFactory<Guild>() {
      * Create a [User] with their [id].
      */
     override fun createObject(id: Long): Guild {
-        val guild = Guild(id, "b!", "", "", -1L, "{user}, you can't swear!", false, "[]")
+        val guild = Guild(id, "b!", "", "", -1L, "{user}, you can't swear!", false, listOf())
 
-        PostgreSql.getConnection()
-                .prepareStatement("INSERT INTO buta.guilds (id, prefix, join_message, leave_message, join_role, swear_filter_msg, disabled_categories, swear_filter_on) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
-                .apply {
-                    setLong(1, id)
-                    setString(2, guild.prefix)
-                    setString(3, guild.joinMessage)
-                    setString(4, guild.leaveMessage)
-                    setLong(5, guild.joinRole)
-                    setString(6, guild.swearFilterMsg)
-                    setString(7, guild.disabledCategories)
-                    setInt(8, guild.swearFilterOn.eitherOr(1, 0))
-                }
-                .executeUpdate()
+        Mongo.getClient()
+                .getDatabase("buta")
+                .getCollection("guilds")
+                .insertOne(Document(mapOf(
+                        "id" to id,
+                        "prefix" to guild.prefix,
+                        "join_message" to guild.joinMessage,
+                        "leave_message" to guild.leaveMessage,
+                        "join_role" to guild.joinRole,
+                        "swear_filter_msg" to guild.swearFilterMsg,
+                        "disabled_categories" to guild.disabledCategories,
+                        "swear_filter_on" to guild.swearFilterOn
+                )))
 
         cache[id] = guild
 
@@ -38,10 +40,10 @@ object GuildFactory : ButaFactory<Guild>() {
      * Delete an object with an [id].
      */
     override fun deleteObject(id: Long) {
-        PostgreSql.getConnection()
-                .prepareStatement("DELETE FROM buta.guilds WHERE id = ?")
-                .apply { setLong(1, id) }
-                .executeUpdate()
+        Mongo.getClient()
+                .getDatabase("buta")
+                .getCollection("guilds")
+                .deleteOne(Filters.eq("id", id))
 
         cache.remove(id)
     }
@@ -53,25 +55,26 @@ object GuildFactory : ButaFactory<Guild>() {
         if (cache.containsKey(id))
             return cache[id]!!
 
-        val rs = PostgreSql.getConnection()
-                .prepareStatement("SELECT * FROM buta.guilds WHERE id = ?")
-                .apply { setLong(1, id) }
-                .executeQuery()
+        val guild = Mongo.getClient()
+                .getDatabase("buta")
+                .getCollection("guilds")
+                .find(Filters.eq("id", id))
+                .map { doc ->
+                    Guild(
+                            doc.getLong("id"),
+                            doc.getString("prefix"),
+                            doc.getString("join_message"),
+                            doc.getString("leave_message"),
+                            doc.getLong("join_role"),
+                            doc.getString("swear_filter_msg"),
+                            doc.getBoolean("swear_filter_on"),
+                            doc["disabled_categories"] as List<String>
+                    )
+                }
+                .firstOrNull()
 
-        while (rs.next()) {
-            val guild = Guild(
-                    rs.getLong("id"),
-                    rs.getString("prefix"),
-                    rs.getString("join_message"),
-                    rs.getString("leave_message"),
-                    rs.getLong("join_role"),
-                    rs.getString("swear_filter_msg"),
-                    rs.getInt("swear_filter_on") == 1,
-                    rs.getString("disabled_categories")
-            )
-
-            cache[rs.getLong("id")] = guild
-
+        if (guild != null) {
+            cache[guild.id] = guild
             return guild
         }
 
@@ -84,12 +87,9 @@ object GuildFactory : ButaFactory<Guild>() {
     override fun updateObject(obj: Guild, key: Pair<String, Any>) {
         cache[obj.id] = obj
 
-        PostgreSql.getConnection()
-                .prepareStatement("UPDATE buta.guilds SET ${key.first} = ? WHERE id = ?")
-                .apply {
-                    setObject(1, key.second)
-                    setLong(2, obj.id)
-                }
-                .executeUpdate()
+        Mongo.getClient()
+                .getDatabase("buta")
+                .getCollection("guilds")
+                .updateOne(Filters.eq("id", obj.id), Updates.set(key.first, key.second))
     }
 }

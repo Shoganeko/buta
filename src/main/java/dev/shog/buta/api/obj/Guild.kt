@@ -14,7 +14,7 @@ class Guild(
         joinRole: Long,
         swearFilterMsg: String,
         swearFilterOn: Boolean,
-        disabledCategories: String
+        disabledCategories: List<String>
 ) : ButaObject {
     var prefix: String = prefix
         set(value) {
@@ -88,7 +88,7 @@ class Guild(
         set(value) {
             field = value
 
-            GuildFactory.updateObject(this, "swear_filter_on" to value.eitherOr(1, 0))
+            GuildFactory.updateObject(this, "swear_filter_on" to value)
         }
 
     /**
@@ -102,7 +102,7 @@ class Guild(
     /**
      * Set the [disabledCategories] in the object and in the database.
      */
-    var disabledCategories: String = disabledCategories
+    var disabledCategories: List<String> = disabledCategories
         set(value) {
             field = value
 
