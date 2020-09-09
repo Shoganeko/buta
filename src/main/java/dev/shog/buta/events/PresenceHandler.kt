@@ -3,11 +3,13 @@ package dev.shog.buta.events
 import dev.shog.buta.CLIENT
 import dev.shog.buta.LOGGER
 import dev.shog.buta.events.obj.Event
+import dev.shog.buta.handle.Mongo
 import discord4j.core.GatewayDiscordClient
 import discord4j.core.`object`.presence.Activity
 import discord4j.core.`object`.presence.Presence
 import discord4j.core.`object`.presence.Status
 import discord4j.core.event.domain.lifecycle.ReadyEvent
+import discord4j.discordjson.json.gateway.StatusUpdate
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toMono
 import java.util.*
@@ -19,9 +21,39 @@ import kotlin.concurrent.timerTask
  */
 object PresenceHandler : Event {
     /**
-     * The presences.
+     * Presences from MongoDB
      */
-    val presences = arrayListOf(Presence.doNotDisturb(Activity.playing("wit cho mama")))
+    val presences by lazy {
+        val presences = Mongo.getClient()
+                .getDatabase("buta")
+                .getCollection("presences")
+                .find()
+
+        val array = arrayListOf<StatusUpdate>()
+
+        presences.forEach { doc ->
+            val data = doc.getString("data")
+
+            val activity = when (doc.getInteger("activity")) {
+                2 -> Activity.listening(data)
+                3 -> Activity.streaming(data, doc.getString("streamUrl"))
+                4 -> Activity.watching(data)
+
+                else -> Activity.playing(data)
+            }
+
+            val presence = when (doc.getInteger("presence")) {
+                2 -> Presence.idle(activity)
+                3 -> Presence.doNotDisturb(activity)
+                4 -> Presence.invisible()
+                else -> Presence.online(activity)
+            }
+
+            array.add(presence)
+        }
+
+        return@lazy array
+    }
 
     /**
      * Gets a random presence from [presences] and updates [CLIENT].
