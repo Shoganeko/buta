@@ -18,6 +18,7 @@ import dev.shog.buta.events.GuildJoinEvent
 import dev.shog.buta.events.GuildLeaveEvent
 import dev.shog.buta.events.MessageEvent
 import dev.shog.buta.events.PresenceHandler
+import dev.shog.buta.handle.BotMention
 import dev.shog.buta.handle.ButaConfig
 import dev.shog.buta.handle.StatisticsManager
 import dev.shog.buta.handle.audio.AudioManager
@@ -145,6 +146,7 @@ fun main(arg: Array<String>) {
                 // a message event
                 gw.on(MessageCreateEvent::class.java) {
                     MessageEvent.invoke(it).then()
+                    BotMention.invoke(it).then()
                 }.subscribe()
 
                 // for b!uno

@@ -15,6 +15,9 @@ error:
     internal-error: There was an issue doing that!
     invalid-arguments: Invalid arguments!
 
+mention:
+    default: "The current prefix for `{0}` is `{1}`."
+
 catfact:
     name: CatFact
     category: fun
