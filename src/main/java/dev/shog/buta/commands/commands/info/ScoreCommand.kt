@@ -1,17 +1,14 @@
 package dev.shog.buta.commands.commands.info
 
+import com.gitlab.kordlib.core.behavior.channel.createEmbed
 import dev.shog.buta.api.factory.UserFactory
 import dev.shog.buta.api.obj.Category
 import dev.shog.buta.api.obj.Command
 import dev.shog.buta.api.obj.CommandConfig
-import dev.shog.buta.api.permission.PermissionFactory
-import dev.shog.buta.util.sendGlobalMessage
+import dev.shog.buta.util.addFooter
 import dev.shog.buta.util.sendMessage
-import dev.shog.buta.util.update
-import discord4j.core.event.domain.message.MessageCreateEvent
 import org.json.JSONArray
 import org.json.JSONObject
-import reactor.core.publisher.Mono
 
 val DEFAULT_SCORE: JSONArray by lazy {
     val ar = JSONArray()
@@ -23,31 +20,26 @@ val DEFAULT_SCORE: JSONArray by lazy {
     ar
 }
 
-val SCORE_COMMAND = Command(CommandConfig("score")) {
-    if (!event.message.author.isPresent) // if a webhook tries?
-        return@Command Mono.empty<Unit>()
+val SCORE_COMMAND = Command(CommandConfig("score", Category.INFO)) {
+    val author = event.message.author ?: return@Command
 
-    val author = event.message.author.get()
-    val user = UserFactory.getOrCreate(author.id.asLong())
+    val user = UserFactory.getOrCreate(author.id.longValue)
     val json = JSONArray(user.scoreData)
 
-    return@Command when {
+    when {
         args.isEmpty() -> {
-            event.message.channel.flatMap { ch ->
-                ch.createEmbed { embed ->
-                    embed.update(event.message.author.get())
-                    embed.setTitle("Your current score board:")
+            event.message.channel.createEmbed {
+                addFooter(event)
 
-                    for (i in 0 until json.length()) {
-                        val obj = json.getJSONObject(i)
+                for (i in 0 until json.length()) {
+                    val obj = json.getJSONObject(i)
 
-                        val score = obj.getInt("score")
-                        val label = obj.getString("label")
+                    val score = obj.getInt("score")
+                    val label = obj.getString("label")
 
-                        val symbol = if (score >= 0) "+" else ""
+                    val symbol = if (score >= 0) "+" else ""
 
-                        embed.addField(label, symbol + score, true)
-                    }
+                    field(label, true) { symbol + score }
                 }
             }
         }
@@ -56,12 +48,16 @@ val SCORE_COMMAND = Command(CommandConfig("score")) {
             val score = args[1].toIntOrNull()
             val newLabel = args[2]
 
-            if (newLabel.length > 32)
-                return@Command sendMessage("too-long")
+            if (newLabel.length > 32) {
+                sendMessage("That label is too long! (Must be under 32)")
+                return@Command
+            }
 
             for (i in 0 until json.length()) {
-                if (json.getJSONObject(i).getString("label").equals(newLabel, true))
-                    return@Command event.sendMessage("already-exists")
+                if (json.getJSONObject(i).getString("label").equals(newLabel, true)) {
+                    sendMessage("That label already exists!")
+                    return@Command
+                }
             }
 
             if (score != null && 3 >= score) {
@@ -73,11 +69,12 @@ val SCORE_COMMAND = Command(CommandConfig("score")) {
                     json.put(score - 1, obj)
                     user.scoreData = json.toString()
 
-                    return@Command event.sendMessage("update-label", score, newLabel)
+                    sendMessage("Score number `${score}` label's now `${newLabel}`!")
+                    return@Command
                 }
             }
 
-            sendMessage("invalid-number")
+            sendMessage("The score should be 1, 2, or 3.")
         }
 
         args.size == 2 -> {
@@ -88,7 +85,11 @@ val SCORE_COMMAND = Command(CommandConfig("score")) {
 
                 if (obj.getString("label").equals(label, true)) {
                     val add = parseAddition(obj.getInt("score"), args[1])
-                            ?: return@Command sendMessage("invalid-modify")
+
+                    if (add == null) {
+                        sendMessage("The modifier should be in the format of `-x` or `+x`.")
+                        return@Command
+                    }
 
                     obj.put("score", add)
 
@@ -97,14 +98,15 @@ val SCORE_COMMAND = Command(CommandConfig("score")) {
                     json.put(i, obj)
                     user.scoreData = json.toString()
 
-                    return@Command sendMessage("update-score", obj.getString("label"), "${symbol}${add}")
+                    sendMessage("`${obj.getString("label")}` is now `${symbol}${add}`")
+                    return@Command
                 }
             }
 
-            sendGlobalMessage("error.invalid-arguments")
+            sendMessage("Invalid arguments")
         }
 
-        else -> sendGlobalMessage("error.invalid-arguments")
+        else -> sendMessage("Invalid arguments")
     }
 }
 

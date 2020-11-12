@@ -1,7 +1,6 @@
 package dev.shog.buta.api.obj
 
-import discord4j.core.event.domain.message.MessageCreateEvent
-import reactor.core.publisher.Mono
+import com.gitlab.kordlib.core.event.message.MessageCreateEvent
 
 /**
  * The main command interface.
@@ -10,10 +9,10 @@ interface ICommand {
     /**
      * When the command is invoked by a user.
      */
-    fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<*>
+    suspend fun invoke(e: MessageCreateEvent, args: MutableList<String>)
 
     /**
      * When the help command is invoked by a user.
      */
-    fun help(e: MessageCreateEvent): Mono<*>
+    suspend fun help(e: MessageCreateEvent)
 }

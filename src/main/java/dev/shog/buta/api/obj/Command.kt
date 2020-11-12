@@ -1,46 +1,42 @@
 package dev.shog.buta.api.obj
 
+import com.gitlab.kordlib.core.behavior.channel.createEmbed
+import com.gitlab.kordlib.core.event.message.MessageCreateEvent
 import dev.shog.buta.api.factory.GuildFactory
 import dev.shog.buta.api.obj.msg.MessageHandler
-import dev.shog.buta.util.update
-import discord4j.core.event.domain.message.MessageCreateEvent
-import reactor.core.publisher.Mono
+import dev.shog.buta.util.addFooter
 
 /**
  * A command.
  *
  * @param cfg The config
  */
-class Command(val cfg: CommandConfig, val cmd: CommandContext.() -> Mono<*>) : ICommand {
+class Command(val cfg: CommandConfig, val cmd: suspend CommandContext.() -> Unit) : ICommand {
     val container = MessageHandler.MessageContainer(cfg.name)
 
-    override fun invoke(e: MessageCreateEvent, args: MutableList<String>): Mono<*> =
+    override suspend fun invoke(e: MessageCreateEvent, args: MutableList<String>) =
             cmd.invoke(CommandContext(container, e, args))
 
-    override fun help(e: MessageCreateEvent): Mono<*> =
-            e.message.guild
-                    .map { g -> g.id.asLong() }
-                    .zipWith(e.message.channel)
-                    .flatMap { zip ->
-                        val ch = zip.t2
-                        val g = GuildFactory.getOrCreate(zip.t1)
+    override suspend fun help(e: MessageCreateEvent) {
+        e.message.channel.createEmbed {
+            val guild = GuildFactory.getOrCreate(e.guildId?.longValue ?: return)
 
-                        ch.createEmbed { embed ->
-                            embed.update(e.message.author.get())
+            addFooter(e)
 
-                            embed.setTitle(cfg.name)
-                            embed.setDescription(container.desc)
+            title = cfg.name
+            description = container.desc
 
-                            val obj = MessageHandler.data
-                                    .getJSONObject(cfg.name)
-                                    .getJSONObject("help")
+            val obj = MessageHandler.data
+                    .getJSONObject(cfg.name)
+                    .getJSONObject("help")
 
-                            obj.keys().forEach { key ->
-                                val value = obj.getString(key)
-
-                                embed.addField("${g.prefix}${key}", value, false)
-                            }
+            obj.keys()
+                    .forEach { key ->
+                        field {
+                            name = "${guild.prefix}${key}"
+                            value = obj.getString(key)
                         }
                     }
-                    .then()
+        }
+    }
 }

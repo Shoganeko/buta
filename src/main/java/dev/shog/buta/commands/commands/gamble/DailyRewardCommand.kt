@@ -1,25 +1,26 @@
 package dev.shog.buta.commands.commands.gamble
 
 import dev.shog.buta.api.factory.UserFactory
+import dev.shog.buta.api.obj.Category
 import dev.shog.buta.api.obj.Command
 import dev.shog.buta.api.obj.CommandConfig
 import dev.shog.buta.util.sendMessage
 import dev.shog.lib.util.fancyDate
 
-val DAILY_REWARD_COMMAND = Command(CommandConfig("dailyreward")) {
-    val user = UserFactory.getOrCreate(event.message.author.get().id.asLong())
+val DAILY_REWARD_COMMAND = Command(CommandConfig("dailyreward", Category.GAMBLING)) {
+    val user = UserFactory.getOrCreate(event.message.author?.id?.longValue!!)
 
-    return@Command when {
-        System.currentTimeMillis() - user.lastDailyReward >= TIME_UNTIL_DAILY_REWARD ->
-            sendMessage("successful", DAILY_REWARD_AMOUNT)
-                    .doOnNext {
-                        user.bal += DAILY_REWARD_AMOUNT
-                        user.lastDailyReward += System.currentTimeMillis()
-                    }
+    when {
+        System.currentTimeMillis() - user.lastDailyReward >= TIME_UNTIL_DAILY_REWARD -> {
+            sendMessage("You have received your daily reward of `${DAILY_REWARD_AMOUNT}`.")
 
-        else -> sendMessage(
-                "unsuccessful",
-                (TIME_UNTIL_DAILY_REWARD - (System.currentTimeMillis() - user.lastDailyReward)).fancyDate()
-        )
+            user.bal += DAILY_REWARD_AMOUNT
+            user.lastDailyReward = System.currentTimeMillis()
+        }
+
+        else -> {
+            val time = (TIME_UNTIL_DAILY_REWARD - (System.currentTimeMillis() - user.lastDailyReward)).fancyDate()
+            sendMessage("You need to wait `${time}` until you can get your daily reward!")
+        }
     }
 }

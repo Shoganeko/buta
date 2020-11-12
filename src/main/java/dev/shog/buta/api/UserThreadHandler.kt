@@ -1,7 +1,7 @@
 package dev.shog.buta.api
 
+import com.gitlab.kordlib.core.entity.User
 import dev.shog.buta.LOGGER
-import discord4j.core.`object`.entity.User
 import java.util.concurrent.ConcurrentHashMap
 
 /**

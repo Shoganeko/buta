@@ -1,27 +1,23 @@
 package dev.shog.buta.handle
 
 import dev.shog.buta.api.obj.Guild
-import dev.shog.buta.api.obj.msg.MessageHandler
-import dev.shog.buta.util.nullIfBlank
-import discord4j.core.`object`.entity.channel.TextChannel
-import discord4j.core.event.domain.message.MessageCreateEvent
-import discord4j.rest.util.Permission
 import kong.unirest.Unirest
 import org.json.JSONArray
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toMono
 
 /**
  * Swear filter stuff.
  */
 object SwearFilter {
-    private val SWEARS: Flux<String> =
-            Unirest.get("https://raw.githubusercontent.com/Shoganeko/badwords/master/array.js")
-                    .asStringAsync()
-                    .toMono()
-                    .map { resp -> JSONArray(resp.body.toString()) }
-                    .flatMapIterable { js -> js.toList().map { it.toString() } }
+    private val SWEARS: MutableList<String> by lazy {
+        val request = Unirest.get("https://raw.githubusercontent.com/Shoganeko/badwords/master/array.js")
+                .asString()
+
+        val body = request.body
+
+        return@lazy JSONArray(body).toList()
+                .map { it.toString() }
+                .toMutableList()
+    }
 
     /**
      * If a message contains a swear.
@@ -30,29 +26,17 @@ object SwearFilter {
      * @param message The message.
      * @param messageEvent The event where [message] was sent.
      */
-    fun hasSwears(guild: Guild, message: String, messageEvent: MessageCreateEvent): Mono<Boolean> =
-            if (guild.swearFilterOn) {
-                SWEARS.any { swear -> message.contains(swear) }
-                        .flatMap { contains ->
-                            if (contains || isAss(message)) {
-                                messageEvent.message.channel
-                                        .flatMap { ch ->
-                                            PlaceholderFiller.fillText(guild.swearFilterMsg.nullIfBlank()
-                                                    ?: MessageHandler.getMessage("default.swear-filter"), messageEvent)
-                                                    .flatMap { msg -> ch.createMessage(msg) }
-                                        }
-                                        .filterWhen {
-                                            messageEvent.message.channel
-                                                    .ofType(TextChannel::class.java)
-                                                    .zipWith(messageEvent.client.self)
-                                                    .flatMap { ch -> ch.t1.getEffectivePermissions(ch.t2.id) }
-                                                    .map { perms -> perms.contains(Permission.MANAGE_MESSAGES) }
-                                        }
-                                        .flatMap { messageEvent.message.delete() }
-                                        .map { true }
-                            } else false.toMono()
-                        }
-            } else false.toMono()
+    fun hasSwears(guild: Guild, message: String): Boolean {
+        return if (guild.swearFilterOn) {
+            SWEARS.any { swear ->
+                if (message.contains(swear)) {
+                    println("contains $swear")
+                    true
+                } else false
+            } || isAss(message)
+        } else
+            false
+    }
 
     /**
      * If any of strings in [message] contains exactly `ass`.
@@ -60,7 +44,9 @@ object SwearFilter {
     private fun isAss(message: String) =
             message.split(" ").asSequence()
                     .map { msg -> msg.replace(Regex("[^A-Za-z0-9]"), ""); }
-                    .any { msg -> msg.toLowerCase() == "ass" || msg.toLowerCase() == getAssByLength(msg) }
+                    .any { msg ->
+                        msg.toLowerCase() == "ass" || (msg.length > 2 && msg.toLowerCase() == getAssByLength(msg))
+                    }
 
     /**
      * Get a variable length ass.

@@ -1,75 +1,79 @@
 package dev.shog.buta.events
 
+import com.gitlab.kordlib.common.entity.Permission
+import com.gitlab.kordlib.core.event.message.MessageCreateEvent
 import dev.shog.buta.DEV
 import dev.shog.buta.commands.CommandHandler
 import dev.shog.buta.api.UserThreadHandler
 import dev.shog.buta.api.factory.GuildFactory
 import dev.shog.buta.api.factory.UserFactory
 import dev.shog.buta.api.obj.Category
+import dev.shog.buta.api.obj.msg.MessageHandler
 import dev.shog.buta.events.obj.Event
+import dev.shog.buta.handle.PlaceholderFiller
 import dev.shog.buta.handle.SwearFilter
-import dev.shog.buta.util.orElse
-import dev.shog.buta.util.sendMessage
-import discord4j.core.event.domain.message.MessageCreateEvent
-import reactor.kotlin.extra.bool.not
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toMono
+import dev.shog.buta.util.nullIfBlank
+import kotlinx.coroutines.delay
 
 /**
  * A message event.
- * It's also a coroutine scope, allowing for a thread for each new message.
  */
 object MessageEvent : Event {
-    override fun invoke(event: discord4j.core.event.domain.Event): Mono<*> {
+    override suspend fun invoke(event: com.gitlab.kordlib.core.event.Event) {
         require(event is MessageCreateEvent)
 
-        if (!event.message.author.isPresent || !event.guildId.isPresent)
-            return Mono.empty<Void>()
+        println(event.message.content)
 
-        val obj = event.message.author.get().id.asLong()
+        val authorId = event.message.author?.id
+                ?: return
 
-        return UserFactory.getOrCreate(obj).toMono()
-                .map { GuildFactory.getOrCreate(event.guildId.get().asLong()) }
-                .flatMap { g ->
-                    val content = event.message.content
-                            .orElse("")
-                            .toMono()
+        val guildId = event.guildId
+                ?: return
 
-                    content
-                            .filter { event.message.author.isPresent && !event.message.author.get().isBot }
-                            .filterWhen { msg -> !SwearFilter.hasSwears(g, msg, event) }
-                            .filter { data -> data.startsWith(g.prefix) }
-                            .map { data -> data.removePrefix(g.prefix) }
-                            .map { data -> data.split(" ") }
-                            .filter { split -> split.isNotEmpty() }
-                            .flatMap { con ->
-                                Flux.fromIterable(CommandHandler.COMMANDS)
-                                        .filter { en ->
-                                            con[0].startsWith(en.container.name.toLowerCase(), true)
-                                                    || en.container.aliases.contains(con[0])
-                                        }
-                                        .filterWhen { en -> en.cfg.permable.check(event) }
-                                        .singleOrEmpty()
-                                        .filter { entry ->
-                                            UserThreadHandler.can(event.message.author.get(), entry.cfg.name)
-                                        }
-                                        .flatMap { entry ->
-                                            val author = event.message.author.get()
-                                            if (
-                                                    Category.valueOf(entry.container.category.toUpperCase()) == Category.DEVELOPER &&
-                                                    !DEV.contains(author.id.asLong()))
-                                                event
-                                                        .sendMessage("You must be a developer")
-                                            else con.toMutableList()
-                                                    .toMono()
-                                                    .doOnNext { l -> l.removeAt(0) }
-                                                    .flatMap { msg -> entry.invoke(event, msg) }
-                                                    .doFinally { UserThreadHandler.finish(author, entry.container.name) }
+        val author = UserFactory.getOrCreate(authorId.longValue)
+        val guild = GuildFactory.getOrCreate(guildId.longValue)
 
-                                        }
-                            }
+        val content = event.message.content
+
+        if (SwearFilter.hasSwears(guild, content)) {
+            val swearText = PlaceholderFiller.fillText(guild.swearFilterMsg.nullIfBlank()
+                    ?: MessageHandler.getMessage("default.swear-filter"), event)
+                    ?: "No swearing!! :("
+
+            val message = event.message.channel.createMessage(swearText)
+            val permissions = event.getGuild()?.getChannel(event.message.channelId)
+                    ?.getEffectivePermissions(event.kord.selfId)
+                    ?: return
+
+            if (permissions.contains(Permission.ManageMessages)) {
+                delay(5000L)
+                message.delete()
+            }
+        }
+
+        if (content.startsWith(guild.prefix)) {
+            val args = content.removePrefix(guild.prefix).split(" ").toMutableList()
+            val command = args[0]
+
+            args.removeAt(0)
+
+            val commandObj = CommandHandler.COMMANDS
+                    .filter { en ->
+                        command.equals(en.cfg.name, true) || en.container.aliases.contains(command)
+                    }
+                    .singleOrNull { en ->
+                        en.cfg.permable.hasPermission(event.member)
+                    }
+
+            if (commandObj != null && UserThreadHandler.can(event.member?.asUser()!!, commandObj.cfg.name)) {
+                if (commandObj.container.category == Category.DEVELOPER.toString() && !DEV.contains(authorId.longValue)) {
+                    event.message.channel.createMessage("This command requires special permissions!")
+                    return
                 }
 
+                commandObj.invoke(event, args)
+                UserThreadHandler.finish(event.member?.asUser()!!, commandObj.container.name)
+            }
+        }
     }
 }

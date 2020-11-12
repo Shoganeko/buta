@@ -1,9 +1,14 @@
 package dev.shog.buta.commands.commands.`fun`
 
+import com.gitlab.kordlib.common.entity.Snowflake
+import com.gitlab.kordlib.core.behavior.channel.MessageChannelBehavior
+import com.gitlab.kordlib.core.behavior.channel.createEmbed
+import com.gitlab.kordlib.core.entity.Member
+import com.gitlab.kordlib.core.entity.Message
+import com.gitlab.kordlib.core.entity.ReactionEmoji
+import com.gitlab.kordlib.core.event.message.ReactionAddEvent
 import dev.shog.buta.api.factory.GuildFactory
 import dev.shog.buta.api.obj.*
-import dev.shog.buta.api.obj.msg.MessageHandler
-import dev.shog.buta.api.permission.PermissionFactory
 import dev.shog.buta.handle.uno.handle.ButaAi
 import dev.shog.buta.handle.uno.obj.Card
 import dev.shog.buta.handle.uno.obj.CardColor
@@ -11,153 +16,188 @@ import dev.shog.buta.handle.uno.obj.CardType
 import dev.shog.buta.handle.uno.obj.UnoGame
 import dev.shog.buta.util.*
 import dev.shog.lib.util.defaultFormat
-import discord4j.common.util.Snowflake
-import discord4j.core.`object`.entity.Message
-import discord4j.core.`object`.entity.User
-import discord4j.core.`object`.entity.channel.MessageChannel
-import discord4j.core.`object`.reaction.ReactionEmoji
-import discord4j.core.event.domain.message.ReactionAddEvent
-import reactor.core.publisher.Mono
 import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Play Uno
  */
-val UNO_COMMAND = Command(CommandConfig("uno", PermissionFactory.hasPermission())) {
-    if (!event.message.author.isPresent)
-        return@Command sendGlobalMessage("error.invalid-arguments")
-
-    val author = event.message.author.get()
+val UNO_COMMAND = Command(CommandConfig("uno", Category.FUN)) {
+    val author = event.message.author ?: return@Command
 
     if (args.size >= 1) {
         when (args[0].toLowerCase()) {
             // When a user tries to end the game
             "end" -> {
-                if (!UnoGame.games.containsKey(author.id))
-                    return@Command sendMessage("not-created-game")
+                if (!UnoGame.games.containsKey(author.id)) {
+                    sendMessage("You haven't created a game yet!")
+                    return@Command
+                }
 
-                return@Command sendMessage("success.manual-game-end")
-                        .doOnNext { UnoGame.games.remove(author.id) }
-                        .then()
+                UnoGame.games.remove(author.id)
+                sendMessage("Ended game!")
+
+                return@Command
             }
 
             "call" -> {
-                if (!UnoGame.games.containsKey(author.id))
-                    return@Command sendMessage("error.not-created-game")
+                if (!UnoGame.games.containsKey(author.id)) {
+                    sendMessage("You haven't created a game yet!")
+                    return@Command
+                }
 
                 val game = UnoGame.getGame(author)
                 val uno = game.second
 
                 // Makes sure they've got 1 card left, then call Uno
-                return@Command if (uno.user.cards.getSize() == 1)
-                    sendMessage("success.called-uno").doOnNext { uno.userCalledUno = true }
-                else sendMessage("error.cannot-call-uno")
+                if (uno.user.cards.getSize() == 1) {
+                    sendMessage("You have caled Uno!")
+
+                    uno.userCalledUno = true
+                } else sendMessage("You don't have 1 card left!")
+
+                return@Command
             }
 
             "draw" -> {
                 val game = UnoGame.getGame(author)
                 val uno = game.second
 
-                if (game.first)
-                    return@Command sendMessage("not-seen-cards")
-                            .doOnNext { UnoGame.games.remove(author.id) }
-                            .then()
+                if (game.first) {
+                    sendMessage("You haven't seen your cards yet, use `b!uno` first!")
+                    UnoGame.games.remove(author.id)
+                    return@Command
+                }
 
-                return@Command event.message.channel
-                        .flatMap { ch ->
-                            ch.createEmbed { embed ->
-                                val drawn = uno.user.draw(1)
+                event.message.channel.createEmbed {
+                    field {
+                        name = "Buta"
+                        value = uno.buta.cards.getSize().toString()
+                        inline = true
+                    }
 
-                                container.getEmbed("draw-card").applyEmbed(embed, event.message.author.get(),
-                                        fields = hashMapOf(
-                                                "buta-cards" to FieldReplacement(null, uno.buta.cards.getSize().toString().ar()),
-                                                "last-played-card" to FieldReplacement(null, uno.playedCards.last().ar()),
-                                                "drawn-card" to FieldReplacement(null, drawn[0].ar()),
-                                                "user-cards" to FieldReplacement(null, getUserCards(uno).ar())
-                                        )
-                                )
-                            }
-                        }
-                        .then()
+                    field {
+                        name = "Last Played Card"
+                        value = uno.playedCards.last().toString()
+                        inline = true
+                    }
+
+                    field {
+                        val drawn = uno.user.draw(1)
+
+                        name = "Drawn Card"
+                        value = drawn[0].toString()
+                        inline = true
+                    }
+
+                    field {
+                        name = "Your Cards"
+                        value = getUserCards(uno)
+                        inline = false
+                    }
+                }
+
+                return@Command
             }
 
             "play" -> {
-                if (args.size < 2)
-                    return@Command sendGlobalMessage("error.invalid-arguments")
+                if (args.size < 2) {
+                    sendMessage("Invalid arguments!")
+                    return@Command
+                }
 
                 val game = UnoGame.getGame(author)
                 val uno = game.second
 
-                if (game.first)
-                    return@Command sendMessage("error.not-seen-cards")
-                            .doOnNext { UnoGame.games.remove(author.id) }
+                if (game.first) {
+                    sendMessage("You haven't seen your cards yet, use `b!uno` first!")
+                    return@Command
+                }
 
                 val number = args[1].toIntOrNull()?.minus(1)
-                        ?: return@Command sendGlobalMessage("error.invalid-arguments")
+
+                if (number == null) {
+                    sendMessage("Invalid arguments!")
+                    return@Command
+                }
 
                 if (uno.user.cards.getSize() == 1 && !uno.userCalledUno) {
                     val drawn = uno.user.draw(2)
 
-                    return@Command sendMessage("error.didnt-call-uno", drawn[0], drawn[1])
+                    sendMessage("You didn't call Uno! You have been given a ${drawn[0]} and a ${drawn[1]}.")
+                    return@Command
                 }
 
                 val card = try {
                     uno.user.cards.cards[number]
                 } catch (ex: Exception) {
-                    return@Command sendMessage("error.card-not-exist")
+                    sendMessage("That card doesn't exist!")
+                    return@Command
                 }
 
-                return@Command if (card.type == CardType.WILD_DEFAULT || card.type == CardType.WILD_DRAW) {
-                    sendMessage("success.select-wild-card-color")
-                            .doOnNext { msg ->
-                                wildWaiting[event.message.author.get().id] =
-                                        PendingWildCardColorSelect(card.type, game.second, System.currentTimeMillis(), msg)
-                            }
-                            .flatMap { msg ->
-                                msg.addReaction(BLUE)
-                                        .then(msg.addReaction(RED))
-                                        .then(msg.addReaction(YELLOW))
-                                        .then(msg.addReaction(GREEN))
-                                        .map { msg }
-                            }
-                            .then()
-                } else event.message.channel
-                        .flatMap { ch -> playCard(event.message.author.get(), ch, game.second, card) }
+                if (card.type == CardType.WILD_DEFAULT || card.type == CardType.WILD_DRAW) {
+                    val msg = sendMessage("What color for the wild card?")
+
+                    wildWaiting[event.message.author!!.id] =
+                            PendingWildCardColorSelect(card.type, game.second, System.currentTimeMillis(), msg)
+
+                    properColors.forEach {
+                        msg.addReaction(it)
+                    }
+                }
+
+                playCard(event.message.getAuthorAsMember()!!, event.message.channel, game.second, card)
+
+                return@Command
             }
         }
     }
 
-    val game = UnoGame.getGame(event.message.author.get())
+    val game = UnoGame.getGame(event.message.author!!)
     val uno = game.second
 
-    return@Command event.message.channel
-            .flatMap { ch ->
-                val g = GuildFactory.getOrCreate(event.guildId.get().asLong())
+    val guild = GuildFactory.getOrCreate(event.guildId?.longValue!!)
 
-                ch.createEmbed { embed ->
-                    if (game.first) {
-                        val init = uno.initGame()
+    event.message.channel.createEmbed {
+        addFooter(event)
 
-                        container.getEmbed("init-game").applyEmbed(embed, event.message.author.get(),
-                                hashMapOf("desc" to g.prefix.ar()),
-                                hashMapOf(
-                                        "first-played-card" to FieldReplacement(null, init.ar()),
-                                        "user-cards" to FieldReplacement(null, getUserCards(uno).ar())
-                                )
-                        )
-                    } else {
-                        container.getEmbed("game-info").applyEmbed(embed, event.message.author.get(),
-                                hashMapOf("desc" to uno.startedAt.defaultFormat().ar()),
-                                hashMapOf(
-                                        "buta-cards" to FieldReplacement(null, uno.buta.cards.getSize().toString().ar()),
-                                        "last-played-card" to FieldReplacement(null, uno.playedCards.last().ar()),
-                                        "user-cards" to FieldReplacement(null, getUserCards(uno).ar())
-                                )
-                        )
-                    }
-                }
+        if (game.first) {
+            val init = uno.initGame()
+
+            description = "You have started a game of Uno!\nSelect a playable card below, and play it with `{0}uno play **number**`.\nOnce you're about to play your last card, make sure to type `{0}uno call`."
+
+            field {
+                name = "First Played Card"
+                value = init.toString()
+                inline = true
             }
-            .then()
+
+            field {
+                name = "Your Cards"
+                value = getUserCards(uno)
+                inline = false
+            }
+        } else {
+            description = "You started this game at `${uno.startedAt.defaultFormat()}`."
+
+            field {
+                name = "Buta"
+                value = "${uno.buta.cards.getSize()} cards"
+                inline = true
+            }
+
+            field {
+                name = "Last Played Card"
+                value = uno.playedCards.last().toString()
+                inline = true
+            }
+
+            field {
+                name = "Your Cards"
+                value = getUserCards(uno)
+                inline = false
+            }
+        }
+    }
 }
 
 /**
@@ -168,66 +208,78 @@ val wildWaiting = ConcurrentHashMap<Snowflake, PendingWildCardColorSelect>()
 /**
  * If the user has selected the color for their wild card, or if they're just playing a card.
  */
-private fun playCard(user: User, channel: MessageChannel, uno: UnoGame, card: Card): Mono<*> {
+private suspend fun playCard(user: Member, channel: MessageChannelBehavior, uno: UnoGame, card: Card) {
     val playedCard = uno.user.play(card)
-    if (!playedCard.successful)
-        return channel.createMessage(UNO_COMMAND.container.getMessage("error.cant-play-card"))
+    if (!playedCard.successful) {
+        channel.createMessage("You can't play that card!")
+        return
+    }
 
     val userWon = uno.user.cards.getSize() == 0
 
-    return channel
-            .createEmbed { embed ->
-                embed.update(user)
+    channel.createEmbed {
+        addFooter(user)
 
-                uno.addHistory(UNO_COMMAND.container.getMessage("success.user-play-card", card))
+        uno.addHistory("\n:white_small_square: You played a ${card}.")
 
-                when {
-                    userWon ->
-                        uno.addHistory(UNO_COMMAND.container.getMessage("success.user-won-game", card))
+        when {
+            userWon ->
+                uno.addHistory("\n:white_small_square: You have won! \uD83D\uDC51") // crown emoji
 
-                    playedCard.shouldSkipTurn ->
-                        uno.addHistory(UNO_COMMAND.container.getMessage("success.user-skip-buta-turn"))
+            playedCard.shouldSkipTurn ->
+                uno.addHistory("\n:white_small_square: You skipped Buta's turn!")
 
-                    else -> ButaAi(uno).play().also { aiCard ->
-                        val butaPlayed = uno.buta.play(aiCard)
+            else -> ButaAi(uno).play().also { aiCard ->
+                val butaPlayed = uno.buta.play(aiCard)
 
-                        uno.addHistory(UNO_COMMAND.container.getMessage("success.buta-play-card", aiCard))
+                uno.addHistory("\n:white_small_square: Buta played a ${aiCard}.")
 
-                        var cont = butaPlayed.shouldSkipTurn
-                        while (cont) {
-                            val aiPlay = ButaAi(uno).play()
-                            val unoAiPlay = uno.buta.play(aiPlay)
+                var cont = butaPlayed.shouldSkipTurn
+                while (cont) {
+                    val aiPlay = ButaAi(uno).play()
+                    val unoAiPlay = uno.buta.play(aiPlay)
 
-                            uno.addHistory(UNO_COMMAND.container.getMessage("success.buta-play-card-whileSkipped", aiPlay))
+                    uno.addHistory("\n:white_small_square: Your turn was skipped, so Buta played a ${aiPlay}.")
 
-                            cont = unoAiPlay.shouldSkipTurn
-                        }
-                    }
+                    cont = unoAiPlay.shouldSkipTurn
                 }
-
-                var desc = uno.getHistory().removePrefix("\n")
-
-                if (uno.buta.cards.getSize() == 0) {
-                    desc += UNO_COMMAND.container.getMessage("success.buta-won-game")
-                    uno.endGame(false)
-                }
-
-                UNO_COMMAND.container.getEmbed("play-cards").applyEmbed(embed, user,
-                        hashMapOf("desc" to desc.ar()),
-                        hashMapOf(
-                                "buta-cards" to FieldReplacement(null, uno.buta.cards.getSize().toString().ar()),
-                                "last-played-card" to FieldReplacement(null, uno.playedCards.last().ar()),
-                                "user-cards" to FieldReplacement(null, getUserCards(uno).ar())
-                        )
-                )
             }
-            .then()
+        }
+
+        var desc = uno.getHistory().removePrefix("\n")
+
+        if (uno.buta.cards.getSize() == 0) {
+            desc += "\n:white_small_square: Buta has won the game!"
+            uno.endGame(false)
+        }
+
+        channel.createEmbed {
+            description = desc
+
+            field {
+                name = "Buta"
+                value = uno.buta.cards.getSize().toString()
+                inline = true
+            }
+
+            field {
+                name = "Last Played Card"
+                value = uno.playedCards.last().toString()
+                inline = true
+            }
+
+            field {
+                name = "Your Cards"
+                value = getUserCards(uno)
+            }
+        }
+    }
 }
 
-private val BLUE: ReactionEmoji = ReactionEmoji.unicode("\uD83D\uDCD8")
-private val RED: ReactionEmoji = ReactionEmoji.unicode("\uD83D\uDCD5")
-private val YELLOW: ReactionEmoji = ReactionEmoji.unicode("\uD83D\uDCD9")
-private val GREEN: ReactionEmoji = ReactionEmoji.unicode("\uD83D\uDCD7")
+private val BLUE: ReactionEmoji = ReactionEmoji.Unicode("\uD83D\uDCD8")
+private val RED: ReactionEmoji = ReactionEmoji.Unicode("\uD83D\uDCD5")
+private val YELLOW: ReactionEmoji = ReactionEmoji.Unicode("\uD83D\uDCD9")
+private val GREEN: ReactionEmoji = ReactionEmoji.Unicode("\uD83D\uDCD7")
 
 /**
  * Proper reaction emojis.
@@ -237,28 +289,31 @@ val properColors = arrayListOf(BLUE, RED, YELLOW, GREEN)
 /**
  * Complete a wild card request with the inputted color.
  */
-fun completedWildCard(ev: ReactionAddEvent): Mono<*> {
+suspend fun completedWildCard(ev: ReactionAddEvent) {
     val selectedColor = when (ev.emoji) {
         BLUE -> CardColor.BLUE
         RED -> CardColor.RED
         GREEN -> CardColor.GREEN
         YELLOW -> CardColor.YELLOW
 
-        else -> return ev.channel.flatMap { ch -> ch.createMessage("Invalid emoji, somehow.") }
+        else -> {
+            ev.message.channel.createMessage("There was an internal issue.")
+            return
+        }
     }
 
     val pending = wildWaiting[ev.userId]
-            ?: return ev.channel.flatMap { ch -> ch.createMessage("Can't find pending request!") }
+
+    if (pending == null) {
+        ev.message.channel.createMessage("A pending request could not be found!")
+        return
+    }
 
     wildWaiting.remove(ev.userId)
 
-    return pending.message
-            .delete()
-            .then(ev.user)
-            .zipWith(ev.channel)
-            .flatMap { userChannel ->
-                playCard(userChannel.t1, userChannel.t2, pending.unoGame, Card(selectedColor, pending.wildCardType, null))
-            }
+    pending.message.delete()
+
+    playCard(ev.getUserAsMember()!!, ev.message.channel, pending.unoGame, Card(selectedColor, pending.wildCardType, null))
 }
 
 data class PendingWildCardColorSelect(val wildCardType: CardType, val unoGame: UnoGame, val time: Long, val message: Message)

@@ -1,23 +1,31 @@
 package dev.shog.buta.util
 
-import dev.shog.buta.APP
-import dev.shog.buta.LOGGER
-import dev.shog.lib.util.logDiscord
-import dev.shog.lib.util.toSuccessfulFailed
-import discord4j.core.`object`.entity.Guild
-import discord4j.core.`object`.entity.channel.TextChannel
-import discord4j.rest.util.Color
-import discord4j.rest.util.Permission
-import kong.unirest.HttpResponse
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
-import kotlin.random.Random
+import com.gitlab.kordlib.common.entity.Permission
+import com.gitlab.kordlib.core.entity.Guild
+import com.gitlab.kordlib.core.entity.Member
+import com.gitlab.kordlib.core.entity.channel.TextChannel
+import com.gitlab.kordlib.core.event.message.MessageCreateEvent
+import com.gitlab.kordlib.rest.builder.message.EmbedBuilder
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import java.time.Instant
 
 fun String.nullIfBlank(): String? =
         if (isBlank()) null else this
 
-fun getRandomColor(): Color =
-        Color.of(Random.nextInt(256), Random.nextInt(256), Random.nextInt(256))
+fun EmbedBuilder.addFooter(member: Member) {
+    timestamp = Instant.now()
+
+    footer {
+        text = "Requested by ${member.username}#${member.discriminator}"
+        icon = member.avatar.url
+    }
+}
+
+fun EmbedBuilder.addFooter(event: MessageCreateEvent) {
+    addFooter(event.member ?: return)
+}
 
 /**
  * Get an array of [T]
@@ -28,13 +36,14 @@ fun <T> T.ar(): ArrayList<String> =
 /**
  * Gets [TextChannel] from a [guild] that self has permissions to.
  */
-fun getChannelsWithPermission(guild: Guild): Flux<TextChannel> {
+suspend fun getChannelsWithPermission(guild: Guild): Flow<TextChannel> {
     return guild.channels
-            .ofType(TextChannel::class.java)
-            .filterWhen { ch ->
-                ch.getEffectivePermissions(ch.client.selfId)
-                        .map { chl -> chl.contains(Permission.SEND_MESSAGES) && chl.contains(Permission.EMBED_LINKS) }
+            .filter {
+                val perms = it.getEffectivePermissions(guild.kord.selfId)
+
+                it is TextChannel && perms.contains(Permission.SendMessages) && perms.contains(Permission.EmbedLinks)
             }
+            .map { it as TextChannel }
 }
 
 /**
@@ -42,17 +51,3 @@ fun getChannelsWithPermission(guild: Guild): Flux<TextChannel> {
  */
 fun <T : Any> T?.orElse(t: T): T =
         this ?: t
-
-/**
- * Log [func] to [LOGGER].
- */
-fun <T> Mono<T>.info(func: (T) -> String): Mono<T> =
-        doOnNext { LOGGER.info(func.invoke(it)) }
-
-fun <T : HttpResponse<*>> Mono<T>.logRequest(method: String, url: String): Mono<T> =
-        info { resp ->
-            ("Web Request (${resp.isSuccess.toSuccessfulFailed().capitalize()}): $method $url -> ${resp.status}" +
-                    "\n\n${resp.body}").logDiscord(APP)
-
-            "${resp.isSuccess.toSuccessfulFailed().capitalize()} -> $method $url : ${resp.status} : ${resp.body}"
-        }

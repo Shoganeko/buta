@@ -375,6 +375,16 @@ dailyreward:
     response:
         successful: "You have received your daily reward of `{0}`!"
         unsuccessful: "You need to wait `{0}` until you can get your daily reward!"
+avatar:
+    name: Avatar
+    desc: Avatar
+    category: info
+    alias:
+        - av
+    help:
+        avatar: get an avatar
+    response:
+
 statdump:
     name: StatDump
     desc: Dump statistics.

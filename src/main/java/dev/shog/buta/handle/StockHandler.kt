@@ -2,8 +2,6 @@ package dev.shog.buta.handle
 
 import dev.shog.buta.APP
 import kong.unirest.Unirest
-import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toMono
 
 /**
  * This is one of the only APIs I could find that fit what I needed.
@@ -75,53 +73,49 @@ object StockHandler {
      * @param time The timespan to receive the stock from.
      * @param type The type of data to retrieve.
      */
-    fun getStock(sym: String, time: Time, type: Type): Mono<StockData> {
+    suspend fun getStock(sym: String, time: Time, type: Type): StockData {
         val builtUrl = URL
                 .replace("{sym}", sym)
                 .replace("{func}", time.func)
 
-        return Unirest.get(builtUrl)
-                .asJsonAsync()
-                .toMono()
-                .filter { js -> !js.body.`object`.has("Error Message") }
-                .map { js ->
-                    val obj = js.body.`object`
+        val obj = Unirest.get(builtUrl)
+                .asJson()
+                .body
+                .`object`
 
-                    val tz = obj.getJSONObject("Meta Data")
+        val tz = obj.getJSONObject("Meta Data")
+        val tsd = obj.getJSONObject(time.key)
 
-                    val tsd = obj.getJSONObject(time.key)
-                    val values = mutableListOf<Double>()
+        val values = mutableListOf<Double>()
 
-                    val timeZone = when (time) {
-                        Time.WEEKLY -> {
-                            val amount = if (8 > tsd.keySet().size) tsd.keySet().size else 8
+        val timeZone = when (time) {
+            Time.WEEKLY -> {
+                val amount = if (8 > tsd.keySet().size) tsd.keySet().size else 8
 
-                            val keys = tsd.keys()
-                            while (amount > values.size) {
-                                val day = tsd.getJSONObject(keys.next())
-                                val value = day.getDouble(type.key)
+                val keys = tsd.keys()
+                while (amount > values.size) {
+                    val day = tsd.getJSONObject(keys.next())
+                    val value = day.getDouble(type.key)
 
-                                values.add(value)
-                            }
-
-                            tz.getString("5. Time Zone")
-                        }
-
-                        Time.DAILY -> {
-                            val firstKey = tsd.keys().next().split(" ")[0]
-
-                            tsd.keys().asSequence()
-                                    .filter { key -> key.startsWith(firstKey) }
-                                    .map { key -> tsd.getJSONObject(key) }
-                                    .map { newObj -> newObj.getDouble(type.key) }
-                                    .forEach { value -> values.add(value) }
-
-                            tz.getString("6. Time Zone")
-                        }
-                    }
-
-                    StockData(sym, timeZone, values.toDoubleArray(), time, type)
+                    values.add(value)
                 }
-                .cache()
+
+                tz.getString("5. Time Zone")
+            }
+
+            Time.DAILY -> {
+                val firstKey = tsd.keys().next().split(" ")[0]
+
+                tsd.keys().asSequence()
+                        .filter { key -> key.startsWith(firstKey) }
+                        .map { key -> tsd.getJSONObject(key) }
+                        .map { newObj -> newObj.getDouble(type.key) }
+                        .forEach { value -> values.add(value) }
+
+                tz.getString("6. Time Zone")
+            }
+        }
+
+        return StockData(sym, timeZone, values.toDoubleArray(), time, type)
     }
 }

@@ -1,57 +1,42 @@
 package dev.shog.buta
 
+//import dev.shog.buta.api.MOJOR_SERVER
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.LoggerContext
-import dev.shog.buta.api.MOJOR_SERVER
+import com.gitlab.kordlib.core.Kord
+import com.gitlab.kordlib.core.event.gateway.ReadyEvent
+import com.gitlab.kordlib.core.event.guild.GuildCreateEvent
+import com.gitlab.kordlib.core.event.guild.GuildDeleteEvent
+import com.gitlab.kordlib.core.event.guild.MemberJoinEvent
+import com.gitlab.kordlib.core.event.message.MessageCreateEvent
+import com.gitlab.kordlib.core.event.message.ReactionAddEvent
+import com.gitlab.kordlib.core.on
 import dev.shog.buta.commands.CommandHandler
-import dev.shog.buta.api.factory.GuildFactory
 import dev.shog.buta.commands.commands.`fun`.*
-import dev.shog.buta.commands.commands.admin.*
-import dev.shog.buta.commands.commands.dev.PRESENCE_COMMAND
-import dev.shog.buta.commands.commands.dev.STAT_DUMP_COMMAND
-import dev.shog.buta.commands.commands.dev.THREAD_VIEW_COMMAND
+import dev.shog.buta.commands.commands.admin.PURGE_COMMAND
 import dev.shog.buta.commands.commands.gamble.BALANCE_COMMAND
 import dev.shog.buta.commands.commands.gamble.DAILY_REWARD_COMMAND
 import dev.shog.buta.commands.commands.info.*
-import dev.shog.buta.commands.commands.music.*
+import dev.shog.buta.events.BotMention
 import dev.shog.buta.events.GuildJoinEvent
 import dev.shog.buta.events.GuildLeaveEvent
 import dev.shog.buta.events.MessageEvent
-import dev.shog.buta.events.PresenceHandler
-import dev.shog.buta.handle.BotMention
 import dev.shog.buta.handle.ButaConfig
 import dev.shog.buta.handle.StatisticsManager
-import dev.shog.buta.handle.audio.AudioManager
 import dev.shog.lib.app.Application
 import dev.shog.lib.app.cfg.ConfigHandler
 import dev.shog.lib.app.cfg.ConfigType
 import dev.shog.lib.discord.DiscordWebhook
 import dev.shog.lib.discord.WebhookUser
 import dev.shog.lib.util.ArgsHandler
-import dev.shog.lib.util.logDiscord
-import discord4j.common.util.Snowflake
-import discord4j.core.DiscordClientBuilder
-import discord4j.core.GatewayDiscordClient
-import discord4j.core.`object`.presence.Activity
-import discord4j.core.`object`.presence.Presence
-import discord4j.core.event.domain.VoiceStateUpdateEvent
-import discord4j.core.event.domain.guild.GuildCreateEvent
-import discord4j.core.event.domain.guild.GuildDeleteEvent
-import discord4j.core.event.domain.guild.MemberJoinEvent
-import discord4j.core.event.domain.lifecycle.ReadyEvent
-import discord4j.core.event.domain.message.MessageCreateEvent
-import discord4j.core.event.domain.message.ReactionAddEvent
-import discord4j.core.shard.ShardingStrategy
-import discord4j.rest.util.Permission
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
-import reactor.core.publisher.Hooks
-import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toMono
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.timerTask
 import kotlin.system.exitProcess
+import kotlin.time.ExperimentalTime
 
 
 /** Developers */
@@ -74,20 +59,22 @@ val APP = Application(
 /**
  * The main Discord Client.
  */
-var CLIENT: GatewayDiscordClient? = null
+var CLIENT: Kord? = null
 
 /**
  * If Buta is running in production mode.
  */
 var PRODUCTION: Boolean = false
 
-fun main(arg: Array<String>) {
+@ExperimentalCoroutinesApi
+@ExperimentalTime
+fun main(arg: Array<String>): Unit = runBlocking {
     // mute mongodb
     val loggerContext = LoggerFactory.getILoggerFactory() as LoggerContext
     val rootLogger = loggerContext.getLogger("org.mongodb.driver")
     rootLogger.level = Level.OFF
 
-    MOJOR_SERVER.start(false)
+//    MOJOR_SERVER.start(false)
 
     val key = APP.getConfigObject<ButaConfig>().token
 
@@ -102,17 +89,11 @@ fun main(arg: Array<String>) {
         LOGGER.info("Starting Buta in Non-Production mode")
 
         PRODUCTION = false
-
-        Hooks.onOperatorDebug()
     }, {
         LOGGER.info("Starting Buta in Production mode")
 
         PRODUCTION = true
     })
-
-    Hooks.onOperatorError { t, _ -> t.logDiscord(APP) }
-    Hooks.onErrorDropped { e -> e.logDiscord(APP) }
-    Hooks.onNextError { e, _ -> e.logDiscord(APP) }
 
     args.initWith(arg)
 
@@ -124,96 +105,51 @@ fun main(arg: Array<String>) {
         StatisticsManager.save()
     }, 0, 1000 * 60 * 60) // Hourly
 
-    DiscordClientBuilder.create(key)
-            .build()
-            .gateway()
-            .setSharding(ShardingStrategy.recommended())
-            .setInitialStatus { Presence.online(Activity.watching("you")) }
-            .login()
-            .doOnNext { gw ->
-                CLIENT = gw
+    val kord = Kord(key)
 
-                // a guild event
-                gw.on(GuildCreateEvent::class.java) {
-                    GuildJoinEvent.invoke(it).then()
-                }.subscribe()
+    CLIENT = kord
 
-                // a guild leave event
-                gw.on(GuildDeleteEvent::class.java) {
-                    GuildLeaveEvent.invoke(it).then()
-                }.subscribe()
+    kord.on<MessageCreateEvent> {
+        MessageEvent.invoke(this)
+        BotMention.invoke(this)
+    }
 
-                // a message event
-                gw.on(MessageCreateEvent::class.java) {
-                    MessageEvent.invoke(it).then()
-                    BotMention.invoke(it).then()
-                }.subscribe()
+    kord.on<GuildCreateEvent> {
+        GuildJoinEvent.invoke(this)
+    }
 
-                // for b!uno
-                gw.on(ReactionAddEvent::class.java) { ev ->
-                    if (wildWaiting.containsKey(ev.userId) && properColors.contains(ev.emoji)) {
-                        val time = wildWaiting[ev.userId]?.time ?: 0
+    kord.on<GuildDeleteEvent> {
+        GuildLeaveEvent.invoke(this)
+    }
 
-                        if (System.currentTimeMillis() - time < TimeUnit.SECONDS.toMillis(10))
-                            completedWildCard(ev).then()
-                        else Mono.empty<Unit>().then()
-                    } else Mono.empty<Unit>().then()
-                }.subscribe()
+    kord.on<MemberJoinEvent> {
+        dev.shog.buta.events.MemberJoinEvent.invoke(this)
+    }
 
-                // stop voice when disconnected
-                gw.on(VoiceStateUpdateEvent::class.java) { ev ->
-                    ev.toMono()
-                            .filter { event ->
-                                event.client.selfId == event.current.userId
-                            }
-                            .filter { event -> !event.current.channelId.isPresent }
-                            .map { event -> AudioManager.getGuildMusicManager(event.current.guildId) }
-                            .doOnNext { guild -> guild.stop(false) }
-                            .then()
-                }.subscribe()
+    kord.on<ReactionAddEvent> {
+        if (wildWaiting.containsKey(userId) && properColors.contains(emoji)) {
+            val time = wildWaiting[userId]?.time ?: 0
 
-                // a member join event
-                gw.on(MemberJoinEvent::class.java) { event ->
-                    event.toMono().filterWhen { e ->
-                        e.client.self
-                                .flatMap { self -> self.asMember(e.guildId) }
-                                .flatMap { member -> member.basePermissions }
-                                .map { perms -> perms.contains(Permission.ADMINISTRATOR) }
-                    }
-                            .flatMap { e ->
-                                GuildFactory.getOrCreate(e.guildId.asLong()).toMono()
-                                        .map { guild -> guild.joinRole }
-                                        .filter { role -> role != -1L }
-                                        .filterWhen { role ->
-                                            e.client.self
-                                                    .flatMap { self -> self.asMember(e.guildId) }
-                                                    .zipWith(e.guild.flatMap { guild ->
-                                                        guild.getRoleById(Snowflake.of(role))
-                                                    })
-                                                    .flatMap { zip -> zip.t1.hasHigherRoles(setOf(zip.t2.id)) }
-                                        }
-                                        .flatMap { role -> e.member.addRole(Snowflake.of(role)) }
-                            }
-                            .then()
-                }.subscribe()
+            if (System.currentTimeMillis() - time < TimeUnit.SECONDS.toMillis(10))
+                completedWildCard(this)
+        }
+    }
 
-                // a ready event
-                gw.on(ReadyEvent::class.java, PresenceHandler::invoke).subscribe()
-            }
-            .block()
+    kord.on<ReadyEvent> {
+        println("Bot is online")
+    }
+
+    kord.login()
 }
 
 /**
  * Initialize commands
  */
+@ExperimentalCoroutinesApi
+@ExperimentalTime
 private fun initCommands() {
-    CommandHandler.add(LEAVE_COMMAND,
-            PAUSE_COMMAND,
-            PLAY_COMMAND,
-            QUEUE_COMMAND,
-            SKIP_COMMAND,
-            VOLUME_COMMAND,
-            STOCK_VIEW_COMMAND,
+    CommandHandler.add(
+            AVATAR_COMMAND,
             PING_COMMAND,
             SCORE_COMMAND,
             HELP_COMMAND,
@@ -223,15 +159,10 @@ private fun initCommands() {
             DAILY_REWARD_COMMAND,
             UNO_COMMAND,
             WORD_REVERSE_COMMAND,
-            RANDOM_WORD_COMMAND,
             DOG_GALLERY_COMMAND,
             DOG_FACT_COMMAND,
             CAT_GALLERY_COMMAND,
             CAT_FACT_COMMAND,
-            PRESENCE_COMMAND,
-            STAT_DUMP_COMMAND,
-            THREAD_VIEW_COMMAND,
-            NSFW_TOGGLE_COMMAND,
             PURGE_COMMAND
     )
 }

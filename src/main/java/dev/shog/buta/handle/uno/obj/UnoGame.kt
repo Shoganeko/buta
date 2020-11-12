@@ -1,9 +1,9 @@
 package dev.shog.buta.handle.uno.obj
 
+import com.gitlab.kordlib.common.entity.Snowflake
+import com.gitlab.kordlib.core.entity.User
 import dev.shog.buta.handle.StatisticsManager
 import dev.shog.lib.util.defaultFormat
-import discord4j.common.util.Snowflake
-import discord4j.core.`object`.entity.User
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 
