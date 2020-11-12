@@ -5,7 +5,13 @@ import dev.shog.buta.api.obj.Command
 import dev.shog.buta.api.obj.CommandConfig
 import dev.shog.buta.util.sendMessage
 
-val WORD_REVERSE_COMMAND = Command(CommandConfig("wordreverse", Category.FUN)) {
+val WORD_REVERSE_COMMAND = Command(CommandConfig(
+        name = "wordreverse",
+        description = "Reverse a word.",
+        aliases = listOf("wr"),
+        category = Category.FUN,
+        help = hashMapOf("wordreverse {word}" to "Reverse a word.")
+)) {
     if (args.isEmpty())
         sendMessage("Invalid arguments!")
     else buildString {

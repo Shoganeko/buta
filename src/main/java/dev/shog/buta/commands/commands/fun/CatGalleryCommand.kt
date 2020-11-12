@@ -7,7 +7,12 @@ import dev.shog.buta.api.obj.CommandConfig
 import dev.shog.buta.util.addFooter
 import kong.unirest.Unirest
 
-val CAT_GALLERY_COMMAND = Command(CommandConfig("catgallery", Category.FUN)) {
+val CAT_GALLERY_COMMAND = Command(CommandConfig(
+        name = "catgallery",
+        description = "See pictures of cats!",
+        help = hashMapOf("catgallery" to "Get a random picture of a cat."),
+        category = Category.FUN
+)) {
     val array = Unirest.get("https://api.thecatapi.com/v1/images/search?size=full")
             .asJson()
             .body

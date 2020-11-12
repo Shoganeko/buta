@@ -21,7 +21,18 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * Play Uno
  */
-val UNO_COMMAND = Command(CommandConfig("uno", Category.FUN)) {
+val UNO_COMMAND = Command(CommandConfig(
+        name = "uno",
+        category = Category.FUN,
+        help = hashMapOf(
+                "uno" to "Start a game of Uno.",
+                "uno end" to "End a game of Uno.",
+                "uno draw" to "Draw a card.",
+                "uno call" to "Call Uno, only if you've got one card left.",
+                "uno play {card id}" to "Play an Uno card."
+        ),
+        description = "Play Uno against Buta."
+)) {
     val author = event.message.author ?: return@Command
 
     if (args.size >= 1) {
@@ -324,7 +335,7 @@ data class PendingWildCardColorSelect(val wildCardType: CardType, val unoGame: U
 private fun getUserCards(uno: UnoGame): String {
     val result = buildString {
         uno.user.cards.cards.forEachIndexed { i, c ->
-            append(UNO_COMMAND.container.getMessage("other.cards", i + 1, c))
+            append("**${i + 1}**: ${c}}\n")
         }
     }
 

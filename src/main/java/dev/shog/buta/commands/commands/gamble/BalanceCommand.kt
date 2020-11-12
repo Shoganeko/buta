@@ -8,7 +8,16 @@ import dev.shog.buta.api.obj.CommandConfig
 import dev.shog.buta.util.sendMessage
 import kotlinx.coroutines.flow.first
 
-val BALANCE_COMMAND = Command(CommandConfig("balance", Category.GAMBLING)) {
+val BALANCE_COMMAND = Command(CommandConfig(
+        name = "balance",
+        description = "See your balance.",
+        category = Category.GAMBLING,
+        aliases = listOf("bal"),
+        help = hashMapOf(
+                "balance" to "See your own balance.",
+                "balance {@user}" to "See another user's balance."
+        )
+)) {
     if (event.message.mentionedUserIds.any()) {
         event.message.mentionedUsers
                 .first { user ->

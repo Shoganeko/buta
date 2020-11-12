@@ -8,7 +8,6 @@ import dev.shog.buta.api.UserThreadHandler
 import dev.shog.buta.api.factory.GuildFactory
 import dev.shog.buta.api.factory.UserFactory
 import dev.shog.buta.api.obj.Category
-import dev.shog.buta.api.obj.msg.MessageHandler
 import dev.shog.buta.events.obj.Event
 import dev.shog.buta.handle.PlaceholderFiller
 import dev.shog.buta.handle.SwearFilter
@@ -37,7 +36,7 @@ object MessageEvent : Event {
 
         if (SwearFilter.hasSwears(guild, content)) {
             val swearText = PlaceholderFiller.fillText(guild.swearFilterMsg.nullIfBlank()
-                    ?: MessageHandler.getMessage("default.swear-filter"), event)
+                    ?: "You cannot swear!", event)
                     ?: "No swearing!! :("
 
             val message = event.message.channel.createMessage(swearText)
@@ -59,20 +58,20 @@ object MessageEvent : Event {
 
             val commandObj = CommandHandler.COMMANDS
                     .filter { en ->
-                        command.equals(en.cfg.name, true) || en.container.aliases.contains(command)
+                        command.equals(en.cfg.name, true) || en.cfg.aliases.contains(command)
                     }
                     .singleOrNull { en ->
                         en.cfg.permable.hasPermission(event.member)
                     }
 
             if (commandObj != null && UserThreadHandler.can(event.member?.asUser()!!, commandObj.cfg.name)) {
-                if (commandObj.container.category == Category.DEVELOPER.toString() && !DEV.contains(authorId.longValue)) {
+                if (commandObj.cfg.category == Category.DEVELOPER && !DEV.contains(authorId.longValue)) {
                     event.message.channel.createMessage("This command requires special permissions!")
                     return
                 }
 
                 commandObj.invoke(event, args)
-                UserThreadHandler.finish(event.member?.asUser()!!, commandObj.container.name)
+                UserThreadHandler.finish(event.member?.asUser()!!, commandObj.cfg.name)
             }
         }
     }

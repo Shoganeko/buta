@@ -6,7 +6,16 @@ import dev.shog.buta.api.obj.Command
 import dev.shog.buta.api.obj.CommandConfig
 import kotlinx.coroutines.flow.first
 
-val AVATAR_COMMAND = Command(CommandConfig("avatar", Category.INFO)) {
+val AVATAR_COMMAND = Command(CommandConfig(
+        name = "avatar",
+        aliases = listOf("av"),
+        category = Category.INFO,
+        description = "Get the avatar of a user.",
+        help = hashMapOf(
+                "avatar" to "Get your own avatar.",
+                "avatar {@user}" to "Get the avatar of another user."
+        )
+)) {
     if (event.message.mentionedUserIds.isNotEmpty()) {
         event.message.mentionedUsers
                 .first { user ->

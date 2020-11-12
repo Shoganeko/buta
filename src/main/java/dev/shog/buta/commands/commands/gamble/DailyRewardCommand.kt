@@ -7,7 +7,12 @@ import dev.shog.buta.api.obj.CommandConfig
 import dev.shog.buta.util.sendMessage
 import dev.shog.lib.util.fancyDate
 
-val DAILY_REWARD_COMMAND = Command(CommandConfig("dailyreward", Category.GAMBLING)) {
+val DAILY_REWARD_COMMAND = Command(CommandConfig(
+        name = "dailyreward",
+        category = Category.GAMBLING,
+        description = "Get a daily reward of ${DAILY_REWARD_AMOUNT}.",
+        help = hashMapOf("dailyreward" to "Receive a daily reward of ${DAILY_REWARD_AMOUNT} in Buta currency.")
+)) {
     val user = UserFactory.getOrCreate(event.message.author?.id?.longValue!!)
 
     when {

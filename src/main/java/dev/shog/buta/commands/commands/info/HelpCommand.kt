@@ -9,7 +9,15 @@ import dev.shog.buta.commands.CommandHandler
 import dev.shog.buta.util.addFooter
 import dev.shog.buta.util.sendMessage
 
-val HELP_COMMAND = Command(CommandConfig("help", Category.INFO)) {
+val HELP_COMMAND = Command(CommandConfig(
+        name = "help",
+        category = Category.INFO,
+        help = hashMapOf(
+                "help" to "Get a list of all commands and their categories.",
+                "help {command}" to "Get help about a specific command."
+        ),
+        description = "Get help on things relating to Buta commands."
+)) {
     if (args.size >= 1) {
         val command = args[0]
 

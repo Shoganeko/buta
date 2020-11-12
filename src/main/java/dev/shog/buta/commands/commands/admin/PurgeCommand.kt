@@ -14,7 +14,16 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 
 @ExperimentalCoroutinesApi
-val PURGE_COMMAND = Command(CommandConfig("purge", Category.ADMINISTRATOR, PermissionFactory.hasPermission(Permission.Administrator))) {
+val PURGE_COMMAND = Command(CommandConfig(
+        name = "purge",
+        description = "Delete a specified amount of messages",
+        category = Category.ADMINISTRATOR,
+        help = hashMapOf(
+                "purge" to "Delete 100 messages in the current channel.",
+                "purge {number}" to "Delete a specified amount of messages in the current channel."
+        ),
+        permable = PermissionFactory.hasPermission(Permission.Administrator)
+)) {
     val amount = if (args.size == 1) {
         val pre = args[0].toLongOrNull() ?: -1
 
