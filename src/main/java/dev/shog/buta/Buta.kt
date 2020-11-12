@@ -163,6 +163,7 @@ private fun initCommands() {
             DOG_FACT_COMMAND,
             CAT_GALLERY_COMMAND,
             CAT_FACT_COMMAND,
-            PURGE_COMMAND
+            PURGE_COMMAND,
+            STOCK_VIEW_COMMAND
     )
 }

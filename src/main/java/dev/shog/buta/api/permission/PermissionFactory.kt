@@ -9,7 +9,7 @@ object PermissionFactory {
      */
     fun hasPermission() =
             object : Permable() {
-                override suspend fun hasPermission(member: Member): Boolean = true
+                override suspend fun hasPermission(member: Member?): Boolean = true
             }
 
     /**
@@ -17,7 +17,7 @@ object PermissionFactory {
      */
     fun hasPermission(vararg permissions: Permission): Permable =
             object : Permable() {
-                override suspend fun hasPermission(member: Member): Boolean =
-                        permissions.any { perm -> !member.getPermissions().contains(perm) }
+                override suspend fun hasPermission(member: Member?): Boolean =
+                        permissions.any { perm -> member?.getPermissions()?.contains(perm) == true }
             }
 }
