@@ -242,7 +242,12 @@ class ButaAi(private val unoGame: UnoGame) {
         var biggestCard: CardColor? = null
         var biggestVal = 0
 
-        arrayListOf(Pair(CardColor.YELLOW, yellow), Pair(CardColor.GREEN, green), Pair(CardColor.BLUE, blue), Pair(CardColor.RED, red)).forEach {
+        arrayListOf(
+            Pair(CardColor.YELLOW, yellow),
+            Pair(CardColor.GREEN, green),
+            Pair(CardColor.BLUE, blue),
+            Pair(CardColor.RED, red)
+        ).forEach {
             if (it.second > biggestVal) {
                 biggestCard = it.first
                 biggestVal = it.second
@@ -250,8 +255,13 @@ class ButaAi(private val unoGame: UnoGame) {
         }
 
         return biggestCard
-                ?: arrayListOf(Pair(CardColor.YELLOW, yellow), Pair(CardColor.GREEN, green), Pair(CardColor.BLUE, blue), Pair(CardColor.RED, red))
-                        .single { it.second > 0 }
-                        .first
+            ?: arrayListOf(
+                Pair(CardColor.YELLOW, yellow),
+                Pair(CardColor.GREEN, green),
+                Pair(CardColor.BLUE, blue),
+                Pair(CardColor.RED, red)
+            )
+                .single { it.second > 0 }
+                .first
     }
 }

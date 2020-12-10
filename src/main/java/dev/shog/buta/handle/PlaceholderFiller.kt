@@ -12,14 +12,14 @@ object PlaceholderFiller {
      */
     suspend fun fillText(text: String, event: MessageCreateEvent): String? {
         val user = event.message.author?.asUser()
-                ?: return null
+            ?: return null
 
         val guild = event.getGuild()
-                ?: return null
+            ?: return null
 
         return text
-                .replace("{user}", user.username)
-                .replace("{guild-name}", guild.name) // This should be {guild}, but then the guild class would misalign :(
-                .replace("{guild-size}", guild.memberCount.orElse(-1).toString())
+            .replace("{user}", user.username)
+            .replace("{guild-name}", guild.name) // This should be {guild}, but then the guild class would misalign :(
+            .replace("{guild-size}", guild.memberCount.orElse(-1).toString())
     }
 }

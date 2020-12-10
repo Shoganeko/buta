@@ -10,13 +10,13 @@ import org.json.JSONArray
 object SwearFilter {
     private val SWEARS: MutableList<String> by lazy {
         val request = Unirest.get("https://raw.githubusercontent.com/Shoganeko/badwords/master/array.js")
-                .asString()
+            .asString()
 
         val body = request.body
 
         return@lazy JSONArray(body).toList()
-                .map { it.toString() }
-                .toMutableList()
+            .map { it.toString() }
+            .toMutableList()
     }
 
     /**
@@ -42,11 +42,11 @@ object SwearFilter {
      * If any of strings in [message] contains exactly `ass`.
      */
     private fun isAss(message: String) =
-            message.split(" ").asSequence()
-                    .map { msg -> msg.replace(Regex("[^A-Za-z0-9]"), ""); }
-                    .any { msg ->
-                        msg.toLowerCase() == "ass" || (msg.length > 2 && msg.toLowerCase() == getAssByLength(msg))
-                    }
+        message.split(" ").asSequence()
+            .map { msg -> msg.replace(Regex("[^A-Za-z0-9]"), ""); }
+            .any { msg ->
+                msg.toLowerCase() == "ass" || (msg.length > 2 && msg.toLowerCase() == getAssByLength(msg))
+            }
 
     /**
      * Get a variable length ass.
@@ -56,7 +56,7 @@ object SwearFilter {
         var msg = "a"
 
         (1..len)
-                .forEach { _ -> msg += "s" }
+            .forEach { _ -> msg += "s" }
 
         return msg
     }

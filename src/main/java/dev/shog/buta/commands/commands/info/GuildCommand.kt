@@ -8,12 +8,14 @@ import dev.shog.buta.api.obj.CommandConfig
 import dev.shog.buta.util.addFooter
 import dev.shog.lib.util.defaultFormat
 
-val GUILD_COMMAND = Command(CommandConfig(
+val GUILD_COMMAND = Command(
+    CommandConfig(
         name = "guild",
         category = Category.INFO,
         description = "Get information about a guild.",
         help = hashMapOf("guild" to "Get information about the current guild.")
-)) {
+    )
+) {
     val guild = event.getGuild() ?: return@Command
 
     event.message.channel.createEmbed {

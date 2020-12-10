@@ -76,13 +76,13 @@ class UnoGame(private val discordUser: User) {
 
         return buildString {
             range
-                    .asSequence()
-                    .map { history[it] }
-                    .forEach { hist ->
-                        if (includeTime)
-                            append(hist.time.defaultFormat() + " " + hist.history)
-                        else append(hist.history)
-                    }
+                .asSequence()
+                .map { history[it] }
+                .forEach { hist ->
+                    if (includeTime)
+                        append(hist.time.defaultFormat() + " " + hist.history)
+                    else append(hist.history)
+                }
         }
     }
 

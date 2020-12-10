@@ -9,7 +9,8 @@ import kong.unirest.Unirest
  * Like, why are there spaces in keys? Why is it not consistent throughout different "?function="s?.
  */
 object StockHandler {
-    private val URL = "https://www.alphavantage.co/query?function={func}&symbol={sym}&apikey=${APP.getConfigObject<ButaConfig>().stocks}"
+    private val URL =
+        "https://www.alphavantage.co/query?function={func}&symbol={sym}&apikey=${APP.getConfigObject<ButaConfig>().stocks}"
 
     /**
      * A stock's data.
@@ -20,7 +21,13 @@ object StockHandler {
      * @param stock The time to get the stock from.
      * @param type The type of value retrieved.
      */
-    class StockData constructor(val symbol: String, private val timezone: String, val data: DoubleArray, private val stock: Time, val type: Type)
+    class StockData constructor(
+        val symbol: String,
+        private val timezone: String,
+        val data: DoubleArray,
+        private val stock: Time,
+        val type: Type
+    )
 
     /**
      * The timespan to show.
@@ -75,13 +82,13 @@ object StockHandler {
      */
     suspend fun getStock(sym: String, time: Time, type: Type): StockData {
         val builtUrl = URL
-                .replace("{sym}", sym)
-                .replace("{func}", time.func)
+            .replace("{sym}", sym)
+            .replace("{func}", time.func)
 
         val obj = Unirest.get(builtUrl)
-                .asJson()
-                .body
-                .`object`
+            .asJson()
+            .body
+            .`object`
 
         val tz = obj.getJSONObject("Meta Data")
         val tsd = obj.getJSONObject(time.key)
@@ -107,10 +114,10 @@ object StockHandler {
                 val firstKey = tsd.keys().next().split(" ")[0]
 
                 tsd.keys().asSequence()
-                        .filter { key -> key.startsWith(firstKey) }
-                        .map { key -> tsd.getJSONObject(key) }
-                        .map { newObj -> newObj.getDouble(type.key) }
-                        .forEach { value -> values.add(value) }
+                    .filter { key -> key.startsWith(firstKey) }
+                    .map { key -> tsd.getJSONObject(key) }
+                    .map { newObj -> newObj.getDouble(type.key) }
+                    .forEach { value -> values.add(value) }
 
                 tz.getString("6. Time Zone")
             }

@@ -21,18 +21,20 @@ import java.util.concurrent.ConcurrentHashMap
 /**
  * Play Uno
  */
-val UNO_COMMAND = Command(CommandConfig(
+val UNO_COMMAND = Command(
+    CommandConfig(
         name = "uno",
         category = Category.FUN,
         help = hashMapOf(
-                "uno" to "Start a game of Uno.",
-                "uno end" to "End a game of Uno.",
-                "uno draw" to "Draw a card.",
-                "uno call" to "Call Uno, only if you've got one card left.",
-                "uno play {card id}" to "Play an Uno card."
+            "uno" to "Start a game of Uno.",
+            "uno end" to "End a game of Uno.",
+            "uno draw" to "Draw a card.",
+            "uno call" to "Call Uno, only if you've got one card left.",
+            "uno play {card id}" to "Play an Uno card."
         ),
         description = "Play Uno against Buta."
-)) {
+    )
+) {
     val author = event.message.author ?: return@Command
 
     if (args.size >= 1) {
@@ -149,7 +151,7 @@ val UNO_COMMAND = Command(CommandConfig(
                     val msg = sendMessage("What color for the wild card?")
 
                     wildWaiting[event.message.author!!.id] =
-                            PendingWildCardColorSelect(card.type, game.second, System.currentTimeMillis(), msg)
+                        PendingWildCardColorSelect(card.type, game.second, System.currentTimeMillis(), msg)
 
                     properColors.forEach {
                         msg.addReaction(it)
@@ -174,7 +176,8 @@ val UNO_COMMAND = Command(CommandConfig(
         if (game.first) {
             val init = uno.initGame()
 
-            description = "You have started a game of Uno!\nSelect a playable card below, and play it with `{0}uno play **number**`.\nOnce you're about to play your last card, make sure to type `{0}uno call`."
+            description =
+                "You have started a game of Uno!\nSelect a playable card below, and play it with `{0}uno play **number**`.\nOnce you're about to play your last card, make sure to type `{0}uno call`."
 
             field {
                 name = "First Played Card"
@@ -324,10 +327,20 @@ suspend fun completedWildCard(ev: ReactionAddEvent) {
 
     pending.message.delete()
 
-    playCard(ev.getUserAsMember()!!, ev.message.channel, pending.unoGame, Card(selectedColor, pending.wildCardType, null))
+    playCard(
+        ev.getUserAsMember()!!,
+        ev.message.channel,
+        pending.unoGame,
+        Card(selectedColor, pending.wildCardType, null)
+    )
 }
 
-data class PendingWildCardColorSelect(val wildCardType: CardType, val unoGame: UnoGame, val time: Long, val message: Message)
+data class PendingWildCardColorSelect(
+    val wildCardType: CardType,
+    val unoGame: UnoGame,
+    val time: Long,
+    val message: Message
+)
 
 /**
  * Build a user's cards.

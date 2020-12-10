@@ -20,15 +20,17 @@ val DEFAULT_SCORE: JSONArray by lazy {
     ar
 }
 
-val SCORE_COMMAND = Command(CommandConfig(
+val SCORE_COMMAND = Command(
+    CommandConfig(
         name = "score",
         description = "Keep the score of something.",
         help = hashMapOf(
-                "score {label} +/-x" to "Adjust a score.",
-                "score label 1/2/3 {label}" to "Change a score's label."
+            "score {label} +/-x" to "Adjust a score.",
+            "score label 1/2/3 {label}" to "Change a score's label."
         ),
         category = Category.INFO
-)) {
+    )
+) {
     val author = event.message.author ?: return@Command
 
     val user = UserFactory.getOrCreate(author.id.longValue)

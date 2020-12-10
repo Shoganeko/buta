@@ -14,16 +14,18 @@ import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.flow.toList
 
 @ExperimentalCoroutinesApi
-val PURGE_COMMAND = Command(CommandConfig(
+val PURGE_COMMAND = Command(
+    CommandConfig(
         name = "purge",
         description = "Delete a specified amount of messages",
         category = Category.ADMINISTRATOR,
         help = hashMapOf(
-                "purge" to "Delete 100 messages in the current channel.",
-                "purge {number}" to "Delete a specified amount of messages in the current channel."
+            "purge" to "Delete 100 messages in the current channel.",
+            "purge {number}" to "Delete a specified amount of messages in the current channel."
         ),
         permable = PermissionFactory.hasPermission(Permission.Administrator)
-)) {
+    )
+) {
     val amount = if (args.size == 1) {
         val pre = args[0].toLongOrNull() ?: -1
 
@@ -33,10 +35,10 @@ val PURGE_COMMAND = Command(CommandConfig(
     val channel = event.message.channel as GuildMessageChannel
 
     channel.bulkDelete(
-            channel.getMessagesBefore(event.message.id)
-                    .take(amount.toInt())
-                    .map { msg -> msg.id }
-                    .toList()
+        channel.getMessagesBefore(event.message.id)
+            .take(amount.toInt())
+            .map { msg -> msg.id }
+            .toList()
     )
 
     val botMessage = sendMessage("Removed the last `${amount}` messages.")

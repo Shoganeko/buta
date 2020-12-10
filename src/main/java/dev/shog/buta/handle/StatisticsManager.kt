@@ -16,7 +16,7 @@ object StatisticsManager {
 
     init {
         statistics = APP.cache.getObject<ConcurrentHashMap<String, Any>>("stats")?.getValue()
-                ?: ConcurrentHashMap()
+            ?: ConcurrentHashMap()
     }
 
     /**
